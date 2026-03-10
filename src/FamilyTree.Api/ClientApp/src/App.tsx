@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -14,12 +15,12 @@ import Typography from '@mui/material/Typography';
 import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import HomePage from './pages/HomePage';
 
 const theme = createTheme();
 
 export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <ThemeProvider theme={theme}>
@@ -46,7 +47,7 @@ export default function App() {
         </Toolbar>
         <Divider />
         <List sx={{ width: 220 }}>
-          <ListItemButton onClick={() => setDrawerOpen(false)}>
+          <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
             <ListItemIcon><HomeIcon /></ListItemIcon>
             <ListItemText primary="Home" />
           </ListItemButton>
@@ -54,7 +55,7 @@ export default function App() {
       </Drawer>
 
       <Box component="main">
-        <HomePage />
+        <Outlet />
       </Box>
     </ThemeProvider>
   );

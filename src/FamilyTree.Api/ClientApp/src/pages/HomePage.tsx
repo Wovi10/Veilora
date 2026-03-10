@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -16,6 +17,7 @@ import type { TreeDto } from '../types/tree';
 import NewTreeDialog from '../components/NewTreeDialog';
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [trees, setTrees] = useState<TreeDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export default function HomePage() {
                   <Typography variant="caption" color="text.secondary">
                     Created {new Date(tree.createdAt).toLocaleDateString()}
                   </Typography>
-                  <Button size="small" variant="outlined" disabled>
+                  <Button size="small" variant="outlined" onClick={() => navigate(`/trees/${tree.id}`)}>
                     Open
                   </Button>
                 </CardActions>
