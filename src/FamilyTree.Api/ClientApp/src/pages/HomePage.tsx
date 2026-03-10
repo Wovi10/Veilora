@@ -32,8 +32,8 @@ export default function HomePage() {
   return (
     <Box sx={{ p: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" component="h1">
-          Family Trees
+        <Typography variant="h5" component="h1">
+          My Trees
         </Typography>
         <Button variant="contained" onClick={() => setDialogOpen(true)}>
           New Tree
