@@ -7,6 +7,7 @@ import {
   CardActions,
   CardContent,
   CircularProgress,
+  Container,
   Grid,
   Typography,
 } from '@mui/material';
@@ -30,7 +31,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 5, px: { xs: 3, sm: 4, md: 5 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" component="h1">
           My Trees
@@ -67,7 +68,7 @@ export default function HomePage() {
       {!loading && !error && trees.length > 0 && (
         <Grid container spacing={3}>
           {trees.map((tree) => (
-            <Grid key={tree.id} size={{ xs: 12, sm: 6, md: 4 }}>
+            <Grid key={tree.id} size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}>
               <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6" gutterBottom>
@@ -90,6 +91,6 @@ export default function HomePage() {
           ))}
         </Grid>
       )}
-    </Box>
+    </Container>
   );
 }
