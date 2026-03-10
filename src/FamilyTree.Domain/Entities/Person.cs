@@ -9,8 +9,8 @@ public class Person : BaseEntity
     public string? MiddleName { get; set; }
     public string LastName { get; set; } = string.Empty;
     public string? MaidenName { get; set; }
-    public DateTime? BirthDate { get; set; }
-    public DateTime? DeathDate { get; set; }
+    public DateOnly? BirthDate { get; set; }
+    public DateOnly? DeathDate { get; set; }
     public string? BirthPlace { get; set; }
     public string? Residence { get; set; }
     public Gender Gender { get; set; }

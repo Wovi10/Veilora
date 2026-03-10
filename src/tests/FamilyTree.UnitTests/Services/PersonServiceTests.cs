@@ -32,7 +32,7 @@ public class PersonServiceTests
         var person = new Person
         {
             Id = personId, FirstName = "Jane", LastName = "Doe",
-            Gender = Gender.Female, BirthDate = new DateTime(1990, 6, 15),
+            Gender = Gender.Female, BirthDate = new DateOnly(1990, 6, 15),
             CreatedAt = now, UpdatedAt = now
         };
 

@@ -24,6 +24,12 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.MaidenName)
             .HasMaxLength(100);
 
+        builder.Property(p => p.BirthDate)
+            .HasColumnType("date");
+
+        builder.Property(p => p.DeathDate)
+            .HasColumnType("date");
+
         builder.Property(p => p.BirthPlace)
             .HasMaxLength(200);
 
