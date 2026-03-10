@@ -12,6 +12,8 @@ namespace FamilyTree.IntegrationTests;
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     public Mock<IPersonService> PersonServiceMock { get; } = new();
+    public Mock<ITreeService> TreeServiceMock { get; } = new();
+    public Mock<IRelationshipService> RelationshipServiceMock { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -26,8 +28,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             // Replace all services that pull in repositories/DbContext
             RemoveAndMock<IPersonService>(services, PersonServiceMock.Object);
-            RemoveAndMock<IRelationshipService>(services, new Mock<IRelationshipService>().Object);
-            RemoveAndMock<ITreeService>(services, new Mock<ITreeService>().Object);
+            RemoveAndMock<IRelationshipService>(services, RelationshipServiceMock.Object);
+            RemoveAndMock<ITreeService>(services, TreeServiceMock.Object);
 
             // Remove repository registrations
             RemoveAll<IPersonRepository>(services);
