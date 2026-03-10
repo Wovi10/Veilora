@@ -12,11 +12,13 @@ import {
 } from '@mui/material';
 import { getTrees } from '../api/treesApi';
 import type { TreeDto } from '../types/tree';
+import NewTreeDialog from '../components/NewTreeDialog';
 
 export default function HomePage() {
   const [trees, setTrees] = useState<TreeDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     getTrees()
@@ -33,10 +35,16 @@ export default function HomePage() {
         <Typography variant="h4" component="h1">
           Family Trees
         </Typography>
-        <Button variant="contained" disabled>
+        <Button variant="contained" onClick={() => setDialogOpen(true)}>
           New Tree
         </Button>
       </Box>
+
+      <NewTreeDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onCreated={(tree) => setTrees((prev) => [...prev, tree])}
+      />
 
       {loading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
