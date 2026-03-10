@@ -1,0 +1,87 @@
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CircularProgress,
+  Grid,
+  Typography,
+} from '@mui/material';
+import { getTrees } from '../api/treesApi';
+import type { TreeDto } from '../types/tree';
+
+export default function HomePage() {
+  const [trees, setTrees] = useState<TreeDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getTrees()
+      .then(setTrees)
+      .catch((err: unknown) =>
+        setError(err instanceof Error ? err.message : 'Unexpected error')
+      )
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <Box sx={{ p: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" component="h1">
+          Family Trees
+        </Typography>
+        <Button variant="contained" disabled>
+          New Tree
+        </Button>
+      </Box>
+
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {!loading && !error && trees.length === 0 && (
+        <Typography color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
+          No family trees yet. Create one to get started.
+        </Typography>
+      )}
+
+      {!loading && !error && trees.length > 0 && (
+        <Grid container spacing={3}>
+          {trees.map((tree) => (
+            <Grid key={tree.id} size={{ xs: 12, sm: 6, md: 4 }}>
+              <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {tree.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {tree.description ?? 'No description'}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Created {new Date(tree.createdAt).toLocaleDateString()}
+                  </Typography>
+                  <Button size="small" variant="outlined" disabled>
+                    Open
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </Box>
+  );
+}
