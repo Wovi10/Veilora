@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"D:\\\\GitHub\\\\FamilyTree\" && dotnet build 2>&1)"
+    ]
+  }
+}
