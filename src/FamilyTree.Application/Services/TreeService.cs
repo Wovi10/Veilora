@@ -42,8 +42,7 @@ public class TreeService : ITreeService
             throw new NotFoundException($"Tree with ID {id} not found");
         }
 
-        var persons = await _personRepository.GetPersonsByTreeIdAsync(id);
-        return TreeMapper.ToTreeWithPersonsDto(tree, persons);
+        return TreeMapper.ToTreeWithPersonsDto(tree);
     }
 
     public async Task<TreeDto> CreateAsync(CreateTreeDto dto)
@@ -130,6 +129,17 @@ public class TreeService : ITreeService
 
         await _treeRepository.RemovePersonFromTreeAsync(treeId, personId);
         await _treeRepository.SaveChangesAsync();
+    }
+
+    public async Task UpdatePersonPositionAsync(Guid treeId, Guid personId, double x, double y)
+    {
+        var isInTree = await _treeRepository.IsPersonInTreeAsync(treeId, personId);
+        if (!isInTree)
+        {
+            throw new NotFoundException($"Person with ID {personId} not found in tree {treeId}");
+        }
+
+        await _treeRepository.UpdatePersonPositionAsync(treeId, personId, x, y);
     }
 }
 

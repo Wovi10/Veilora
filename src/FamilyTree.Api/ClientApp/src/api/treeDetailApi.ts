@@ -13,3 +13,12 @@ export async function getTreeRelationships(treeId: string): Promise<Relationship
   if (!res.ok) throw new Error('Failed to fetch tree relationships');
   return res.json() as Promise<RelationshipDto[]>;
 }
+
+export async function updatePersonPosition(treeId: string, personId: string, x: number, y: number): Promise<void> {
+  const res = await apiFetch(`/api/trees/${treeId}/persons/${personId}/position`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ x, y }),
+  });
+  if (!res.ok) throw new Error('Failed to update person position');
+}

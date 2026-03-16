@@ -32,14 +32,19 @@ public static class TreeMapper
         entity.Description = dto.Description;
     }
 
-    public static TreeWithPersonsDto ToTreeWithPersonsDto(Tree entity, IEnumerable<Person> persons)
+    public static TreeWithPersonsDto ToTreeWithPersonsDto(Tree entity)
     {
         return new TreeWithPersonsDto
         {
             Id = entity.Id,
             Name = entity.Name,
             Description = entity.Description,
-            Persons = persons.Select(PersonMapper.ToDto).ToList(),
+            Persons = entity.PersonTrees.Select(pt => new PersonInTreeDto
+            {
+                Person = PersonMapper.ToDto(pt.Person),
+                PositionX = pt.PositionX,
+                PositionY = pt.PositionY
+            }).ToList(),
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt
         };

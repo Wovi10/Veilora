@@ -8,11 +8,17 @@ export interface TreeDto {
   updatedAt: string;
 }
 
+export interface PersonInTreeDto {
+  person: PersonDto;
+  positionX: number | null;
+  positionY: number | null;
+}
+
 export interface TreeWithPersonsDto {
   id: string;
   name: string;
   description?: string;
-  persons: PersonDto[];
+  persons: PersonInTreeDto[];
   createdAt: string;
   updatedAt: string;
 }

@@ -1,8 +1,8 @@
 import 'reactflow/dist/style.css';
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ReactFlow, { Background, Controls } from 'reactflow';
-import type { Node, Edge } from 'reactflow';
+import ReactFlow, { Background, Controls, useNodesState } from 'reactflow';
+import type { Node, Edge, NodeMouseHandler } from 'reactflow';
 import {
   Alert,
   Box,
@@ -12,8 +12,8 @@ import {
   Typography,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getTreeDetails, getTreeRelationships } from '../api/treeDetailApi';
-import type { TreeWithPersonsDto } from '../types/tree';
+import { getTreeDetails, getTreeRelationships, updatePersonPosition } from '../api/treeDetailApi';
+import type { TreeWithPersonsDto, PersonInTreeDto } from '../types/tree';
 import type { RelationshipDto } from '../types/relationship';
 import type { PersonDto } from '../types/person';
 import PersonNode from '../components/PersonNode';
@@ -27,15 +27,15 @@ const GAP = 60;
 
 const nodeTypes = { person: PersonNode };
 
-function buildNodes(persons: PersonDto[], onEdit: (person: PersonDto) => void): Node[] {
-  return persons.map((person, i) => ({
-    id: person.id,
+function buildNodes(persons: PersonInTreeDto[], onEdit: (person: PersonDto) => void): Node[] {
+  return persons.map((pit, i) => ({
+    id: pit.person.id,
     type: 'person',
     position: {
-      x: (i % COLS) * (NODE_W + GAP),
-      y: Math.floor(i / COLS) * (NODE_H + GAP),
+      x: pit.positionX ?? (i % COLS) * (NODE_W + GAP),
+      y: pit.positionY ?? Math.floor(i / COLS) * (NODE_H + GAP),
     },
-    data: { person, onEdit },
+    data: { person: pit.person, onEdit },
   }));
 }
 
@@ -54,7 +54,7 @@ export default function TreePage() {
   const navigate = useNavigate();
 
   const [tree, setTree] = useState<TreeWithPersonsDto | null>(null);
-  const [nodes, setNodes] = useState<Node[]>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +82,7 @@ export default function TreePage() {
   const handlePersonCreated = useCallback((person: PersonDto) => {
     setTree((prev) => {
       if (!prev) return prev;
-      return { ...prev, persons: [...prev.persons, person] };
+      return { ...prev, persons: [...prev.persons, { person, positionX: null, positionY: null }] };
     });
     setNodes((prev) => {
       const next = [...prev, {
@@ -98,10 +98,15 @@ export default function TreePage() {
     });
   }, [handleEdit]);
 
+  const handleNodeDragStop = useCallback<NodeMouseHandler>((_event, node) => {
+    if (!id) return;
+    updatePersonPosition(id, node.id, node.position.x, node.position.y);
+  }, [id]);
+
   const handlePersonSaved = useCallback((updated: PersonDto) => {
     setTree((prev) => {
       if (!prev) return prev;
-      return { ...prev, persons: prev.persons.map((p) => p.id === updated.id ? updated : p) };
+      return { ...prev, persons: prev.persons.map((p) => p.person.id === updated.id ? { ...p, person: updated } : p) };
     });
     setNodes((prev) =>
       prev.map((n) =>
@@ -167,7 +172,14 @@ export default function TreePage() {
 
           {tree && tree.persons.length > 0 && (
             <Box sx={{ height: 'calc(100vh - 128px)' }}>
-              <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                nodeTypes={nodeTypes}
+                onNodesChange={onNodesChange}
+                onNodeDragStop={handleNodeDragStop}
+                fitView
+              >
                 <Background />
                 <Controls />
               </ReactFlow>

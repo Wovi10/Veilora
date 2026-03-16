@@ -85,14 +85,14 @@ public class TreeServiceTests
     {
         var treeId = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var tree = new Tree { Id = treeId, Name = "Smith Family", CreatedAt = now, UpdatedAt = now };
         var persons = new List<Person>
         {
             new() { Id = Guid.NewGuid(), FirstName = "Alice", LastName = "Smith", Gender = Gender.Female, CreatedAt = now, UpdatedAt = now },
             new() { Id = Guid.NewGuid(), FirstName = "Bob", LastName = "Smith", Gender = Gender.Male, CreatedAt = now, UpdatedAt = now }
         };
+        var tree = new Tree { Id = treeId, Name = "Smith Family", CreatedAt = now, UpdatedAt = now };
+        tree.PersonTrees = persons.Select(p => new PersonTree { TreeId = treeId, PersonId = p.Id, Person = p, Tree = tree }).ToList();
         _treeRepositoryMock.Setup(r => r.GetTreeWithPersonsAsync(treeId)).ReturnsAsync(tree);
-        _personRepositoryMock.Setup(r => r.GetPersonsByTreeIdAsync(treeId)).ReturnsAsync(persons);
 
         var result = await _sut.GetTreeWithPersonsAsync(treeId);
 

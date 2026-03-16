@@ -104,4 +104,13 @@ public class TreesController(
         await treeService.RemovePersonFromTreeAsync(treeId, personId);
         return NoContent();
     }
+
+    [HttpPut("{treeId:guid}/persons/{personId:guid}/position")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePersonPosition(Guid treeId, Guid personId, [FromBody] UpdatePersonPositionDto dto)
+    {
+        await treeService.UpdatePersonPositionAsync(treeId, personId, dto.X, dto.Y);
+        return NoContent();
+    }
 }

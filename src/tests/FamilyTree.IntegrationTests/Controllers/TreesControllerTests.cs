@@ -84,7 +84,7 @@ public class TreesControllerTests
         {
             Id = treeId,
             Name = "Smith Family",
-            Persons = [new() { Id = Guid.NewGuid(), FirstName = "Jane", LastName = "Doe", Gender = "Female", CreatedAt = now, UpdatedAt = now }],
+            Persons = [new() { Person = new PersonDto { Id = Guid.NewGuid(), FirstName = "Jane", LastName = "Doe", Gender = "Female", CreatedAt = now, UpdatedAt = now } }],
             CreatedAt = now,
             UpdatedAt = now
         };
