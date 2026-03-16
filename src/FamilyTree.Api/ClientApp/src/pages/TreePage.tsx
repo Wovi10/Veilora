@@ -18,6 +18,7 @@ import type { RelationshipDto } from '../types/relationship';
 import type { PersonDto } from '../types/person';
 import PersonNode from '../components/PersonNode';
 import ParentEdge from '../components/ParentEdge';
+import RelationshipEdge from '../components/RelationshipEdge';
 import AddPersonDialog from '../components/AddPersonDialog';
 import EditPersonDialog from '../components/EditPersonDialog';
 import AddRelationshipDialog from '../components/AddRelationshipDialog';
@@ -28,7 +29,7 @@ const NODE_H = 100;
 const GAP = 60;
 
 const nodeTypes = { person: PersonNode };
-const edgeTypes = { parentEdge: ParentEdge };
+const edgeTypes = { parentEdge: ParentEdge, relationshipEdge: RelationshipEdge };
 
 function buildNodes(persons: PersonInTreeDto[], onEdit: (person: PersonDto) => void): Node[] {
   return persons.map((pit, i) => ({
@@ -89,8 +90,8 @@ function buildEdges(relationships: RelationshipDto[], posMap: Map<string, Pos>):
       id: rel.id,
       source: rel.person1Id,
       target: rel.person2Id,
-      type: 'smoothstep',
-      label: rel.relationshipType,
+      type: 'relationshipEdge',
+      data: { relationshipType: rel.relationshipType },
       ...handles,
     };
   });
@@ -173,8 +174,8 @@ export default function TreePage() {
       id: rel.id,
       source: rel.person1Id,
       target: rel.person2Id,
-      type: 'smoothstep',
-      label: rel.relationshipType,
+      type: 'relationshipEdge',
+      data: { relationshipType: rel.relationshipType },
       ...handles,
     }]);
     setPendingConnection(null);
