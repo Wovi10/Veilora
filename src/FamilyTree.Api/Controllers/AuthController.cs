@@ -33,7 +33,7 @@ public class AuthController(IAuthService authService, ITokenService tokenService
     {
         var user = await authService.ValidateAsync(dto);
         if (user is null)
-            return Unauthorized(new { message = "Invalid email or password." });
+            return Unauthorized(new { message = "Invalid username/email or password." });
 
         var token = tokenService.GenerateToken(user);
         return Ok(new AuthResponseDto(token, user.Email, user.DisplayName));

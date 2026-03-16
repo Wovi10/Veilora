@@ -28,7 +28,11 @@ public class AuthService(IUserRepository userRepository) : IAuthService
 
     public async Task<UserInfoDto?> ValidateAsync(LoginDto dto)
     {
-        var user = await userRepository.GetByEmailAsync(dto.Email.ToLowerInvariant());
+        var input = dto.UsernameOrEmail;
+        var user = input.Contains('@')
+            ? await userRepository.GetByEmailAsync(input.ToLowerInvariant())
+            : await userRepository.GetByDisplayNameAsync(input);
+
         if (user is null) return null;
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash)) return null;
 

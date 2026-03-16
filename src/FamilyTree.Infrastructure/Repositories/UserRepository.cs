@@ -11,4 +11,9 @@ public class UserRepository(ApplicationDbContext context) : Repository<User>(con
         => await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == email);
+
+    public async Task<User?> GetByDisplayNameAsync(string displayName)
+        => await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.DisplayName == displayName);
 }

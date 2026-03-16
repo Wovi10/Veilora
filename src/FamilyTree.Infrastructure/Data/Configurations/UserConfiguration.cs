@@ -27,7 +27,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.UpdatedAt)
             .IsRequired();
 
-        // Unique constraint on email
         builder.HasIndex(u => u.Email)
             .IsUnique();
     }
