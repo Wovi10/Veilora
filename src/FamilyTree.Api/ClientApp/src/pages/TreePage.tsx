@@ -18,6 +18,7 @@ import type { RelationshipDto } from '../types/relationship';
 import type { PersonDto } from '../types/person';
 import PersonNode from '../components/PersonNode';
 import AddPersonDialog from '../components/AddPersonDialog';
+import EditPersonDialog from '../components/EditPersonDialog';
 
 const COLS = 4;
 const NODE_W = 180;
@@ -26,7 +27,7 @@ const GAP = 60;
 
 const nodeTypes = { person: PersonNode };
 
-function buildNodes(persons: PersonDto[]): Node[] {
+function buildNodes(persons: PersonDto[], onEdit: (person: PersonDto) => void): Node[] {
   return persons.map((person, i) => ({
     id: person.id,
     type: 'person',
@@ -34,7 +35,7 @@ function buildNodes(persons: PersonDto[]): Node[] {
       x: (i % COLS) * (NODE_W + GAP),
       y: Math.floor(i / COLS) * (NODE_H + GAP),
     },
-    data: { person },
+    data: { person, onEdit },
   }));
 }
 
@@ -58,20 +59,25 @@ export default function TreePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPerson, setEditingPerson] = useState<PersonDto | null>(null);
+
+  const handleEdit = useCallback((person: PersonDto) => {
+    setEditingPerson(person);
+  }, []);
 
   useEffect(() => {
     if (!id) return;
     Promise.all([getTreeDetails(id), getTreeRelationships(id)])
       .then(([treeData, rels]) => {
         setTree(treeData);
-        setNodes(buildNodes(treeData.persons));
+        setNodes(buildNodes(treeData.persons, handleEdit));
         setEdges(buildEdges(rels));
       })
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : 'Unexpected error')
       )
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, handleEdit]);
 
   const handlePersonCreated = useCallback((person: PersonDto) => {
     setTree((prev) => {
@@ -86,10 +92,23 @@ export default function TreePage() {
           x: (prev.length % COLS) * (NODE_W + GAP),
           y: Math.floor(prev.length / COLS) * (NODE_H + GAP),
         },
-        data: { person },
+        data: { person, onEdit: handleEdit },
       }];
       return next;
     });
+  }, [handleEdit]);
+
+  const handlePersonSaved = useCallback((updated: PersonDto) => {
+    setTree((prev) => {
+      if (!prev) return prev;
+      return { ...prev, persons: prev.persons.map((p) => p.id === updated.id ? updated : p) };
+    });
+    setNodes((prev) =>
+      prev.map((n) =>
+        n.id === updated.id ? { ...n, data: { ...n.data, person: updated } } : n
+      )
+    );
+    setEditingPerson(null);
   }, []);
 
   return (
@@ -163,6 +182,15 @@ export default function TreePage() {
           treeId={id}
           onClose={() => setDialogOpen(false)}
           onCreated={handlePersonCreated}
+        />
+      )}
+
+      {editingPerson && (
+        <EditPersonDialog
+          open
+          person={editingPerson}
+          onClose={() => setEditingPerson(null)}
+          onSaved={handlePersonSaved}
         />
       )}
     </>
