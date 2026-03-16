@@ -18,8 +18,11 @@ A personal web-based family tree application for creating and visualizing family
 - [x] React + TypeScript + Vite frontend
 - [x] React Flow canvas (TreePage)
 - [x] Home page with tree list
-- [ ] Create/edit person form
-- [ ] Display full family tree with relationships and edges
+- [x] Create/edit person form (add + edit dialogs)
+- [x] Display full family tree with relationships and edges
+- [x] Drag-and-drop node repositioning with persistence
+- [x] Canvas relationship creation
+- [x] H-bridge parent edges with relationship type icons
 
 ### Phase 2 — Enhanced Features
 
