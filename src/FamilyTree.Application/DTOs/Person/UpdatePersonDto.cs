@@ -12,4 +12,6 @@ public record UpdatePersonDto
     public string? Residence { get; init; }
     public string Gender { get; init; } = string.Empty;
     public string? Biography { get; init; }
+    public Guid? Parent1Id { get; init; }
+    public Guid? Parent2Id { get; init; }
 }

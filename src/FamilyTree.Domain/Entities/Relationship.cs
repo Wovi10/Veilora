@@ -8,8 +8,8 @@ public class Relationship : BaseEntity
     public Guid Person1Id { get; set; }
     public Guid Person2Id { get; set; }
     public RelationshipType RelationshipType { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
+    public DateOnly? StartDate { get; set; }
+    public DateOnly? EndDate { get; set; }
     public string? Notes { get; set; }
 
     // Navigation properties

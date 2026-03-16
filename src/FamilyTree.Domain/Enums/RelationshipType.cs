@@ -2,11 +2,7 @@
 
 public enum RelationshipType
 {
-    // Person1 is child, Person2 is parent
-    ParentChildBiological,
-    ParentChildAdopted,
-
-    // Mutual relationship
+    // Mutual relationships
     Spouse,
     Partner,
 

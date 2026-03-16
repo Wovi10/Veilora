@@ -1,11 +1,18 @@
 export type RelationshipType =
-  | 'ParentChildBiological'
-  | 'ParentChildAdopted'
   | 'Spouse'
   | 'Partner'
   | 'Godparent'
   | 'Guardian'
   | 'CloseFriend';
+
+export interface CreateRelationshipDto {
+  person1Id: string;
+  person2Id: string;
+  relationshipType: RelationshipType;
+  startDate?: string;
+  endDate?: string;
+  notes?: string;
+}
 
 export interface RelationshipDto {
   id: string;

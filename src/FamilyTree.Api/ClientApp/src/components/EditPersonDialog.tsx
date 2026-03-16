@@ -18,16 +18,24 @@ import type { Gender, PersonDto } from '../types/person';
 interface Props {
   open: boolean;
   person: PersonDto;
+  persons: PersonDto[];
   onClose: () => void;
   onSaved: (person: PersonDto) => void;
 }
 
-export default function EditPersonDialog({ open, person, onClose, onSaved }: Props) {
+const fullName = (p: PersonDto) =>
+  [p.firstName, p.middleName, p.lastName].filter(Boolean).join(' ');
+
+export default function EditPersonDialog({ open, person, persons, onClose, onSaved }: Props) {
   const [firstName, setFirstName] = useState(person.firstName);
   const [lastName, setLastName] = useState(person.lastName);
   const [gender, setGender] = useState<Gender>(person.gender);
   const [birthDate, setBirthDate] = useState(person.birthDate ?? '');
   const [deathDate, setDeathDate] = useState(person.deathDate ?? '');
+  const [parent1Id, setParent1Id] = useState<string | null>(person.parent1Id ?? null);
+  const [parent2Id, setParent2Id] = useState<string | null>(person.parent2Id ?? null);
+
+  const otherPersons = persons.filter(p => p.id !== person.id);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +58,8 @@ export default function EditPersonDialog({ open, person, onClose, onSaved }: Pro
         gender,
         birthDate: birthDate || undefined,
         deathDate: deathDate || undefined,
+        parent1Id,
+        parent2Id,
       });
       onSaved(updated);
       handleClose();
@@ -109,6 +119,32 @@ export default function EditPersonDialog({ open, person, onClose, onSaved }: Pro
           fullWidth
           slotProps={{ inputLabel: { shrink: true } }}
         />
+        <FormControl fullWidth>
+          <InputLabel>Parent 1</InputLabel>
+          <Select
+            value={parent1Id ?? ''}
+            label="Parent 1"
+            onChange={(e) => setParent1Id(e.target.value || null)}
+          >
+            <MenuItem value=""><em>Unknown</em></MenuItem>
+            {otherPersons.map(p => (
+              <MenuItem key={p.id} value={p.id}>{fullName(p)}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth>
+          <InputLabel>Parent 2</InputLabel>
+          <Select
+            value={parent2Id ?? ''}
+            label="Parent 2"
+            onChange={(e) => setParent2Id(e.target.value || null)}
+          >
+            <MenuItem value=""><em>Unknown</em></MenuItem>
+            {otherPersons.map(p => (
+              <MenuItem key={p.id} value={p.id}>{fullName(p)}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={submitting}>Cancel</Button>
