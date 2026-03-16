@@ -34,7 +34,7 @@ public class CreatePersonDtoValidator : AbstractValidator<CreatePersonDto>
 
         RuleFor(x => x.Gender)
             .NotEmpty().WithMessage("Gender is required")
-            .Must(BeValidGender).WithMessage("Gender must be a valid value (Male, Female, Other, PreferNotToSay)");
+            .Must(BeValidGender).WithMessage("Gender must be a valid value (Male, Female, Other, Unknown)");
 
         RuleFor(x => x.DeathDate)
             .GreaterThan(x => x.BirthDate).WithMessage("Death date must be after birth date")

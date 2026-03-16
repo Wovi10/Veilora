@@ -1,4 +1,4 @@
-export type Gender = 'Male' | 'Female' | 'Other' | 'PreferNotToSay';
+export type Gender = 'Male' | 'Female' | 'Other' | 'Unknown';
 
 export interface PersonDto {
   id: string;
