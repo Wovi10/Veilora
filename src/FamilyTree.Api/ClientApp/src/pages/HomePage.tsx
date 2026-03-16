@@ -9,7 +9,7 @@ import {
   CardContent,
   CircularProgress,
   Container,
-  Grid,
+  Grid2,
   Typography,
 } from '@mui/material';
 import { getTrees } from '../api/treesApi';
@@ -68,9 +68,9 @@ export default function HomePage() {
       )}
 
       {!loading && !error && trees.length > 0 && (
-        <Grid container spacing={3}>
+        <Grid2 container spacing={3}>
           {trees.map((tree) => (
-            <Grid key={tree.id} size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}>
+            <Grid2 key={tree.id} size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}>
               <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6" gutterBottom>
@@ -89,9 +89,9 @@ export default function HomePage() {
                   </Button>
                 </CardActions>
               </Card>
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
       )}
     </Container>
   );
