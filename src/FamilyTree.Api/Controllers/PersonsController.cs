@@ -1,11 +1,13 @@
 using FamilyTree.Application.DTOs.Person;
 using FamilyTree.Application.DTOs.Relationship;
 using FamilyTree.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTree.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/persons")]
 public class PersonsController(IPersonService personService, IRelationshipService relationshipService) : ControllerBase
 {

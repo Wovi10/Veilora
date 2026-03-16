@@ -18,7 +18,7 @@ FamilyTree/
 │   │   │   ├── PersonsController.cs
 │   │   │   ├── RelationshipsController.cs
 │   │   │   ├── TreesController.cs
-│   │   │   └── UsersController.cs          # For Phase 3
+│   │   │   └── AuthController.cs           # register + login
 │   │   ├── Middleware/
 │   │   │   ├── ExceptionHandlingMiddleware.cs
 │   │   │   └── RequestLoggingMiddleware.cs
@@ -643,9 +643,10 @@ dotnet test --collect:"XPlat Code Coverage"
 - Specific repositories for complex queries
 - Keep repositories focused on data access only
 
-### 6. Security (Phase 3)
-- Use JWT tokens for authentication
-- Implement authorization policies
+### 6. Security
+- JWT Bearer authentication (implemented in Phase 1)
+- All endpoints except `/api/auth/*` require `Authorization: Bearer {token}`
+- Set JWT secret via user secrets: `dotnet user-secrets set "Jwt:Key" "..."`
 - Validate all inputs
 - Use parameterized queries (EF Core does this automatically)
 - Enable CORS only for trusted origins

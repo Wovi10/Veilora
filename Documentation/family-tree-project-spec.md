@@ -1,7 +1,7 @@
 # Family Tree Application - Project Specification
 
-**Last Updated:** February 26, 2026  
-**Project Status:** Planning Phase
+**Last Updated:** March 16, 2026
+**Project Status:** Phase 1 (MVP) - In Progress
 
 ---
 
@@ -41,7 +41,7 @@ A web-based family tree application that allows users to create, visualize, and 
 ### Infrastructure (Future Consideration)
 - Hosting: TBD (Azure, AWS, or other)
 - File Storage: TBD (for photos/documents)
-- Authentication: TBD (Identity Server, Auth0, or ASP.NET Core Identity)
+- Authentication: JWT Bearer (custom, no Identity framework)
 
 ---
 
@@ -167,6 +167,7 @@ A web-based family tree application that allows users to create, visualize, and 
 ### 2. User Management
 - [x] **Single-user application** (for now)
 - [x] **Multiple separate family trees** support required
+- [x] **JWT authentication** — register once, login to get token, all API endpoints protected
 - [ ] Privacy levels for different family members? - Not needed for v1
 - [ ] Collaboration features (multiple editors)? - Future consideration
 - [x] Private trees only (no public sharing in v1)
@@ -214,8 +215,8 @@ A web-based family tree application that allows users to create, visualize, and 
 #### Phase 3 - Advanced & Mobile
 - [ ] Mobile-friendly responsive design (3rd priority)
 - [ ] GEDCOM import/export (4th priority - genealogy standard format)
-- [ ] User authentication (if opening to family members)
-- [ ] Sharing and collaboration
+- [x] ~~User authentication~~ — implemented in Phase 1 (JWT Bearer)
+- [ ] Sharing and collaboration (TreePermission wiring)
 - [ ] Cloud storage for photos (Azure Blob or AWS S3)
 - [ ] Advanced querying and reports
 - [ ] Historical records integration
@@ -361,15 +362,16 @@ src/
 ## Development Phases
 
 ### Phase 1: Foundation (MVP)
-1. Set up .NET Core API project
-2. Configure PostgreSQL database and EF Core
-3. Create Person and Relationship models
-4. Implement basic CRUD API endpoints
-5. Set up React project with TypeScript
-6. Integrate React Flow
-7. Create basic person nodes and relationship edges
-8. Implement create/edit person form
-9. Display simple family tree
+1. [x] Set up .NET Core API project
+2. [x] Configure PostgreSQL database and EF Core
+3. [x] Create Person, Relationship, Tree, User domain models
+4. [x] Implement CRUD API endpoints (Person, Tree, Relationship)
+5. [x] JWT authentication (register + login)
+6. [x] Set up React project with TypeScript
+7. [x] Integrate React Flow
+8. [x] Basic tree visualization canvas
+9. [ ] Create/edit person form (in progress)
+10. [ ] Display full family tree with relationships
 
 **Deliverable:** Working application where you can add people, define relationships, and see a basic tree visualization
 

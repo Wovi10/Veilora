@@ -25,5 +25,12 @@ public class TreeConfiguration : IEntityTypeConfiguration<Tree>
 
         // Index
         builder.HasIndex(t => t.Name);
+
+        // FK to User (nullable - tree can exist without an owner)
+        builder.HasOne(t => t.Creator)
+            .WithMany(u => u.CreatedTrees)
+            .HasForeignKey(t => t.CreatedBy)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
     }
 }

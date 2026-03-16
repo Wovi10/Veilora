@@ -2,11 +2,13 @@ using FamilyTree.Application.DTOs.Person;
 using FamilyTree.Application.DTOs.Relationship;
 using FamilyTree.Application.DTOs.Tree;
 using FamilyTree.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTree.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/trees")]
 public class TreesController(
     ITreeService treeService,
