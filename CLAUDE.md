@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-Early development — Phase 1 (MVP). The backend skeleton is scaffolded (domain entities, DTOs, validators, mappers, repositories, EF Core migrations). **No API controllers exist yet.** There is no frontend yet.
+Early development — Phase 1 (MVP). Backend has full CRUD controllers for Person, Tree, and Relationship, plus JWT authentication. React frontend is in progress (Tree detail page with React Flow canvas exists).
 
 ## Commands
 
@@ -63,10 +63,18 @@ Repository interfaces live in **both** `FamilyTree.Application/Repositories/Inte
 - No soft deletes — use hard deletes for now.
 - No photo storage in v1 — `ProfilePhotoUrl` is just a nullable string field.
 
+## Authentication
+
+JWT Bearer auth is implemented. `POST /api/auth/register` and `POST /api/auth/login` return a token. All other endpoints require `Authorization: Bearer {token}`.
+
+Set the JWT secret via user secrets (never commit it):
+```bash
+dotnet user-secrets set "Jwt:Key" "your-secret-key-at-least-32-chars" --project src/FamilyTree.Api
+```
+
 ## What NOT to Implement Yet
 
-- Authentication/authorization → Phase 3
 - Photo uploads → Phase 2
-- `User`/`TreePermission` service wiring → Phase 3
+- `TreePermission` service wiring (sharing/collaboration) → Phase 3
 - GEDCOM import/export → Phase 3
 - Mobile/responsive design → Phase 3

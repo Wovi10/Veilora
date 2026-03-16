@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
@@ -15,12 +16,14 @@ import Typography from '@mui/material/Typography';
 import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useAuth } from './context/AuthContext';
 
 const theme = createTheme();
 
 export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   return (
     <ThemeProvider theme={theme}>
@@ -35,9 +38,12 @@ export default function App() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div">
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Family Tree
           </Typography>
+          <Button color="inherit" onClick={() => { logout(); navigate('/login', { replace: true }); }}>
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
 

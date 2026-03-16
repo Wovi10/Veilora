@@ -1,7 +1,8 @@
 import type { CreatePersonDto, PersonDto } from '../types/person';
+import { apiFetch } from './apiFetch';
 
 export async function createPerson(dto: CreatePersonDto): Promise<PersonDto> {
-  const res = await fetch('/api/persons', {
+  const res = await apiFetch('/api/persons', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(dto),
@@ -14,7 +15,7 @@ export async function createPerson(dto: CreatePersonDto): Promise<PersonDto> {
 }
 
 export async function addPersonToTree(treeId: string, personId: string): Promise<void> {
-  const res = await fetch(`/api/trees/${treeId}/persons/${personId}`, {
+  const res = await apiFetch(`/api/trees/${treeId}/persons/${personId}`, {
     method: 'POST',
   });
   if (!res.ok) {

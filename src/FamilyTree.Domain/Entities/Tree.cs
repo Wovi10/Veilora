@@ -6,8 +6,9 @@ public class Tree : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public Guid? CreatedBy { get; set; } // For Phase 3 - User relationship
+    public Guid? CreatedBy { get; set; }
 
     // Navigation properties
+    public User? Creator { get; set; }
     public ICollection<PersonTree> PersonTrees { get; set; } = [];
 }
