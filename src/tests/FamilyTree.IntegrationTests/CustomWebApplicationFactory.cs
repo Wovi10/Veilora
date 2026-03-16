@@ -1,6 +1,7 @@
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Application.Services.Interfaces;
 using FamilyTree.Infrastructure.Data;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             RemoveAll<IPersonRepository>(services);
             RemoveAll<IRelationshipRepository>(services);
             RemoveAll<ITreeRepository>(services);
+
+            // Replace JWT auth with a test scheme that always authenticates
+            services.AddAuthentication(TestAuthHandler.SchemeName)
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
         });
     }
 
