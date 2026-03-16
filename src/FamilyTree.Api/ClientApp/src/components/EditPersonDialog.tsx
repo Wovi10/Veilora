@@ -90,7 +90,7 @@ export default function EditPersonDialog({ open, person, onClose, onSaved }: Pro
             <MenuItem value="Male">Male</MenuItem>
             <MenuItem value="Female">Female</MenuItem>
             <MenuItem value="Other">Other</MenuItem>
-            <MenuItem value="PreferNotToSay">Prefer not to say</MenuItem>
+            <MenuItem value="Unknown">Unknown</MenuItem>
           </Select>
         </FormControl>
         <TextField
