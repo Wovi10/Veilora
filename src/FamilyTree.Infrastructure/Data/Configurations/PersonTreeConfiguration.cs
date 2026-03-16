@@ -22,6 +22,9 @@ public class PersonTreeConfiguration : IEntityTypeConfiguration<PersonTree>
             .HasForeignKey(pt => pt.TreeId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(pt => pt.PositionX).IsRequired(false);
+        builder.Property(pt => pt.PositionY).IsRequired(false);
+
         // Indexes
         builder.HasIndex(pt => pt.PersonId);
         builder.HasIndex(pt => pt.TreeId);

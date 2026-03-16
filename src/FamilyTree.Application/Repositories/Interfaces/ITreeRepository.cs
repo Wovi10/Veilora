@@ -8,5 +8,6 @@ public interface ITreeRepository : IRepository<Tree>
     Task AddPersonToTreeAsync(Guid treeId, Guid personId);
     Task RemovePersonFromTreeAsync(Guid treeId, Guid personId);
     Task<bool> IsPersonInTreeAsync(Guid treeId, Guid personId);
+    Task UpdatePersonPositionAsync(Guid treeId, Guid personId, double x, double y);
 }
 

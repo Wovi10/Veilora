@@ -5,6 +5,9 @@ public class PersonTree
     public Guid PersonId { get; set; }
     public Guid TreeId { get; set; }
 
+    public double? PositionX { get; set; }
+    public double? PositionY { get; set; }
+
     // Navigation properties
     public Person Person { get; set; } = null!;
     public Tree Tree { get; set; } = null!;

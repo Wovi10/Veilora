@@ -12,4 +12,5 @@ public interface ITreeService
     Task DeleteAsync(Guid id);
     Task AddPersonToTreeAsync(Guid treeId, Guid personId);
     Task RemovePersonFromTreeAsync(Guid treeId, Guid personId);
+    Task UpdatePersonPositionAsync(Guid treeId, Guid personId, double x, double y);
 }
