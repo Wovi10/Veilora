@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,11 +21,11 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await loginApi({ email, password });
+      const res = await loginApi({ usernameOrEmail, password });
       login(res.token);
       navigate('/', { replace: true });
     } catch {
-      setError('Invalid email or password.');
+      setError('Invalid username/email or password.');
     } finally {
       setLoading(false);
     }
@@ -39,10 +39,9 @@ export default function LoginPage() {
         </Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
           <TextField
-            label="Email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
+            label="Username or email"
+            value={usernameOrEmail}
+            onChange={e => setUsernameOrEmail(e.target.value)}
             required
             autoFocus
           />
