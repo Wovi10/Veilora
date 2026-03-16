@@ -1,4 +1,4 @@
-import type { CreatePersonDto, PersonDto } from '../types/person';
+import type { CreatePersonDto, UpdatePersonDto, PersonDto } from '../types/person';
 import { apiFetch } from './apiFetch';
 
 export async function createPerson(dto: CreatePersonDto): Promise<PersonDto> {
@@ -10,6 +10,19 @@ export async function createPerson(dto: CreatePersonDto): Promise<PersonDto> {
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || 'Failed to create person');
+  }
+  return res.json() as Promise<PersonDto>;
+}
+
+export async function updatePerson(id: string, dto: UpdatePersonDto): Promise<PersonDto> {
+  const res = await apiFetch(`/api/persons/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dto),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to update person');
   }
   return res.json() as Promise<PersonDto>;
 }
