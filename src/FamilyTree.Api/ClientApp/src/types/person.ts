@@ -13,6 +13,8 @@ export interface PersonDto {
   gender: Gender;
   biography?: string;
   profilePhotoUrl?: string;
+  parent1Id?: string;
+  parent2Id?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +30,8 @@ export interface UpdatePersonDto {
   residence?: string;
   gender: Gender;
   biography?: string;
+  parent1Id?: string | null;
+  parent2Id?: string | null;
 }
 
 export interface CreatePersonDto {

@@ -38,7 +38,10 @@ function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: Pe
 
   return (
     <>
-      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Top}    id="top"    />
+      <Handle type="source" position={Position.Bottom} id="bottom" />
+      <Handle type="source" position={Position.Left}   id="left"   />
+      <Handle type="source" position={Position.Right}  id="right"  />
       <Paper
         variant="outlined"
         onMouseEnter={() => setHovered(true)}
@@ -76,7 +79,6 @@ function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: Pe
           </IconButton>
         )}
       </Paper>
-      <Handle type="source" position={Position.Bottom} />
     </>
   );
 }

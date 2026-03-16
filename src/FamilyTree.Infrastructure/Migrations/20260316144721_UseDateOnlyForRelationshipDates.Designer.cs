@@ -3,6 +3,7 @@ using System;
 using FamilyTree.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FamilyTree.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260316144721_UseDateOnlyForRelationshipDates")]
+    partial class UseDateOnlyForRelationshipDates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,12 +70,6 @@ namespace FamilyTree.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<Guid?>("Parent1Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("Parent2Id")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("ProfilePhotoUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -89,10 +86,6 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.HasIndex("BirthDate");
 
                     b.HasIndex("LastName");
-
-                    b.HasIndex("Parent1Id");
-
-                    b.HasIndex("Parent2Id");
 
                     b.HasIndex("FirstName", "LastName");
 
@@ -269,23 +262,6 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.Person", b =>
-                {
-                    b.HasOne("FamilyTree.Domain.Entities.Person", "Parent1")
-                        .WithMany("ChildrenAsParent1")
-                        .HasForeignKey("Parent1Id")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("FamilyTree.Domain.Entities.Person", "Parent2")
-                        .WithMany("ChildrenAsParent2")
-                        .HasForeignKey("Parent2Id")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Parent1");
-
-                    b.Navigation("Parent2");
-                });
-
             modelBuilder.Entity("FamilyTree.Domain.Entities.PersonTree", b =>
                 {
                     b.HasOne("FamilyTree.Domain.Entities.Person", "Person")
@@ -355,10 +331,6 @@ namespace FamilyTree.Infrastructure.Migrations
 
             modelBuilder.Entity("FamilyTree.Domain.Entities.Person", b =>
                 {
-                    b.Navigation("ChildrenAsParent1");
-
-                    b.Navigation("ChildrenAsParent2");
-
                     b.Navigation("PersonTrees");
 
                     b.Navigation("RelationshipsAsPerson1");

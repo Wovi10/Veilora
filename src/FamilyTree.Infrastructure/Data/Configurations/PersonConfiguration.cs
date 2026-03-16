@@ -52,6 +52,17 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.UpdatedAt)
             .IsRequired();
 
+        // Self-referencing parent FKs
+        builder.HasOne(p => p.Parent1)
+            .WithMany(p => p.ChildrenAsParent1)
+            .HasForeignKey(p => p.Parent1Id)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(p => p.Parent2)
+            .WithMany(p => p.ChildrenAsParent2)
+            .HasForeignKey(p => p.Parent2Id)
+            .OnDelete(DeleteBehavior.SetNull);
+
         // Indexes for better query performance
         builder.HasIndex(p => p.LastName);
         builder.HasIndex(p => new { p.FirstName, p.LastName });

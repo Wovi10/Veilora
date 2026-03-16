@@ -1,6 +1,5 @@
 ﻿using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Domain.Entities;
-using FamilyTree.Domain.Enums;
 using FamilyTree.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,21 +54,20 @@ public class PersonRepository : Repository<Person>, IPersonRepository
 
         visitedIds.Add(personId);
 
-        // Get parent relationships where personId is Person1 (child)
-        var parentRelationships = await _context.Relationships
+        var person = await _dbSet
             .AsNoTracking()
-            .Include(r => r.Person2)
-            .Where(r => r.Person1Id == personId &&
-                       (r.RelationshipType == RelationshipType.ParentChildBiological ||
-                        r.RelationshipType == RelationshipType.ParentChildAdopted))
-            .ToListAsync();
+            .FirstOrDefaultAsync(p => p.Id == personId);
 
-        foreach (var relationship in parentRelationships)
+        if (person == null) return;
+
+        foreach (var parentId in new[] { person.Parent1Id, person.Parent2Id })
         {
-            if (!ancestors.Any(a => a.Id == relationship.Person2Id))
+            if (parentId == null) continue;
+            var parent = await _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.Id == parentId);
+            if (parent != null && !ancestors.Any(a => a.Id == parentId))
             {
-                ancestors.Add(relationship.Person2);
-                await GetAncestorsRecursiveAsync(relationship.Person2Id, ancestors, visitedIds);
+                ancestors.Add(parent);
+                await GetAncestorsRecursiveAsync(parentId.Value, ancestors, visitedIds);
             }
         }
     }
@@ -91,21 +89,17 @@ public class PersonRepository : Repository<Person>, IPersonRepository
 
         visitedIds.Add(personId);
 
-        // Get child relationships where personId is Person2 (parent)
-        var childRelationships = await _context.Relationships
+        var children = await _dbSet
             .AsNoTracking()
-            .Include(r => r.Person1)
-            .Where(r => r.Person2Id == personId &&
-                       (r.RelationshipType == RelationshipType.ParentChildBiological ||
-                        r.RelationshipType == RelationshipType.ParentChildAdopted))
+            .Where(p => p.Parent1Id == personId || p.Parent2Id == personId)
             .ToListAsync();
 
-        foreach (var relationship in childRelationships)
+        foreach (var child in children)
         {
-            if (!descendants.Any(d => d.Id == relationship.Person1Id))
+            if (!descendants.Any(d => d.Id == child.Id))
             {
-                descendants.Add(relationship.Person1);
-                await GetDescendantsRecursiveAsync(relationship.Person1Id, descendants, visitedIds);
+                descendants.Add(child);
+                await GetDescendantsRecursiveAsync(child.Id, descendants, visitedIds);
             }
         }
     }

@@ -22,6 +22,8 @@ public static class PersonMapper
             Gender = entity.Gender.ToString(),
             Biography = entity.Biography,
             ProfilePhotoUrl = entity.ProfilePhotoUrl,
+            Parent1Id = entity.Parent1Id,
+            Parent2Id = entity.Parent2Id,
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt
         };
@@ -56,6 +58,8 @@ public static class PersonMapper
         entity.Residence = dto.Residence;
         entity.Gender = Enum.Parse<Gender>(dto.Gender, ignoreCase: true);
         entity.Biography = dto.Biography;
+        entity.Parent1Id = dto.Parent1Id;
+        entity.Parent2Id = dto.Parent2Id;
     }
 }
 
