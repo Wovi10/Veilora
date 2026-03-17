@@ -58,26 +58,87 @@ function pickHandles(p1: Pos, p2: Pos) {
     : { sourceHandle: 'left',  targetHandle: 'right' };
 }
 
-function buildParentEdge(personId: string, parentId: string, slot: 1 | 2, siblingParentId?: string): Edge {
-  return {
-    id: `parent-${personId}-${slot}`,
-    source: parentId,
-    target: personId,
-    type: 'parentEdge',
-    sourceHandle: 'bottom',
-    targetHandle: 'top',
-    data: siblingParentId ? { siblingParentId } : {},
-  };
-}
-
 function buildParentEdges(persons: PersonDto[]): Edge[] {
   const edges: Edge[] = [];
+
+  // Group children who have both parents by their sorted parent-pair key
+  type FamilyGroup = { parent1Id: string; parent2Id: string; childIds: string[] };
+  const familyMap = new Map<string, FamilyGroup>();
+
   for (const person of persons) {
-    if (person.parent1Id)
-      edges.push(buildParentEdge(person.id, person.parent1Id, 1, person.parent2Id ?? undefined));
-    if (person.parent2Id)
-      edges.push(buildParentEdge(person.id, person.parent2Id, 2, person.parent1Id ?? undefined));
+    if (person.parent1Id && person.parent2Id) {
+      const [p1, p2] = [person.parent1Id, person.parent2Id].sort();
+      const key = `${p1}|${p2}`;
+      const existing = familyMap.get(key);
+      if (existing) {
+        existing.childIds.push(person.id);
+      } else {
+        familyMap.set(key, { parent1Id: p1, parent2Id: p2, childIds: [person.id] });
+      }
+    } else {
+      const parentId = person.parent1Id ?? person.parent2Id;
+      if (parentId) {
+        edges.push({
+          id: `parent-${person.id}-1`,
+          source: parentId,
+          target: person.id,
+          type: 'parentEdge',
+          sourceHandle: 'bottom',
+          targetHandle: 'top',
+          data: {},
+        });
+      }
+    }
   }
+
+  for (const { parent1Id, parent2Id, childIds } of familyMap.values()) {
+    const [primaryChild, ...otherChildren] = childIds;
+
+    // Primary edge: parent1 → firstChild, carries all drawing data
+    edges.push({
+      id: `parent-${primaryChild}-1`,
+      source: parent1Id,
+      target: primaryChild,
+      type: 'parentEdge',
+      sourceHandle: 'bottom',
+      targetHandle: 'top',
+      data: { siblingParentId: parent2Id, allChildIds: childIds },
+    });
+
+    // Silent: parent2 → firstChild
+    edges.push({
+      id: `parent-${primaryChild}-2`,
+      source: parent2Id,
+      target: primaryChild,
+      type: 'parentEdge',
+      sourceHandle: 'bottom',
+      targetHandle: 'top',
+      data: { silent: true },
+    });
+
+    // Silent: both parents → remaining children
+    for (const childId of otherChildren) {
+      edges.push({
+        id: `parent-${childId}-1`,
+        source: parent1Id,
+        target: childId,
+        type: 'parentEdge',
+        sourceHandle: 'bottom',
+        targetHandle: 'top',
+        data: { silent: true },
+      });
+      edges.push({
+        id: `parent-${childId}-2`,
+        source: parent2Id,
+        target: childId,
+        type: 'parentEdge',
+        sourceHandle: 'bottom',
+        targetHandle: 'top',
+        data: { silent: true },
+      });
+    }
+  }
+
   return edges;
 }
 
@@ -166,6 +227,15 @@ export default function TreePage() {
     setPendingConnection({ person1, person2 });
   }, [tree]);
 
+  const handleRedrawLines = useCallback(() => {
+    if (!tree) return;
+    const persons = tree.persons.map(pit => pit.person);
+    setEdges(prev => {
+      const nonParentEdges = prev.filter(e => !e.id.startsWith('parent-'));
+      return [...nonParentEdges, ...buildParentEdges(persons)];
+    });
+  }, [tree]);
+
   const handleRelationshipCreated = useCallback((rel: RelationshipDto) => {
     const n1 = nodes.find(n => n.id === rel.person1Id);
     const n2 = nodes.find(n => n.id === rel.person2Id);
@@ -182,6 +252,9 @@ export default function TreePage() {
   }, [nodes]);
 
   const handlePersonSaved = useCallback((updated: PersonDto) => {
+    const updatedPersons = (tree?.persons ?? []).map(p =>
+      p.person.id === updated.id ? updated : p.person
+    );
     setTree((prev) => {
       if (!prev) return prev;
       return { ...prev, persons: prev.persons.map((p) => p.person.id === updated.id ? { ...p, person: updated } : p) };
@@ -192,18 +265,11 @@ export default function TreePage() {
       )
     );
     setEdges((prev) => {
-      const withoutOld = prev.filter(
-        e => e.id !== `parent-${updated.id}-1` && e.id !== `parent-${updated.id}-2`
-      );
-      const newParentEdges: Edge[] = [];
-      if (updated.parent1Id)
-        newParentEdges.push(buildParentEdge(updated.id, updated.parent1Id, 1, updated.parent2Id ?? undefined));
-      if (updated.parent2Id)
-        newParentEdges.push(buildParentEdge(updated.id, updated.parent2Id, 2, updated.parent1Id ?? undefined));
-      return [...withoutOld, ...newParentEdges];
+      const nonParentEdges = prev.filter(e => !e.id.startsWith('parent-'));
+      return [...nonParentEdges, ...buildParentEdges(updatedPersons)];
     });
     setEditingPerson(null);
-  }, []);
+  }, [tree]);
 
   return (
     <>
@@ -224,6 +290,14 @@ export default function TreePage() {
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           {tree?.name ?? '…'}
         </Typography>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handleRedrawLines}
+          disabled={loading || !!error}
+        >
+          Redraw Lines
+        </Button>
         <Button
           variant="contained"
           size="small"
