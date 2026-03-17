@@ -62,9 +62,11 @@ public class PersonRepository : Repository<Person>, IPersonRepository
 
         foreach (var parentId in new[] { person.Parent1Id, person.Parent2Id })
         {
-            if (parentId == null) continue;
+            if (parentId == null)
+                continue;
+
             var parent = await _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.Id == parentId);
-            if (parent != null && !ancestors.Any(a => a.Id == parentId))
+            if (parent != null && ancestors.All(a => a.Id != parentId))
             {
                 ancestors.Add(parent);
                 await GetAncestorsRecursiveAsync(parentId.Value, ancestors, visitedIds);
