@@ -28,13 +28,6 @@ function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: Pe
     .join(' ');
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('en-GB');
-  const dates = person.birthDate
-    ? person.deathDate
-      ? `${fmt(person.birthDate)} – ${fmt(person.deathDate)}`
-      : `b. ${fmt(person.birthDate)}`
-    : person.deathDate
-      ? `d. ${fmt(person.deathDate)}`
-      : null;
 
   return (
     <>
@@ -64,10 +57,19 @@ function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: Pe
         <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: '100%' }}>
           {fullName}
         </Typography>
-        {dates && (
-          <Typography variant="caption" color="text.secondary">
-            {dates}
-          </Typography>
+        {(person.birthDate || person.deathDate) && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.3 }}>
+            {person.birthDate && (
+              <Typography variant="caption" color="text.secondary">
+                ° {fmt(person.birthDate)}
+              </Typography>
+            )}
+            {person.deathDate && (
+              <Typography variant="caption" color="text.secondary">
+                † {fmt(person.deathDate)}
+              </Typography>
+            )}
+          </Box>
         )}
         {hovered && (
           <IconButton
