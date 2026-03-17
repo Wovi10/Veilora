@@ -58,7 +58,9 @@ function pickHandles(p1: Pos, p2: Pos) {
     : { sourceHandle: 'left',  targetHandle: 'right' };
 }
 
-function buildParentEdges(persons: PersonDto[]): Edge[] {
+type ParentBendsFn = (edgeId: string, bends: Record<string, Array<{ x: number; y: number }>>) => void;
+
+function buildParentEdges(persons: PersonDto[], onBendsChange: ParentBendsFn): Edge[] {
   const edges: Edge[] = [];
 
   // Group children who have both parents by their sorted parent-pair key
@@ -85,7 +87,7 @@ function buildParentEdges(persons: PersonDto[]): Edge[] {
           type: 'parentEdge',
           sourceHandle: 'bottom',
           targetHandle: 'top',
-          data: {},
+          data: { onBendsChange },
         });
       }
     }
@@ -102,7 +104,7 @@ function buildParentEdges(persons: PersonDto[]): Edge[] {
       type: 'parentEdge',
       sourceHandle: 'bottom',
       targetHandle: 'top',
-      data: { siblingParentId: parent2Id, allChildIds: childIds },
+      data: { siblingParentId: parent2Id, allChildIds: childIds, onBendsChange },
     });
 
     // Silent: parent2 → firstChild
@@ -186,6 +188,12 @@ export default function TreePage() {
     ));
   }, []);
 
+  const handleParentBendsChange = useCallback<ParentBendsFn>((edgeId, bends) => {
+    setEdges(prev => prev.map(e =>
+      e.id === edgeId ? { ...e, data: { ...e.data, bends } } : e
+    ));
+  }, []);
+
   useEffect(() => {
     if (!id) return;
     Promise.all([getTreeDetails(id), getTreeRelationships(id)])
@@ -195,13 +203,13 @@ export default function TreePage() {
         setNodes(builtNodes);
         const posMap = new Map(builtNodes.map(n => [n.id, n.position]));
         const persons = treeData.persons.map(pit => pit.person);
-        setEdges([...buildParentEdges(persons), ...buildEdges(rels, posMap, handleEdgeBendChange)]);
+        setEdges([...buildParentEdges(persons, handleParentBendsChange), ...buildEdges(rels, posMap, handleEdgeBendChange)]);
       })
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : 'Unexpected error')
       )
       .finally(() => setLoading(false));
-  }, [id, handleEdit, handleEdgeBendChange]);
+  }, [id, handleEdit, handleEdgeBendChange, handleParentBendsChange]);
 
   const handlePersonCreated = useCallback((person: PersonDto) => {
     setTree((prev) => {
@@ -240,9 +248,9 @@ export default function TreePage() {
     const persons = tree.persons.map(pit => pit.person);
     setEdges(prev => {
       const nonParentEdges = prev.filter(e => !e.id.startsWith('parent-'));
-      return [...nonParentEdges, ...buildParentEdges(persons)];
+      return [...nonParentEdges, ...buildParentEdges(persons, handleParentBendsChange)];
     });
-  }, [tree]);
+  }, [tree, handleParentBendsChange]);
 
   const handleRelationshipCreated = useCallback((rel: RelationshipDto) => {
     const n1 = nodes.find(n => n.id === rel.person1Id);
@@ -274,10 +282,10 @@ export default function TreePage() {
     );
     setEdges((prev) => {
       const nonParentEdges = prev.filter(e => !e.id.startsWith('parent-'));
-      return [...nonParentEdges, ...buildParentEdges(updatedPersons)];
+      return [...nonParentEdges, ...buildParentEdges(updatedPersons, handleParentBendsChange)];
     });
     setEditingPerson(null);
-  }, [tree]);
+  }, [tree, handleParentBendsChange]);
 
   return (
     <>
