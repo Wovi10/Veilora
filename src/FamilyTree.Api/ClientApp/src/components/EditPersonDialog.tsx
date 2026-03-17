@@ -8,6 +8,7 @@ import {
   DialogTitle,
   FormControl,
   InputLabel,
+  ListSubheader,
   MenuItem,
   Select,
   TextField,
@@ -25,6 +26,22 @@ interface Props {
 
 const fullName = (p: PersonDto) =>
   [p.firstName, p.middleName, p.lastName].filter(Boolean).join(' ');
+
+function groupedPersonItems(persons: PersonDto[]) {
+  const groups = new Map<string, PersonDto[]>();
+  for (const p of [...persons].sort((a, b) => (a.lastName ?? '').localeCompare(b.lastName ?? ''))) {
+    const key = p.lastName?.trim() || '—';
+    const group = groups.get(key) ?? [];
+    group.push(p);
+    groups.set(key, group);
+  }
+  return [...groups.entries()].flatMap(([lastName, members]) => [
+    <ListSubheader key={`group-${lastName}`}>{lastName}</ListSubheader>,
+    ...members.map(p => (
+      <MenuItem key={p.id} value={p.id}>{fullName(p)}</MenuItem>
+    )),
+  ]);
+}
 
 export default function EditPersonDialog({ open, person, persons, onClose, onSaved }: Props) {
   const [firstName, setFirstName] = useState(person.firstName);
@@ -127,9 +144,7 @@ export default function EditPersonDialog({ open, person, persons, onClose, onSav
             onChange={(e) => setParent1Id(e.target.value || null)}
           >
             <MenuItem value=""><em>Unknown</em></MenuItem>
-            {otherPersons.map(p => (
-              <MenuItem key={p.id} value={p.id}>{fullName(p)}</MenuItem>
-            ))}
+            {groupedPersonItems(otherPersons)}
           </Select>
         </FormControl>
         <FormControl fullWidth>
@@ -140,9 +155,7 @@ export default function EditPersonDialog({ open, person, persons, onClose, onSav
             onChange={(e) => setParent2Id(e.target.value || null)}
           >
             <MenuItem value=""><em>Unknown</em></MenuItem>
-            {otherPersons.map(p => (
-              <MenuItem key={p.id} value={p.id}>{fullName(p)}</MenuItem>
-            ))}
+            {groupedPersonItems(otherPersons)}
           </Select>
         </FormControl>
       </DialogContent>

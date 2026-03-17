@@ -1,8 +1,8 @@
 import 'reactflow/dist/style.css';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactFlow, { Background, Controls, ConnectionMode, useNodesState } from 'reactflow';
-import type { Node, Edge, NodeMouseHandler, Connection } from 'reactflow';
+import type { Node, Edge, NodeMouseHandler, Connection, ReactFlowInstance } from 'reactflow';
 import {
   Alert,
   Box,
@@ -173,6 +173,8 @@ export default function TreePage() {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<PersonDto | null>(null);
+  const rfInstance = useRef<ReactFlowInstance | null>(null);
+  const flowContainerRef = useRef<HTMLDivElement | null>(null);
   const [pendingConnection, setPendingConnection] = useState<{
     person1: PersonDto;
     person2: PersonDto;
@@ -217,22 +219,29 @@ export default function TreePage() {
       return { ...prev, persons: [...prev.persons, { person, positionX: null, positionY: null }] };
     });
     setNodes((prev) => {
-      const next = [...prev, {
+      const vp = rfInstance.current?.getViewport() ?? { x: 0, y: 0, zoom: 1 };
+      const rect = flowContainerRef.current?.getBoundingClientRect();
+      const cx = rect ? rect.width / 2 : 400;
+      const cy = rect ? rect.height / 2 : 300;
+      const flowX = (-vp.x + cx) / vp.zoom - NODE_W / 2;
+      const flowY = (-vp.y + cy) / vp.zoom - NODE_H / 2;
+      return [...prev, {
         id: person.id,
         type: 'person',
-        position: {
-          x: (prev.length % COLS) * (NODE_W + GAP),
-          y: Math.floor(prev.length / COLS) * (NODE_H + GAP),
-        },
-        data: { person, onEdit: handleEdit },
+        position: { x: flowX, y: flowY },
+        data: { person, onEdit: handleEdit, isNew: true },
       }];
-      return next;
     });
   }, [handleEdit]);
 
   const handleNodeDragStop = useCallback<NodeMouseHandler>((_event, node) => {
     if (!id) return;
     updatePersonPosition(id, node.id, node.position.x, node.position.y);
+    if (node.data.isNew) {
+      setNodes(prev => prev.map(n =>
+        n.id === node.id ? { ...n, data: { ...n.data, isNew: false } } : n
+      ));
+    }
   }, [id]);
 
   const handleConnect = useCallback((connection: Connection) => {
@@ -350,7 +359,7 @@ export default function TreePage() {
           )}
 
           {tree && tree.persons.length > 0 && (
-            <Box sx={{ height: 'calc(100vh - 128px)' }}>
+            <Box ref={flowContainerRef} sx={{ height: 'calc(100vh - 128px)' }}>
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -359,6 +368,7 @@ export default function TreePage() {
                 onNodesChange={onNodesChange}
                 onNodeDragStop={handleNodeDragStop}
                 onConnect={handleConnect}
+                onInit={(instance) => { rfInstance.current = instance; }}
                 connectionMode={ConnectionMode.Loose}
                 fitView
               >
