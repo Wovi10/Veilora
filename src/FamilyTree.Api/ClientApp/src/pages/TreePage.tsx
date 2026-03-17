@@ -142,7 +142,9 @@ function buildParentEdges(persons: PersonDto[]): Edge[] {
   return edges;
 }
 
-function buildEdges(relationships: RelationshipDto[], posMap: Map<string, Pos>): Edge[] {
+type BendChangeFn = (edgeId: string, bends: Array<{ x: number; y: number }>) => void;
+
+function buildEdges(relationships: RelationshipDto[], posMap: Map<string, Pos>, onBendChange: BendChangeFn): Edge[] {
   return relationships.map((rel) => {
     const p1 = posMap.get(rel.person1Id);
     const p2 = posMap.get(rel.person2Id);
@@ -152,7 +154,7 @@ function buildEdges(relationships: RelationshipDto[], posMap: Map<string, Pos>):
       source: rel.person1Id,
       target: rel.person2Id,
       type: 'relationshipEdge',
-      data: { relationshipType: rel.relationshipType },
+      data: { relationshipType: rel.relationshipType, onBendChange },
       ...handles,
     };
   });
@@ -178,6 +180,12 @@ export default function TreePage() {
     setEditingPerson(person);
   }, []);
 
+  const handleEdgeBendChange = useCallback<BendChangeFn>((edgeId, bends) => {
+    setEdges(prev => prev.map(e =>
+      e.id === edgeId ? { ...e, data: { ...e.data, bends } } : e
+    ));
+  }, []);
+
   useEffect(() => {
     if (!id) return;
     Promise.all([getTreeDetails(id), getTreeRelationships(id)])
@@ -187,13 +195,13 @@ export default function TreePage() {
         setNodes(builtNodes);
         const posMap = new Map(builtNodes.map(n => [n.id, n.position]));
         const persons = treeData.persons.map(pit => pit.person);
-        setEdges([...buildParentEdges(persons), ...buildEdges(rels, posMap)]);
+        setEdges([...buildParentEdges(persons), ...buildEdges(rels, posMap, handleEdgeBendChange)]);
       })
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : 'Unexpected error')
       )
       .finally(() => setLoading(false));
-  }, [id, handleEdit]);
+  }, [id, handleEdit, handleEdgeBendChange]);
 
   const handlePersonCreated = useCallback((person: PersonDto) => {
     setTree((prev) => {
@@ -245,11 +253,11 @@ export default function TreePage() {
       source: rel.person1Id,
       target: rel.person2Id,
       type: 'relationshipEdge',
-      data: { relationshipType: rel.relationshipType },
+      data: { relationshipType: rel.relationshipType, onBendChange: handleEdgeBendChange },
       ...handles,
     }]);
     setPendingConnection(null);
-  }, [nodes]);
+  }, [nodes, handleEdgeBendChange]);
 
   const handlePersonSaved = useCallback((updated: PersonDto) => {
     const updatedPersons = (tree?.persons ?? []).map(p =>
