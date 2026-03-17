@@ -5,12 +5,18 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { keyframes } from '@mui/system';
 import EditIcon from '@mui/icons-material/Edit';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import TransgenderIcon from '@mui/icons-material/Transgender';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import type { Gender, PersonDto } from '../types/person';
+
+const glowPulse = keyframes`
+  0%, 100% { box-shadow: 0 0 6px 2px rgba(99, 179, 237, 0.7); }
+  50%       { box-shadow: 0 0 18px 6px rgba(99, 179, 237, 1); }
+`;
 
 const genderIconMap: Record<Gender, React.ReactElement> = {
   Male: <MaleIcon sx={{ fontSize: 14, color: 'info.main' }} />,
@@ -19,8 +25,8 @@ const genderIconMap: Record<Gender, React.ReactElement> = {
   Unknown: <QuestionMarkIcon sx={{ fontSize: 14, color: 'text.disabled' }} />,
 };
 
-function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: PersonDto) => void }>) {
-  const { person, onEdit } = data;
+function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: PersonDto) => void; isNew?: boolean }>) {
+  const { person, onEdit, isNew } = data;
   const [hovered, setHovered] = useState(false);
 
   const fullName = [person.firstName, person.middleName, person.lastName]
@@ -49,6 +55,10 @@ function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: Pe
           px: 1,
           textAlign: 'center',
           position: 'relative',
+          ...(isNew && {
+            borderColor: 'rgba(99, 179, 237, 0.9)',
+            animation: `${glowPulse} 1.4s ease-in-out infinite`,
+          }),
         }}
       >
         <Box sx={{ position: 'absolute', top: 4, left: 6, lineHeight: 0 }}>
