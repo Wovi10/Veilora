@@ -84,7 +84,6 @@ export default function WorldPage() {
       {/* Entity sections */}
       {ENTITY_SECTIONS.map(({ type, plural }) => {
         const sectionEntities = entities.filter(e => e.type === type);
-        if (!isEditMode && sectionEntities.length === 0) return null;
         return (
           <Box key={type} mb={5}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
