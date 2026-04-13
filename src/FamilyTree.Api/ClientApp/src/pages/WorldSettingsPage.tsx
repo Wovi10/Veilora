@@ -9,7 +9,13 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getWorld, updateWorld, deleteWorld, transferOwnership } from '../api/worldsApi';
-import { addPermissionByEmail, upsertPermission, deletePermission, NotFoundError } from '../api/worldPermissionsApi';
+import {
+  addPermissionByEmail,
+  upsertPermission,
+  deletePermission,
+  NotFoundError,
+  getPermissions
+} from '../api/worldPermissionsApi';
 import type { WorldPermissionDto } from '../types/worldPermission';
 import { useAuth } from '../context/AuthContext';
 
@@ -187,8 +193,8 @@ export default function WorldSettingsPage() {
       <Box component="form" onSubmit={handleAdd} sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <TextField
           label="User ID"
-          value={newUserId}
-          onChange={e => setNewUserId(e.target.value)}
+          value={newEmail}
+          onChange={e => setNewEmail(e.target.value)}
           size="small"
           sx={{ flexGrow: 1, minWidth: 280 }}
           required

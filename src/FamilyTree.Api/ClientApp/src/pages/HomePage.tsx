@@ -19,7 +19,9 @@ export default function HomePage() {
   const [newWorldOpen, setNewWorldOpen] = useState(false);
 
   useEffect(() => {
+    // order the worlds by update date DESC
     getWorlds()
+      .then(worlds => worlds.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()))
       .then(setWorlds)
       .catch(() => setError('Failed to load worlds'))
       .finally(() => setLoading(false));
