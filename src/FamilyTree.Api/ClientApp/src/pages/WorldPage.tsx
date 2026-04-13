@@ -20,7 +20,7 @@ import NewFamilyTreeDialog from '../components/NewFamilyTreeDialog';
 const ENTITY_SECTIONS: { type: EntityType; plural: string }[] = [
   { type: 'Character', plural: 'Characters' },
   { type: 'Place',     plural: 'Places'     },
-  { type: 'Faction',   plural: 'Factions'   },
+  { type: 'Group',     plural: 'Groups'     },
   { type: 'Event',     plural: 'Events'     },
   { type: 'Concept',   plural: 'Concepts'   },
 ];
