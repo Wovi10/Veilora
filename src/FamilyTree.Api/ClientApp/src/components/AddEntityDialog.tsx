@@ -14,7 +14,7 @@ interface Props {
   onCreated: (entity: EntityDto) => void;
 }
 
-const ENTITY_TYPES: EntityType[] = ['Character', 'Place', 'Faction', 'Event', 'Concept'];
+const ENTITY_TYPES: EntityType[] = ['Character', 'Place', 'Group', 'Event', 'Concept'];
 const GENDERS: Gender[] = ['Male', 'Female', 'Other', 'Unknown'];
 
 export default function AddEntityDialog({ open, worldId, defaultType, onClose, onCreated }: Props) {

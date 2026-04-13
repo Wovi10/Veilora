@@ -1,4 +1,4 @@
-export type EntityType = 'Character' | 'Place' | 'Faction' | 'Event' | 'Concept';
+export type EntityType = 'Character' | 'Place' | 'Group' | 'Event' | 'Concept';
 export type Gender = 'Male' | 'Female' | 'Other' | 'Unknown';
 
 export interface EntityDto {
