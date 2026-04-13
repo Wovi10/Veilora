@@ -3,7 +3,8 @@ import App from './App';
 import { getToken } from './api/apiFetch';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
-import TreePage from './pages/TreePage';
+import WorldPage from './pages/WorldPage';
+import FamilyTreePage from './pages/FamilyTreePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Read from localStorage directly — always in sync, no React state batching issues
@@ -25,7 +26,8 @@ const routes: RouteObject[] = [
     ),
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'trees/:id', element: <TreePage /> },
+      { path: 'worlds/:worldId', element: <WorldPage /> },
+      { path: 'family-trees/:familyTreeId', element: <FamilyTreePage /> },
     ],
   },
 ];

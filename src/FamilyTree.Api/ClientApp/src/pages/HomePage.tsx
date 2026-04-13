@@ -1,98 +1,109 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  CircularProgress,
-  Container,
-  Grid2,
-  Typography,
+  Box, Typography, Button, CircularProgress, Alert,
+  Card, CardActionArea,
 } from '@mui/material';
-import { getTrees } from '../api/treesApi';
-import type { TreeDto } from '../types/tree';
-import NewTreeDialog from '../components/NewTreeDialog';
+import AddIcon from '@mui/icons-material/Add';
+import { getWorlds } from '../api/worldsApi';
+import type { WorldDto } from '../types/world';
+import { useEditMode } from '../context/EditModeContext';
+import NewWorldDialog from '../components/NewWorldDialog';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const [trees, setTrees] = useState<TreeDto[]>([]);
+  const { isEditMode } = useEditMode();
+  const [worlds, setWorlds] = useState<WorldDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [error, setError] = useState('');
+  const [newWorldOpen, setNewWorldOpen] = useState(false);
 
   useEffect(() => {
-    getTrees()
-      .then(setTrees)
-      .catch((err: unknown) =>
-        setError(err instanceof Error ? err.message : 'Unexpected error')
-      )
+    getWorlds()
+      .then(setWorlds)
+      .catch(() => setError('Failed to load worlds'))
       .finally(() => setLoading(false));
   }, []);
 
+  if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
+  if (error) return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
+
   return (
-    <Container maxWidth="xl" sx={{ py: 5, px: { xs: 3, sm: 4, md: 5 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" component="h1">
-          My Trees
-        </Typography>
-        <Button variant="contained" onClick={() => setDialogOpen(true)}>
-          New Tree
-        </Button>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={4}>
+        <Typography variant="h4" fontWeight={700}>My Worlds</Typography>
+        {isEditMode && (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setNewWorldOpen(true)}>
+            New World
+          </Button>
+        )}
       </Box>
 
-      <NewTreeDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onCreated={(tree) => setTrees((prev) => [...prev, tree])}
-      />
-
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-          <CircularProgress />
+      {worlds.length === 0 ? (
+        <Box textAlign="center" mt={8}>
+          <Typography variant="h6" color="text.secondary">No worlds yet.</Typography>
+          {isEditMode && (
+            <Button variant="contained" startIcon={<AddIcon />} sx={{ mt: 2 }} onClick={() => setNewWorldOpen(true)}>
+              Create your first world
+            </Button>
+          )}
+        </Box>
+      ) : (
+        <Box display="flex" flexDirection="column" gap={2}>
+          {worlds.map(world => (
+            <Card
+              key={world.id}
+              sx={{
+                borderRadius: 3,
+                overflow: 'hidden',
+                transition: 'box-shadow 0.2s, transform 0.15s',
+                '&:hover': { boxShadow: 8, transform: 'translateY(-1px)' },
+              }}
+            >
+              <CardActionArea onClick={() => navigate(`/worlds/${world.id}`)} sx={{ p: 0 }}>
+                <Box
+                  sx={{
+                    height: 160,
+                    px: 5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <Box>
+                    <Typography variant="h3" fontWeight={700} sx={{ letterSpacing: '-0.5px', lineHeight: 1.1 }}>
+                      {world.name}
+                    </Typography>
+                    {world.author && (
+                      <Typography variant="subtitle1" sx={{ mt: 0.5, opacity: 0.6, fontStyle: 'italic' }}>
+                        by {world.author}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Box textAlign="right">
+                    <Typography variant="caption" sx={{ opacity: 0.4, textTransform: 'uppercase', letterSpacing: 1 }}>
+                      Last updated
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.75 }}>
+                      {new Date(world.updatedAt).toLocaleDateString('en-GB', {
+                        day: 'numeric', month: 'long', year: 'numeric',
+                      })}
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardActionArea>
+            </Card>
+          ))}
         </Box>
       )}
 
-      {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      {!loading && !error && trees.length === 0 && (
-        <Typography color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
-          No family trees yet. Create one to get started.
-        </Typography>
-      )}
-
-      {!loading && !error && trees.length > 0 && (
-        <Grid2 container spacing={3}>
-          {trees.map((tree) => (
-            <Grid2 key={tree.id} size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}>
-              <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" gutterBottom>
-                    {tree.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {tree.description ?? 'No description'}
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Created {new Date(tree.createdAt).toLocaleDateString()}
-                  </Typography>
-                  <Button size="small" variant="outlined" onClick={() => navigate(`/trees/${tree.id}`)}>
-                    Open
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid2>
-          ))}
-        </Grid2>
-      )}
-    </Container>
+      <NewWorldDialog
+        open={newWorldOpen}
+        onClose={() => setNewWorldOpen(false)}
+        onCreated={world => { setWorlds(prev => [...prev, world]); setNewWorldOpen(false); }}
+      />
+    </Box>
   );
 }
