@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FamilyTree.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260316150437_RemoveParentChildRelationships")]
-    partial class RemoveParentChildRelationships
+    [Migration("20260413112626_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace FamilyTree.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.Person", b =>
+            modelBuilder.Entity("FamilyTree.Domain.Entities.Entity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -47,18 +47,18 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.Property<DateOnly?>("DeathDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -69,6 +69,11 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.Property<string>("MiddleName")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<Guid?>("Parent1Id")
                         .HasColumnType("uuid");
@@ -84,30 +89,42 @@ namespace FamilyTree.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("Species")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("WorldId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("BirthDate");
-
-                    b.HasIndex("LastName");
+                    b.HasIndex("Name");
 
                     b.HasIndex("Parent1Id");
 
                     b.HasIndex("Parent2Id");
 
-                    b.HasIndex("FirstName", "LastName");
+                    b.HasIndex("Type");
 
-                    b.ToTable("Persons");
+                    b.HasIndex("WorldId");
+
+                    b.ToTable("Entities");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.PersonTree", b =>
+            modelBuilder.Entity("FamilyTree.Domain.Entities.EntityFamilyTree", b =>
                 {
-                    b.Property<Guid>("PersonId")
+                    b.Property<Guid>("EntityId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TreeId")
+                    b.Property<Guid>("FamilyTreeId")
                         .HasColumnType("uuid");
 
                     b.Property<double?>("PositionX")
@@ -116,59 +133,16 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.Property<double?>("PositionY")
                         .HasColumnType("double precision");
 
-                    b.HasKey("PersonId", "TreeId");
+                    b.HasKey("EntityId", "FamilyTreeId");
 
-                    b.HasIndex("PersonId");
+                    b.HasIndex("EntityId");
 
-                    b.HasIndex("TreeId");
+                    b.HasIndex("FamilyTreeId");
 
-                    b.ToTable("PersonTrees");
+                    b.ToTable("EntityFamilyTrees");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.Relationship", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateOnly?>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("Person1Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("Person2Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RelationshipType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateOnly?>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Person1Id");
-
-                    b.HasIndex("Person2Id");
-
-                    b.HasIndex("RelationshipType");
-
-                    b.ToTable("Relationships");
-                });
-
-            modelBuilder.Entity("FamilyTree.Domain.Entities.Tree", b =>
+            modelBuilder.Entity("FamilyTree.Domain.Entities.FamilyTree", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -191,13 +165,92 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("WorldId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("Name");
 
-                    b.ToTable("Trees");
+                    b.HasIndex("WorldId");
+
+                    b.ToTable("FamilyTrees");
+                });
+
+            modelBuilder.Entity("FamilyTree.Domain.Entities.Note", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("WorldId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityId");
+
+                    b.HasIndex("WorldId");
+
+                    b.ToTable("Notes");
+                });
+
+            modelBuilder.Entity("FamilyTree.Domain.Entities.Relationship", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("Entity1Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("Entity2Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RelationshipType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateOnly?>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Entity1Id");
+
+                    b.HasIndex("Entity2Id");
+
+                    b.HasIndex("RelationshipType");
+
+                    b.ToTable("Relationships");
                 });
 
             modelBuilder.Entity("FamilyTree.Domain.Entities.TreePermission", b =>
@@ -272,74 +325,134 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.Person", b =>
+            modelBuilder.Entity("FamilyTree.Domain.Entities.World", b =>
                 {
-                    b.HasOne("FamilyTree.Domain.Entities.Person", "Parent1")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Worlds");
+                });
+
+            modelBuilder.Entity("FamilyTree.Domain.Entities.Entity", b =>
+                {
+                    b.HasOne("FamilyTree.Domain.Entities.Entity", "Parent1")
                         .WithMany("ChildrenAsParent1")
                         .HasForeignKey("Parent1Id")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("FamilyTree.Domain.Entities.Person", "Parent2")
+                    b.HasOne("FamilyTree.Domain.Entities.Entity", "Parent2")
                         .WithMany("ChildrenAsParent2")
                         .HasForeignKey("Parent2Id")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("FamilyTree.Domain.Entities.World", "World")
+                        .WithMany("Entities")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Parent1");
 
                     b.Navigation("Parent2");
+
+                    b.Navigation("World");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.PersonTree", b =>
+            modelBuilder.Entity("FamilyTree.Domain.Entities.EntityFamilyTree", b =>
                 {
-                    b.HasOne("FamilyTree.Domain.Entities.Person", "Person")
-                        .WithMany("PersonTrees")
-                        .HasForeignKey("PersonId")
+                    b.HasOne("FamilyTree.Domain.Entities.Entity", "Entity")
+                        .WithMany("EntityFamilyTrees")
+                        .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FamilyTree.Domain.Entities.Tree", "Tree")
-                        .WithMany("PersonTrees")
-                        .HasForeignKey("TreeId")
+                    b.HasOne("FamilyTree.Domain.Entities.FamilyTree", "FamilyTree")
+                        .WithMany("EntityFamilyTrees")
+                        .HasForeignKey("FamilyTreeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Person");
+                    b.Navigation("Entity");
 
-                    b.Navigation("Tree");
+                    b.Navigation("FamilyTree");
+                });
+
+            modelBuilder.Entity("FamilyTree.Domain.Entities.FamilyTree", b =>
+                {
+                    b.HasOne("FamilyTree.Domain.Entities.User", "Creator")
+                        .WithMany("CreatedFamilyTrees")
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("FamilyTree.Domain.Entities.World", "World")
+                        .WithMany("FamilyTrees")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("World");
+                });
+
+            modelBuilder.Entity("FamilyTree.Domain.Entities.Note", b =>
+                {
+                    b.HasOne("FamilyTree.Domain.Entities.Entity", "Entity")
+                        .WithMany("Notes")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("FamilyTree.Domain.Entities.World", "World")
+                        .WithMany("Notes")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Entity");
+
+                    b.Navigation("World");
                 });
 
             modelBuilder.Entity("FamilyTree.Domain.Entities.Relationship", b =>
                 {
-                    b.HasOne("FamilyTree.Domain.Entities.Person", "Person1")
-                        .WithMany("RelationshipsAsPerson1")
-                        .HasForeignKey("Person1Id")
+                    b.HasOne("FamilyTree.Domain.Entities.Entity", "Entity1")
+                        .WithMany("RelationshipsAsEntity1")
+                        .HasForeignKey("Entity1Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FamilyTree.Domain.Entities.Person", "Person2")
-                        .WithMany("RelationshipsAsPerson2")
-                        .HasForeignKey("Person2Id")
+                    b.HasOne("FamilyTree.Domain.Entities.Entity", "Entity2")
+                        .WithMany("RelationshipsAsEntity2")
+                        .HasForeignKey("Entity2Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Person1");
+                    b.Navigation("Entity1");
 
-                    b.Navigation("Person2");
-                });
-
-            modelBuilder.Entity("FamilyTree.Domain.Entities.Tree", b =>
-                {
-                    b.HasOne("FamilyTree.Domain.Entities.User", "Creator")
-                        .WithMany("CreatedTrees")
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Creator");
+                    b.Navigation("Entity2");
                 });
 
             modelBuilder.Entity("FamilyTree.Domain.Entities.TreePermission", b =>
                 {
-                    b.HasOne("FamilyTree.Domain.Entities.Tree", "Tree")
+                    b.HasOne("FamilyTree.Domain.Entities.FamilyTree", "Tree")
                         .WithMany()
                         .HasForeignKey("TreeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -356,29 +469,40 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.Person", b =>
+            modelBuilder.Entity("FamilyTree.Domain.Entities.Entity", b =>
                 {
                     b.Navigation("ChildrenAsParent1");
 
                     b.Navigation("ChildrenAsParent2");
 
-                    b.Navigation("PersonTrees");
+                    b.Navigation("EntityFamilyTrees");
 
-                    b.Navigation("RelationshipsAsPerson1");
+                    b.Navigation("Notes");
 
-                    b.Navigation("RelationshipsAsPerson2");
+                    b.Navigation("RelationshipsAsEntity1");
+
+                    b.Navigation("RelationshipsAsEntity2");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.Tree", b =>
+            modelBuilder.Entity("FamilyTree.Domain.Entities.FamilyTree", b =>
                 {
-                    b.Navigation("PersonTrees");
+                    b.Navigation("EntityFamilyTrees");
                 });
 
             modelBuilder.Entity("FamilyTree.Domain.Entities.User", b =>
                 {
-                    b.Navigation("CreatedTrees");
+                    b.Navigation("CreatedFamilyTrees");
 
                     b.Navigation("TreePermissions");
+                });
+
+            modelBuilder.Entity("FamilyTree.Domain.Entities.World", b =>
+                {
+                    b.Navigation("Entities");
+
+                    b.Navigation("FamilyTrees");
+
+                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }
