@@ -33,8 +33,8 @@ public class RelationshipsControllerTests
         var now = DateTime.UtcNow;
         var dtos = new List<RelationshipDto>
         {
-            new() { Id = Guid.NewGuid(), Person1Id = Guid.NewGuid(), Person2Id = Guid.NewGuid(), RelationshipType = "Spouse", CreatedAt = now, UpdatedAt = now },
-            new() { Id = Guid.NewGuid(), Person1Id = Guid.NewGuid(), Person2Id = Guid.NewGuid(), RelationshipType = "ParentChildBiological", CreatedAt = now, UpdatedAt = now }
+            new() { Id = Guid.NewGuid(), Entity1Id = Guid.NewGuid(), Entity2Id = Guid.NewGuid(), RelationshipType = "Spouse", CreatedAt = now, UpdatedAt = now },
+            new() { Id = Guid.NewGuid(), Entity1Id = Guid.NewGuid(), Entity2Id = Guid.NewGuid(), RelationshipType = "ParentChildBiological", CreatedAt = now, UpdatedAt = now }
         };
         _factory.RelationshipServiceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(dtos);
 
@@ -50,7 +50,7 @@ public class RelationshipsControllerTests
     {
         var relId = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var dto = new RelationshipDto { Id = relId, Person1Id = Guid.NewGuid(), Person2Id = Guid.NewGuid(), RelationshipType = "Spouse", CreatedAt = now, UpdatedAt = now };
+        var dto = new RelationshipDto { Id = relId, Entity1Id = Guid.NewGuid(), Entity2Id = Guid.NewGuid(), RelationshipType = "Spouse", CreatedAt = now, UpdatedAt = now };
         _factory.RelationshipServiceMock.Setup(s => s.GetByIdAsync(relId)).ReturnsAsync(dto);
 
         var response = await _client.GetAsync($"/api/relationships/{relId}");
@@ -66,7 +66,7 @@ public class RelationshipsControllerTests
         var relId = Guid.NewGuid();
         _factory.RelationshipServiceMock
             .Setup(s => s.GetByIdAsync(relId))
-            .ThrowsAsync(new NotFoundException($"Relationship with ID {relId} not found"));
+            .ReturnsAsync((RelationshipDto?)null);
 
         var response = await _client.GetAsync($"/api/relationships/{relId}");
 
@@ -77,11 +77,11 @@ public class RelationshipsControllerTests
     public async Task Create_WithValidDto_Returns201WithLocation()
     {
         var now = DateTime.UtcNow;
-        var person1Id = Guid.NewGuid();
-        var person2Id = Guid.NewGuid();
-        var dto = new CreateRelationshipDto { Person1Id = person1Id, Person2Id = person2Id, RelationshipType = "Spouse" };
-        var returnedDto = new RelationshipDto { Id = Guid.NewGuid(), Person1Id = person1Id, Person2Id = person2Id, RelationshipType = "Spouse", CreatedAt = now, UpdatedAt = now };
-        _factory.RelationshipServiceMock.Setup(s => s.CreateAsync(dto)).ReturnsAsync(returnedDto);
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
+        var dto = new CreateRelationshipDto { Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Spouse" };
+        var returnedDto = new RelationshipDto { Id = Guid.NewGuid(), Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Spouse", CreatedAt = now, UpdatedAt = now };
+        _factory.RelationshipServiceMock.Setup(s => s.CreateAsync(It.IsAny<CreateRelationshipDto>())).ReturnsAsync(returnedDto);
 
         var response = await _client.PostAsJsonAsync("/api/relationships", dto);
 
@@ -90,14 +90,14 @@ public class RelationshipsControllerTests
     }
 
     [Test]
-    public async Task Create_WhenPersonNotFound_Returns404()
+    public async Task Create_WhenEntityNotFound_Returns404()
     {
-        var person1Id = Guid.NewGuid();
-        var person2Id = Guid.NewGuid();
-        var dto = new CreateRelationshipDto { Person1Id = person1Id, Person2Id = person2Id, RelationshipType = "Spouse" };
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
+        var dto = new CreateRelationshipDto { Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Spouse" };
         _factory.RelationshipServiceMock
-            .Setup(s => s.CreateAsync(dto))
-            .ThrowsAsync(new NotFoundException($"Person with ID {person1Id} not found"));
+            .Setup(s => s.CreateAsync(It.IsAny<CreateRelationshipDto>()))
+            .ThrowsAsync(new NotFoundException($"Entity with ID {e1Id} not found"));
 
         var response = await _client.PostAsJsonAsync("/api/relationships", dto);
 
@@ -109,11 +109,11 @@ public class RelationshipsControllerTests
     {
         var relId = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var person1Id = Guid.NewGuid();
-        var person2Id = Guid.NewGuid();
-        var dto = new UpdateRelationshipDto { Person1Id = person1Id, Person2Id = person2Id, RelationshipType = "Partner" };
-        var returnedDto = new RelationshipDto { Id = relId, Person1Id = person1Id, Person2Id = person2Id, RelationshipType = "Partner", CreatedAt = now, UpdatedAt = now };
-        _factory.RelationshipServiceMock.Setup(s => s.UpdateAsync(relId, dto)).ReturnsAsync(returnedDto);
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
+        var dto = new UpdateRelationshipDto { Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Partner" };
+        var returnedDto = new RelationshipDto { Id = relId, Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Partner", CreatedAt = now, UpdatedAt = now };
+        _factory.RelationshipServiceMock.Setup(s => s.UpdateAsync(relId, It.IsAny<UpdateRelationshipDto>())).ReturnsAsync(returnedDto);
 
         var response = await _client.PutAsJsonAsync($"/api/relationships/{relId}", dto);
 
@@ -126,9 +126,9 @@ public class RelationshipsControllerTests
     public async Task Update_WhenRelationshipDoesNotExist_Returns404()
     {
         var relId = Guid.NewGuid();
-        var dto = new UpdateRelationshipDto { Person1Id = Guid.NewGuid(), Person2Id = Guid.NewGuid(), RelationshipType = "Partner" };
+        var dto = new UpdateRelationshipDto { Entity1Id = Guid.NewGuid(), Entity2Id = Guid.NewGuid(), RelationshipType = "Partner" };
         _factory.RelationshipServiceMock
-            .Setup(s => s.UpdateAsync(relId, dto))
+            .Setup(s => s.UpdateAsync(relId, It.IsAny<UpdateRelationshipDto>()))
             .ThrowsAsync(new NotFoundException($"Relationship with ID {relId} not found"));
 
         var response = await _client.PutAsJsonAsync($"/api/relationships/{relId}", dto);
@@ -159,6 +159,4 @@ public class RelationshipsControllerTests
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
-    private record ErrorResponse(string Message);
 }

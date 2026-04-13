@@ -1,117 +1,69 @@
-﻿using FamilyTree.Application.DTOs.Relationship;
+using FamilyTree.Application.DTOs.Relationship;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Mappers;
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Application.Services.Interfaces;
+using FamilyTree.Domain.Entities;
 
 namespace FamilyTree.Application.Services;
 
-public class RelationshipService : IRelationshipService
+public class RelationshipService(IRelationshipRepository relationshipRepository, IEntityRepository entityRepository) : IRelationshipService
 {
-    private readonly IRelationshipRepository _relationshipRepository;
-    private readonly IPersonRepository _personRepository;
-
-    public RelationshipService(IRelationshipRepository relationshipRepository, IPersonRepository personRepository)
-    {
-        _relationshipRepository = relationshipRepository;
-        _personRepository = personRepository;
-    }
-
     public async Task<IEnumerable<RelationshipDto>> GetAllAsync()
     {
-        var relationships = await _relationshipRepository.GetAllAsync();
+        var relationships = await relationshipRepository.GetAllAsync();
         return relationships.Select(RelationshipMapper.ToDto);
     }
 
     public async Task<RelationshipDto?> GetByIdAsync(Guid id)
     {
-        var relationship = await _relationshipRepository.GetByIdAsync(id);
-        if (relationship == null)
-        {
-            throw new NotFoundException($"Relationship with ID {id} not found");
-        }
-
-        return RelationshipMapper.ToDto(relationship);
+        var relationship = await relationshipRepository.GetByIdAsync(id);
+        return relationship is null ? null : RelationshipMapper.ToDto(relationship);
     }
 
-    public async Task<IEnumerable<RelationshipDto>> GetRelationshipsByTreeIdAsync(Guid treeId)
+    public async Task<IEnumerable<RelationshipDto>> GetRelationshipsByFamilyTreeIdAsync(Guid familyTreeId)
     {
-        var relationships = await _relationshipRepository.GetRelationshipsByTreeIdAsync(treeId);
+        var relationships = await relationshipRepository.GetRelationshipsByFamilyTreeIdAsync(familyTreeId);
         return relationships.Select(RelationshipMapper.ToDto);
     }
 
     public async Task<RelationshipDto> CreateAsync(CreateRelationshipDto dto)
     {
-        // Validate that both persons exist
-        var person1 = await _personRepository.GetByIdAsync(dto.Person1Id);
-        if (person1 == null)
-        {
-            throw new NotFoundException($"Person with ID {dto.Person1Id} not found");
-        }
-
-        var person2 = await _personRepository.GetByIdAsync(dto.Person2Id);
-        if (person2 == null)
-        {
-            throw new NotFoundException($"Person with ID {dto.Person2Id} not found");
-        }
-
+        _ = await entityRepository.GetByIdAsync(dto.Entity1Id)
+            ?? throw new NotFoundException(nameof(Entity), dto.Entity1Id);
+        _ = await entityRepository.GetByIdAsync(dto.Entity2Id)
+            ?? throw new NotFoundException(nameof(Entity), dto.Entity2Id);
         var relationship = RelationshipMapper.ToEntity(dto);
-        await _relationshipRepository.AddAsync(relationship);
-        await _relationshipRepository.SaveChangesAsync();
-
+        await relationshipRepository.AddAsync(relationship);
+        await relationshipRepository.SaveChangesAsync();
         return RelationshipMapper.ToDto(relationship);
     }
 
     public async Task<RelationshipDto> UpdateAsync(Guid id, UpdateRelationshipDto dto)
     {
-        var relationship = await _relationshipRepository.GetByIdAsync(id);
-        if (relationship == null)
-        {
-            throw new NotFoundException($"Relationship with ID {id} not found");
-        }
-
-        // Validate that both persons exist
-        var person1 = await _personRepository.GetByIdAsync(dto.Person1Id);
-        if (person1 == null)
-        {
-            throw new NotFoundException($"Person with ID {dto.Person1Id} not found");
-        }
-
-        var person2 = await _personRepository.GetByIdAsync(dto.Person2Id);
-        if (person2 == null)
-        {
-            throw new NotFoundException($"Person with ID {dto.Person2Id} not found");
-        }
-
+        var relationship = await relationshipRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Relationship), id);
+        _ = await entityRepository.GetByIdAsync(dto.Entity1Id)
+            ?? throw new NotFoundException(nameof(Entity), dto.Entity1Id);
+        _ = await entityRepository.GetByIdAsync(dto.Entity2Id)
+            ?? throw new NotFoundException(nameof(Entity), dto.Entity2Id);
         RelationshipMapper.UpdateEntity(dto, relationship);
-        await _relationshipRepository.UpdateAsync(relationship);
-        await _relationshipRepository.SaveChangesAsync();
-
+        await relationshipRepository.UpdateAsync(relationship);
+        await relationshipRepository.SaveChangesAsync();
         return RelationshipMapper.ToDto(relationship);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var relationship = await _relationshipRepository.GetByIdAsync(id);
-        if (relationship == null)
-        {
-            throw new NotFoundException($"Relationship with ID {id} not found");
-        }
-
-        await _relationshipRepository.DeleteAsync(relationship);
-        await _relationshipRepository.SaveChangesAsync();
+        var relationship = await relationshipRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Relationship), id);
+        await relationshipRepository.DeleteAsync(relationship);
+        await relationshipRepository.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<RelationshipDto>> GetPersonRelationshipsAsync(Guid personId)
+    public async Task<IEnumerable<RelationshipDto>> GetEntityRelationshipsAsync(Guid entityId)
     {
-        var person = await _personRepository.GetByIdAsync(personId);
-        if (person == null)
-        {
-            throw new NotFoundException($"Person with ID {personId} not found");
-        }
-
-        var relationships = await _relationshipRepository.GetPersonRelationshipsAsync(personId);
+        var relationships = await relationshipRepository.GetEntityRelationshipsAsync(entityId);
         return relationships.Select(RelationshipMapper.ToDto);
     }
 }
-

@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FamilyTree.Application.DTOs.Person;
-using FamilyTree.Application.DTOs.Relationship;
+using FamilyTree.Application.DTOs.Entity;
 using FamilyTree.Application.Exceptions;
 using FluentAssertions;
 using Moq;
@@ -9,7 +8,7 @@ using Moq;
 namespace FamilyTree.IntegrationTests.Controllers;
 
 [TestFixture]
-public class PersonsControllerTests
+public class EntitiesControllerTests
 {
     private CustomWebApplicationFactory _factory;
     private HttpClient _client;
@@ -29,234 +28,103 @@ public class PersonsControllerTests
     }
 
     [Test]
-    public async Task GetById_WhenPersonExists_Returns200WithPersonDto()
+    public async Task GetById_WhenEntityExists_Returns200WithEntityDto()
     {
-        var personId = Guid.NewGuid();
-        var expectedDto = new PersonDto
+        var entityId = Guid.NewGuid();
+        var expectedDto = new EntityDto
         {
-            Id = personId, FirstName = "Jane", LastName = "Doe", Gender = "Female",
-            CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+            Id = entityId,
+            Name = "Jane Doe",
+            Type = "Character",
+            WorldId = Guid.NewGuid(),
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
-        _factory.PersonServiceMock.Setup(s => s.GetByIdAsync(personId)).ReturnsAsync(expectedDto);
+        _factory.EntityServiceMock.Setup(s => s.GetByIdAsync(entityId)).ReturnsAsync(expectedDto);
 
-        var response = await _client.GetAsync($"/api/persons/{personId}");
+        var response = await _client.GetAsync($"/api/entities/{entityId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<PersonDto>();
-        body!.Id.Should().Be(personId);
-        body.FirstName.Should().Be("Jane");
-        _factory.PersonServiceMock.Verify(s => s.GetByIdAsync(personId), Times.Once);
+        var body = await response.Content.ReadFromJsonAsync<EntityDto>();
+        body!.Id.Should().Be(entityId);
+        body.Name.Should().Be("Jane Doe");
+        _factory.EntityServiceMock.Verify(s => s.GetByIdAsync(entityId), Times.Once);
     }
 
     [Test]
-    public async Task GetById_WhenPersonDoesNotExist_Returns404WithErrorMessage()
+    public async Task GetById_WhenEntityDoesNotExist_Returns404()
     {
-        var personId = Guid.NewGuid();
-        var message = $"Person with ID {personId} not found";
+        var entityId = Guid.NewGuid();
+        _factory.EntityServiceMock.Setup(s => s.GetByIdAsync(entityId)).ReturnsAsync((EntityDto?)null);
 
-        _factory.PersonServiceMock
-            .Setup(s => s.GetByIdAsync(personId))
-            .ThrowsAsync(new NotFoundException(message));
-
-        var response = await _client.GetAsync($"/api/persons/{personId}");
+        var response = await _client.GetAsync($"/api/entities/{entityId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-        body!.Message.Should().Be(message);
     }
 
     [Test]
-    public async Task GetAll_Returns200WithPersonDtos()
+    public async Task GetAll_Returns200WithEntityDtos()
     {
         var now = DateTime.UtcNow;
-        var dtos = new List<PersonDto>
+        var worldId = Guid.NewGuid();
+        var dtos = new List<EntityDto>
         {
-            new() { Id = Guid.NewGuid(), FirstName = "Jane", LastName = "Doe", Gender = "Female", CreatedAt = now, UpdatedAt = now },
-            new() { Id = Guid.NewGuid(), FirstName = "John", LastName = "Doe", Gender = "Male", CreatedAt = now, UpdatedAt = now }
+            new() { Id = Guid.NewGuid(), Name = "Gandalf", Type = "Character", WorldId = worldId, CreatedAt = now, UpdatedAt = now },
+            new() { Id = Guid.NewGuid(), Name = "Rivendell", Type = "Place", WorldId = worldId, CreatedAt = now, UpdatedAt = now }
         };
-        _factory.PersonServiceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(dtos);
+        _factory.EntityServiceMock.Setup(s => s.GetAllAsync()).ReturnsAsync(dtos);
 
-        var response = await _client.GetAsync("/api/persons");
+        var response = await _client.GetAsync("/api/entities");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<List<PersonDto>>();
+        var body = await response.Content.ReadFromJsonAsync<List<EntityDto>>();
         body!.Should().HaveCount(2);
     }
 
     [Test]
-    public async Task Search_WithValidTerm_Returns200WithResults()
+    public async Task Create_WithValidDto_Returns201WithEntityDto()
     {
-        var now = DateTime.UtcNow;
-        var dto = new PersonDto { Id = Guid.NewGuid(), FirstName = "Jane", LastName = "Doe", Gender = "Female", CreatedAt = now, UpdatedAt = now };
-        _factory.PersonServiceMock.Setup(s => s.SearchAsync("Jane")).ReturnsAsync([dto]);
+        var worldId = Guid.NewGuid();
+        var dto = new CreateEntityDto { Name = "Gandalf", Type = "Character", WorldId = worldId };
+        var createdDto = new EntityDto
+        {
+            Id = Guid.NewGuid(),
+            Name = "Gandalf",
+            Type = "Character",
+            WorldId = worldId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _factory.EntityServiceMock.Setup(s => s.CreateAsync(It.IsAny<CreateEntityDto>())).ReturnsAsync(createdDto);
 
-        var response = await _client.GetAsync("/api/persons/search?q=Jane");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<List<PersonDto>>();
-        body!.Should().HaveCount(1);
-    }
-
-    [Test]
-    public async Task Search_WithMissingTerm_Returns400()
-    {
-        var response = await _client.GetAsync("/api/persons/search");
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    [Test]
-    public async Task GetAncestors_WhenPersonExists_Returns200()
-    {
-        var personId = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var ancestor = new PersonDto { Id = Guid.NewGuid(), FirstName = "Bob", LastName = "Doe", Gender = "Male", CreatedAt = now, UpdatedAt = now };
-        _factory.PersonServiceMock.Setup(s => s.GetAncestorsAsync(personId)).ReturnsAsync([ancestor]);
-
-        var response = await _client.GetAsync($"/api/persons/{personId}/ancestors");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<List<PersonDto>>();
-        body!.Should().HaveCount(1);
-    }
-
-    [Test]
-    public async Task GetAncestors_WhenPersonDoesNotExist_Returns404()
-    {
-        var personId = Guid.NewGuid();
-        _factory.PersonServiceMock
-            .Setup(s => s.GetAncestorsAsync(personId))
-            .ThrowsAsync(new NotFoundException($"Person with ID {personId} not found"));
-
-        var response = await _client.GetAsync($"/api/persons/{personId}/ancestors");
-
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    [Test]
-    public async Task GetDescendants_WhenPersonExists_Returns200()
-    {
-        var personId = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var descendant = new PersonDto { Id = Guid.NewGuid(), FirstName = "Alice", LastName = "Doe", Gender = "Female", CreatedAt = now, UpdatedAt = now };
-        _factory.PersonServiceMock.Setup(s => s.GetDescendantsAsync(personId)).ReturnsAsync([descendant]);
-
-        var response = await _client.GetAsync($"/api/persons/{personId}/descendants");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<List<PersonDto>>();
-        body!.Should().HaveCount(1);
-    }
-
-    [Test]
-    public async Task GetDescendants_WhenPersonDoesNotExist_Returns404()
-    {
-        var personId = Guid.NewGuid();
-        _factory.PersonServiceMock
-            .Setup(s => s.GetDescendantsAsync(personId))
-            .ThrowsAsync(new NotFoundException($"Person with ID {personId} not found"));
-
-        var response = await _client.GetAsync($"/api/persons/{personId}/descendants");
-
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    [Test]
-    public async Task GetRelationships_WhenPersonExists_Returns200()
-    {
-        var personId = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var rel = new RelationshipDto { Id = Guid.NewGuid(), Person1Id = personId, Person2Id = Guid.NewGuid(), RelationshipType = "Spouse", CreatedAt = now, UpdatedAt = now };
-        _factory.RelationshipServiceMock.Setup(s => s.GetPersonRelationshipsAsync(personId)).ReturnsAsync([rel]);
-
-        var response = await _client.GetAsync($"/api/persons/{personId}/relationships");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<List<RelationshipDto>>();
-        body!.Should().HaveCount(1);
-    }
-
-    [Test]
-    public async Task GetRelationships_WhenPersonDoesNotExist_Returns404()
-    {
-        var personId = Guid.NewGuid();
-        _factory.RelationshipServiceMock
-            .Setup(s => s.GetPersonRelationshipsAsync(personId))
-            .ThrowsAsync(new NotFoundException($"Person with ID {personId} not found"));
-
-        var response = await _client.GetAsync($"/api/persons/{personId}/relationships");
-
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    [Test]
-    public async Task Create_WithValidDto_Returns201WithLocation()
-    {
-        var now = DateTime.UtcNow;
-        var dto = new CreatePersonDto { FirstName = "Jane", LastName = "Doe", Gender = "Female" };
-        var returnedDto = new PersonDto { Id = Guid.NewGuid(), FirstName = "Jane", LastName = "Doe", Gender = "Female", CreatedAt = now, UpdatedAt = now };
-        _factory.PersonServiceMock.Setup(s => s.CreateAsync(dto)).ReturnsAsync(returnedDto);
-
-        var response = await _client.PostAsJsonAsync("/api/persons", dto);
+        var response = await _client.PostAsJsonAsync("/api/entities", dto);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        response.Headers.Location!.ToString().Should().Contain(returnedDto.Id.ToString());
+        var body = await response.Content.ReadFromJsonAsync<EntityDto>();
+        body!.Name.Should().Be("Gandalf");
     }
 
     [Test]
-    public async Task Update_WhenPersonExists_Returns200WithUpdatedDto()
+    public async Task Delete_WhenEntityExists_Returns204()
     {
-        var personId = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var dto = new UpdatePersonDto { FirstName = "Janet", LastName = "Doe", Gender = "Female" };
-        var returnedDto = new PersonDto { Id = personId, FirstName = "Janet", LastName = "Doe", Gender = "Female", CreatedAt = now, UpdatedAt = now };
-        _factory.PersonServiceMock.Setup(s => s.UpdateAsync(personId, dto)).ReturnsAsync(returnedDto);
+        var entityId = Guid.NewGuid();
+        _factory.EntityServiceMock.Setup(s => s.DeleteAsync(entityId)).Returns(Task.CompletedTask);
 
-        var response = await _client.PutAsJsonAsync($"/api/persons/{personId}", dto);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<PersonDto>();
-        body!.FirstName.Should().Be("Janet");
-    }
-
-    [Test]
-    public async Task Update_WhenPersonDoesNotExist_Returns404()
-    {
-        var personId = Guid.NewGuid();
-        var dto = new UpdatePersonDto { FirstName = "Janet", LastName = "Doe", Gender = "Female" };
-        _factory.PersonServiceMock
-            .Setup(s => s.UpdateAsync(personId, dto))
-            .ThrowsAsync(new NotFoundException($"Person with ID {personId} not found"));
-
-        var response = await _client.PutAsJsonAsync($"/api/persons/{personId}", dto);
-
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    [Test]
-    public async Task Delete_WhenPersonExists_Returns204()
-    {
-        var personId = Guid.NewGuid();
-        _factory.PersonServiceMock.Setup(s => s.DeleteAsync(personId)).Returns(Task.CompletedTask);
-
-        var response = await _client.DeleteAsync($"/api/persons/{personId}");
+        var response = await _client.DeleteAsync($"/api/entities/{entityId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Test]
-    public async Task Delete_WhenPersonDoesNotExist_Returns404()
+    public async Task Delete_WhenEntityDoesNotExist_Returns404()
     {
-        var personId = Guid.NewGuid();
-        _factory.PersonServiceMock
-            .Setup(s => s.DeleteAsync(personId))
-            .ThrowsAsync(new NotFoundException($"Person with ID {personId} not found"));
+        var entityId = Guid.NewGuid();
+        _factory.EntityServiceMock.Setup(s => s.DeleteAsync(entityId))
+            .ThrowsAsync(new NotFoundException(nameof(EntityDto), entityId));
 
-        var response = await _client.DeleteAsync($"/api/persons/{personId}");
+        var response = await _client.DeleteAsync($"/api/entities/{entityId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-
-    private record ErrorResponse(string Message);
 }

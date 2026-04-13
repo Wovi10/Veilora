@@ -1,4 +1,4 @@
-﻿using FamilyTree.Application.DTOs.Relationship;
+using FamilyTree.Application.DTOs.Relationship;
 using FamilyTree.Domain.Entities;
 using FamilyTree.Domain.Enums;
 
@@ -6,43 +6,36 @@ namespace FamilyTree.Application.Mappers;
 
 public static class RelationshipMapper
 {
-    public static RelationshipDto ToDto(Relationship entity)
+    public static RelationshipDto ToDto(Relationship relationship) => new()
     {
-        return new RelationshipDto
-        {
-            Id = entity.Id,
-            Person1Id = entity.Person1Id,
-            Person2Id = entity.Person2Id,
-            RelationshipType = entity.RelationshipType.ToString(),
-            StartDate = entity.StartDate,
-            EndDate = entity.EndDate,
-            Notes = entity.Notes,
-            CreatedAt = entity.CreatedAt,
-            UpdatedAt = entity.UpdatedAt
-        };
-    }
+        Id = relationship.Id,
+        Entity1Id = relationship.Entity1Id,
+        Entity2Id = relationship.Entity2Id,
+        RelationshipType = relationship.RelationshipType.ToString(),
+        StartDate = relationship.StartDate,
+        EndDate = relationship.EndDate,
+        Notes = relationship.Notes,
+        CreatedAt = relationship.CreatedAt,
+        UpdatedAt = relationship.UpdatedAt
+    };
 
-    public static Relationship ToEntity(CreateRelationshipDto dto)
+    public static Relationship ToEntity(CreateRelationshipDto dto) => new()
     {
-        return new Relationship
-        {
-            Person1Id = dto.Person1Id,
-            Person2Id = dto.Person2Id,
-            RelationshipType = Enum.Parse<RelationshipType>(dto.RelationshipType, ignoreCase: true),
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
-            Notes = dto.Notes
-        };
-    }
+        Entity1Id = dto.Entity1Id,
+        Entity2Id = dto.Entity2Id,
+        RelationshipType = Enum.Parse<RelationshipType>(dto.RelationshipType),
+        StartDate = dto.StartDate,
+        EndDate = dto.EndDate,
+        Notes = dto.Notes
+    };
 
-    public static void UpdateEntity(UpdateRelationshipDto dto, Relationship entity)
+    public static void UpdateEntity(UpdateRelationshipDto dto, Relationship relationship)
     {
-        entity.Person1Id = dto.Person1Id;
-        entity.Person2Id = dto.Person2Id;
-        entity.RelationshipType = Enum.Parse<RelationshipType>(dto.RelationshipType, ignoreCase: true);
-        entity.StartDate = dto.StartDate;
-        entity.EndDate = dto.EndDate;
-        entity.Notes = dto.Notes;
+        relationship.Entity1Id = dto.Entity1Id;
+        relationship.Entity2Id = dto.Entity2Id;
+        relationship.RelationshipType = Enum.Parse<RelationshipType>(dto.RelationshipType);
+        relationship.StartDate = dto.StartDate;
+        relationship.EndDate = dto.EndDate;
+        relationship.Notes = dto.Notes;
     }
 }
-

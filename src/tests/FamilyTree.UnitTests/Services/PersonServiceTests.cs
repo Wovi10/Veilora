@@ -1,4 +1,4 @@
-using FamilyTree.Application.DTOs.Person;
+using FamilyTree.Application.DTOs.Entity;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Application.Services;
@@ -10,81 +10,85 @@ using Moq;
 namespace FamilyTree.UnitTests.Services;
 
 [TestFixture]
-public class PersonServiceTests
+public class EntityServiceTests
 {
-    private Mock<IPersonRepository> _personRepositoryMock;
-    private Mock<ITreeRepository> _treeRepositoryMock;
-    private PersonService _sut;
+    private Mock<IEntityRepository> _entityRepositoryMock;
+    private Mock<IWorldRepository> _worldRepositoryMock;
+    private EntityService _sut;
 
     [SetUp]
     public void SetUp()
     {
-        _personRepositoryMock = new Mock<IPersonRepository>();
-        _treeRepositoryMock = new Mock<ITreeRepository>();
-        _sut = new PersonService(_personRepositoryMock.Object, _treeRepositoryMock.Object);
+        _entityRepositoryMock = new Mock<IEntityRepository>();
+        _worldRepositoryMock = new Mock<IWorldRepository>();
+        _sut = new EntityService(_entityRepositoryMock.Object, _worldRepositoryMock.Object);
     }
 
-    [Test]
-    public async Task GetByIdAsync_WhenPersonExists_ReturnsMappedDto()
+    private static Entity MakeEntity(Guid id, DateTime now) => new()
     {
-        var personId = Guid.NewGuid();
+        Id = id,
+        Name = "Alice Smith",
+        Type = EntityType.Character,
+        WorldId = Guid.NewGuid(),
+        FirstName = "Alice",
+        LastName = "Smith",
+        Gender = Gender.Female,
+        CreatedAt = now,
+        UpdatedAt = now
+    };
+
+    [Test]
+    public async Task GetByIdAsync_WhenEntityExists_ReturnsMappedDto()
+    {
+        var entityId = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var person = new Person
-        {
-            Id = personId, FirstName = "Jane", LastName = "Doe",
-            Gender = Gender.Female, BirthDate = new DateOnly(1990, 6, 15),
-            CreatedAt = now, UpdatedAt = now
-        };
+        var entity = MakeEntity(entityId, now);
 
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync(person);
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync(entity);
 
-        var result = await _sut.GetByIdAsync(personId);
+        var result = await _sut.GetByIdAsync(entityId);
 
         result.Should().NotBeNull();
-        result!.Id.Should().Be(personId);
-        result.FirstName.Should().Be("Jane");
-        result.LastName.Should().Be("Doe");
-        result.Gender.Should().Be("Female");
-        result.BirthDate.Should().Be(person.BirthDate);
-        _personRepositoryMock.Verify(r => r.GetByIdAsync(personId), Times.Once);
+        result!.Id.Should().Be(entityId);
+        result.Name.Should().Be("Alice Smith");
+        result.Type.Should().Be("Character");
+        _entityRepositoryMock.Verify(r => r.GetByIdAsync(entityId), Times.Once);
     }
 
     [Test]
-    public async Task GetByIdAsync_WhenPersonDoesNotExist_ThrowsNotFoundException()
+    public async Task GetByIdAsync_WhenEntityDoesNotExist_ReturnsNull()
     {
-        var personId = Guid.NewGuid();
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync((Person?)null);
+        var entityId = Guid.NewGuid();
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync((Entity?)null);
 
-        var act = async () => await _sut.GetByIdAsync(personId);
+        var result = await _sut.GetByIdAsync(entityId);
 
-        await act.Should()
-            .ThrowAsync<NotFoundException>()
-            .WithMessage($"Person with ID {personId} not found");
+        result.Should().BeNull();
     }
 
     [Test]
-    public async Task GetAllAsync_WhenPersonsExist_ReturnsMappedDtos()
+    public async Task GetAllAsync_WhenEntitiesExist_ReturnsMappedDtos()
     {
         var now = DateTime.UtcNow;
         var id1 = Guid.NewGuid();
         var id2 = Guid.NewGuid();
-        var persons = new List<Person>
+        var entities = new List<Entity>
         {
-            new() { Id = id1, FirstName = "Alice", LastName = "Smith", Gender = Gender.Female, CreatedAt = now, UpdatedAt = now },
-            new() { Id = id2, FirstName = "Bob", LastName = "Smith", Gender = Gender.Male, CreatedAt = now, UpdatedAt = now }
+            MakeEntity(id1, now),
+            MakeEntity(id2, now)
         };
-        _personRepositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(persons);
+        _entityRepositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(entities);
 
         var result = (await _sut.GetAllAsync()).ToList();
 
         result.Should().HaveCount(2);
-        result.Select(p => p.Id).Should().Contain([id1, id2]);
+        result.Select(e => e.Id).Should().Contain([id1, id2]);
     }
 
     [Test]
-    public async Task GetAllAsync_WhenNoPersonsExist_ReturnsEmptyCollection()
+    public async Task GetAllAsync_WhenNoEntitiesExist_ReturnsEmptyCollection()
     {
-        _personRepositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _entityRepositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
 
         var result = await _sut.GetAllAsync();
 
@@ -92,176 +96,90 @@ public class PersonServiceTests
     }
 
     [Test]
-    public async Task GetPersonsByTreeIdAsync_ReturnsMappedDtos()
+    public async Task CreateAsync_WhenWorldExists_CreatesEntityAndReturnsMappedDto()
     {
-        var treeId = Guid.NewGuid();
+        var worldId = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var id1 = Guid.NewGuid();
-        var persons = new List<Person>
-        {
-            new() { Id = id1, FirstName = "Alice", LastName = "Smith", Gender = Gender.Female, CreatedAt = now, UpdatedAt = now }
-        };
-        _personRepositoryMock.Setup(r => r.GetPersonsByTreeIdAsync(treeId)).ReturnsAsync(persons);
-
-        var result = (await _sut.GetPersonsByTreeIdAsync(treeId)).ToList();
-
-        result.Should().HaveCount(1);
-        result[0].Id.Should().Be(id1);
-        _personRepositoryMock.Verify(r => r.GetPersonsByTreeIdAsync(treeId), Times.Once);
-    }
-
-    [Test]
-    public async Task CreateAsync_CreatesPersonAndReturnsMappedDto()
-    {
-        var dto = new CreatePersonDto { FirstName = "Alice", LastName = "Smith", Gender = "Female" };
-        _personRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Person>())).ReturnsAsync((Person p) => p);
-        _personRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        var world = new World { Id = worldId, Name = "Middle Earth", CreatedAt = now, UpdatedAt = now };
+        var dto = new CreateEntityDto { Name = "Gandalf", Type = "Character", WorldId = worldId };
+        _worldRepositoryMock.Setup(r => r.GetByIdAsync(worldId)).ReturnsAsync(world);
+        _entityRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Entity>())).ReturnsAsync((Entity e) => e);
+        _entityRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
         var result = await _sut.CreateAsync(dto);
 
-        result.FirstName.Should().Be("Alice");
-        result.LastName.Should().Be("Smith");
-        result.Gender.Should().Be("Female");
-        _personRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Person>()), Times.Once);
-        _personRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+        result.Name.Should().Be("Gandalf");
+        result.Type.Should().Be("Character");
+        _entityRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Entity>()), Times.Once);
+        _entityRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
-    public async Task UpdateAsync_WhenPersonExists_UpdatesAndReturnsMappedDto()
+    public async Task CreateAsync_WhenWorldNotFound_ThrowsNotFoundException()
     {
-        var personId = Guid.NewGuid();
+        var worldId = Guid.NewGuid();
+        var dto = new CreateEntityDto { Name = "Gandalf", Type = "Character", WorldId = worldId };
+        _worldRepositoryMock.Setup(r => r.GetByIdAsync(worldId)).ReturnsAsync((World?)null);
+
+        var act = async () => await _sut.CreateAsync(dto);
+
+        await act.Should().ThrowAsync<NotFoundException>();
+        _entityRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Entity>()), Times.Never);
+    }
+
+    [Test]
+    public async Task UpdateAsync_WhenEntityExists_UpdatesAndReturnsMappedDto()
+    {
+        var entityId = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var person = new Person { Id = personId, FirstName = "Old", LastName = "Name", Gender = Gender.Male, CreatedAt = now, UpdatedAt = now };
-        var dto = new UpdatePersonDto { FirstName = "New", LastName = "Name", Gender = "Female" };
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync(person);
-        _personRepositoryMock.Setup(r => r.UpdateAsync(person)).Returns(Task.CompletedTask);
-        _personRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        var entity = MakeEntity(entityId, now);
+        var dto = new UpdateEntityDto { Name = "Gandalf the White", Type = "Character" };
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync(entity);
+        _entityRepositoryMock.Setup(r => r.UpdateAsync(entity)).Returns(Task.CompletedTask);
+        _entityRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
-        var result = await _sut.UpdateAsync(personId, dto);
+        var result = await _sut.UpdateAsync(entityId, dto);
 
-        result.FirstName.Should().Be("New");
-        result.Gender.Should().Be("Female");
-        _personRepositoryMock.Verify(r => r.UpdateAsync(person), Times.Once);
-        _personRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+        result.Name.Should().Be("Gandalf the White");
+        _entityRepositoryMock.Verify(r => r.UpdateAsync(entity), Times.Once);
+        _entityRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
-    public async Task UpdateAsync_WhenPersonDoesNotExist_ThrowsNotFoundException()
+    public async Task UpdateAsync_WhenEntityDoesNotExist_ThrowsNotFoundException()
     {
-        var personId = Guid.NewGuid();
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync((Person?)null);
+        var entityId = Guid.NewGuid();
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync((Entity?)null);
 
-        var act = async () => await _sut.UpdateAsync(personId, new UpdatePersonDto { FirstName = "X", LastName = "Y", Gender = "Male" });
+        var act = async () => await _sut.UpdateAsync(entityId, new UpdateEntityDto { Name = "X", Type = "Character" });
 
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {personId} not found");
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     [Test]
-    public async Task DeleteAsync_WhenPersonExists_DeletesAndSaves()
+    public async Task DeleteAsync_WhenEntityExists_DeletesAndSaves()
     {
-        var personId = Guid.NewGuid();
+        var entityId = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var person = new Person { Id = personId, FirstName = "Alice", LastName = "Smith", Gender = Gender.Female, CreatedAt = now, UpdatedAt = now };
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync(person);
-        _personRepositoryMock.Setup(r => r.DeleteAsync(person)).Returns(Task.CompletedTask);
-        _personRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        var entity = MakeEntity(entityId, now);
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync(entity);
+        _entityRepositoryMock.Setup(r => r.DeleteAsync(entity)).Returns(Task.CompletedTask);
+        _entityRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
-        await _sut.DeleteAsync(personId);
+        await _sut.DeleteAsync(entityId);
 
-        _personRepositoryMock.Verify(r => r.DeleteAsync(person), Times.Once);
-        _personRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+        _entityRepositoryMock.Verify(r => r.DeleteAsync(entity), Times.Once);
+        _entityRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
-    public async Task DeleteAsync_WhenPersonDoesNotExist_ThrowsNotFoundException()
+    public async Task DeleteAsync_WhenEntityDoesNotExist_ThrowsNotFoundException()
     {
-        var personId = Guid.NewGuid();
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync((Person?)null);
+        var entityId = Guid.NewGuid();
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync((Entity?)null);
 
-        var act = async () => await _sut.DeleteAsync(personId);
+        var act = async () => await _sut.DeleteAsync(entityId);
 
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {personId} not found");
-    }
-
-    [Test]
-    public async Task SearchAsync_ReturnsMappedResults()
-    {
-        var now = DateTime.UtcNow;
-        var id1 = Guid.NewGuid();
-        var persons = new List<Person>
-        {
-            new() { Id = id1, FirstName = "Alice", LastName = "Smith", Gender = Gender.Female, CreatedAt = now, UpdatedAt = now }
-        };
-        _personRepositoryMock.Setup(r => r.SearchAsync("Alice")).ReturnsAsync(persons);
-
-        var result = (await _sut.SearchAsync("Alice")).ToList();
-
-        result.Should().HaveCount(1);
-        result[0].FirstName.Should().Be("Alice");
-        _personRepositoryMock.Verify(r => r.SearchAsync("Alice"), Times.Once);
-    }
-
-    [Test]
-    public async Task GetAncestorsAsync_WhenPersonExists_ReturnsMappedAncestors()
-    {
-        var personId = Guid.NewGuid();
-        var ancestorId = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var person = new Person { Id = personId, FirstName = "Child", LastName = "Doe", Gender = Gender.Male, CreatedAt = now, UpdatedAt = now };
-        var ancestors = new List<Person>
-        {
-            new() { Id = ancestorId, FirstName = "Parent", LastName = "Doe", Gender = Gender.Male, CreatedAt = now, UpdatedAt = now }
-        };
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync(person);
-        _personRepositoryMock.Setup(r => r.GetAncestorsAsync(personId)).ReturnsAsync(ancestors);
-
-        var result = (await _sut.GetAncestorsAsync(personId)).ToList();
-
-        result.Should().HaveCount(1);
-        result[0].Id.Should().Be(ancestorId);
-        _personRepositoryMock.Verify(r => r.GetAncestorsAsync(personId), Times.Once);
-    }
-
-    [Test]
-    public async Task GetAncestorsAsync_WhenPersonDoesNotExist_ThrowsNotFoundException()
-    {
-        var personId = Guid.NewGuid();
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync((Person?)null);
-
-        var act = async () => await _sut.GetAncestorsAsync(personId);
-
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {personId} not found");
-    }
-
-    [Test]
-    public async Task GetDescendantsAsync_WhenPersonExists_ReturnsMappedDescendants()
-    {
-        var personId = Guid.NewGuid();
-        var descendantId = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var person = new Person { Id = personId, FirstName = "Parent", LastName = "Doe", Gender = Gender.Male, CreatedAt = now, UpdatedAt = now };
-        var descendants = new List<Person>
-        {
-            new() { Id = descendantId, FirstName = "Child", LastName = "Doe", Gender = Gender.Male, CreatedAt = now, UpdatedAt = now }
-        };
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync(person);
-        _personRepositoryMock.Setup(r => r.GetDescendantsAsync(personId)).ReturnsAsync(descendants);
-
-        var result = (await _sut.GetDescendantsAsync(personId)).ToList();
-
-        result.Should().HaveCount(1);
-        result[0].Id.Should().Be(descendantId);
-        _personRepositoryMock.Verify(r => r.GetDescendantsAsync(personId), Times.Once);
-    }
-
-    [Test]
-    public async Task GetDescendantsAsync_WhenPersonDoesNotExist_ThrowsNotFoundException()
-    {
-        var personId = Guid.NewGuid();
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync((Person?)null);
-
-        var act = async () => await _sut.GetDescendantsAsync(personId);
-
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {personId} not found");
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 }

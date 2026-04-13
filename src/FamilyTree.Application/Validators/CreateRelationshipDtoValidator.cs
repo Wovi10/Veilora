@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FamilyTree.Application.DTOs.Relationship;
 using FamilyTree.Domain.Enums;
 
@@ -8,29 +8,13 @@ public class CreateRelationshipDtoValidator : AbstractValidator<CreateRelationsh
 {
     public CreateRelationshipDtoValidator()
     {
-        RuleFor(x => x.Person1Id)
-            .NotEmpty().WithMessage("Person1Id is required");
-
-        RuleFor(x => x.Person2Id)
-            .NotEmpty().WithMessage("Person2Id is required");
-
-        RuleFor(x => x)
-            .Must(x => x.Person1Id != x.Person2Id)
-            .WithMessage("Person1Id and Person2Id must be different")
-            .When(x => x.Person1Id != Guid.Empty && x.Person2Id != Guid.Empty);
-
-        RuleFor(x => x.RelationshipType)
-            .NotEmpty().WithMessage("Relationship type is required")
-            .Must(BeValidRelationshipType).WithMessage("Relationship type must be a valid value");
-
-        RuleFor(x => x.EndDate)
-            .GreaterThan(x => x.StartDate).WithMessage("End date must be after start date")
+        RuleFor(x => x.Entity1Id).NotEmpty();
+        RuleFor(x => x.Entity2Id).NotEmpty()
+            .NotEqual(x => x.Entity1Id).WithMessage("Entity2Id must differ from Entity1Id.");
+        RuleFor(x => x.RelationshipType).NotEmpty()
+            .Must(t => Enum.TryParse<RelationshipType>(t, out _))
+            .WithMessage("Invalid relationship type.");
+        RuleFor(x => x.EndDate).GreaterThan(x => x.StartDate)
             .When(x => x.StartDate.HasValue && x.EndDate.HasValue);
     }
-
-    private bool BeValidRelationshipType(string relationshipType)
-    {
-        return Enum.TryParse<RelationshipType>(relationshipType, ignoreCase: true, out _);
-    }
 }
-
