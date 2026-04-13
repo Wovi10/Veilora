@@ -32,3 +32,14 @@ export async function updateWorld(id: string, dto: UpdateWorldDto): Promise<Worl
 export async function deleteWorld(id: string): Promise<void> {
   await apiFetch(`/api/worlds/${id}`, { method: 'DELETE' });
 }
+
+export async function transferOwnership(id: string, email: string): Promise<boolean> {
+  const res = await apiFetch(`/api/worlds/${id}/owner`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (res.status === 404) return false;
+  if (!res.ok) throw new Error('Failed to transfer ownership.');
+  return true;
+}

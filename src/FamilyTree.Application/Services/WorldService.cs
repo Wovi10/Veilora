@@ -7,11 +7,11 @@ using FamilyTree.Domain.Entities;
 
 namespace FamilyTree.Application.Services;
 
-public class WorldService(IWorldRepository worldRepository) : IWorldService
+public class WorldService(IWorldRepository worldRepository, IUserRepository userRepository) : IWorldService
 {
-    public async Task<IEnumerable<WorldDto>> GetAllAsync()
+    public async Task<IEnumerable<WorldDto>> GetAllByUserAsync(Guid userId)
     {
-        var worlds = await worldRepository.GetAllAsync();
+        var worlds = await worldRepository.GetAllByUserAsync(userId);
         return worlds.Select(WorldMapper.ToDto);
     }
 
@@ -21,9 +21,9 @@ public class WorldService(IWorldRepository worldRepository) : IWorldService
         return world is null ? null : WorldMapper.ToDto(world);
     }
 
-    public async Task<WorldDto> CreateAsync(CreateWorldDto dto)
+    public async Task<WorldDto> CreateAsync(CreateWorldDto dto, Guid? createdById = null)
     {
-        var world = WorldMapper.ToEntity(dto);
+        var world = WorldMapper.ToEntity(dto, createdById);
         await worldRepository.AddAsync(world);
         await worldRepository.SaveChangesAsync();
         return WorldMapper.ToDto(world);
@@ -45,5 +45,18 @@ public class WorldService(IWorldRepository worldRepository) : IWorldService
             ?? throw new NotFoundException(nameof(World), id);
         await worldRepository.DeleteAsync(world);
         await worldRepository.SaveChangesAsync();
+    }
+
+    public async Task<bool> TransferOwnershipAsync(Guid id, string newOwnerEmail)
+    {
+        var newOwner = await userRepository.GetByEmailAsync(newOwnerEmail);
+        if (newOwner is null) return false;
+
+        var world = await worldRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException(nameof(World), id);
+        world.CreatedById = newOwner.Id;
+        await worldRepository.UpdateAsync(world);
+        await worldRepository.SaveChangesAsync();
+        return true;
     }
 }

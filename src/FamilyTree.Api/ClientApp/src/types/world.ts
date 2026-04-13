@@ -3,6 +3,7 @@ export interface WorldDto {
   name: string;
   author?: string;
   description?: string;
+  createdById?: string;
   createdAt: string;
   updatedAt: string;
 }

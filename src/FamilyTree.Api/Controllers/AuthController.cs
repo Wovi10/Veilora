@@ -18,7 +18,7 @@ public class AuthController(IAuthService authService, ITokenService tokenService
         {
             var user = await authService.RegisterAsync(dto);
             var token = tokenService.GenerateToken(user);
-            return Created(string.Empty, new AuthResponseDto(token, user.Email, user.DisplayName));
+            return Created(string.Empty, new AuthResponseDto(user.Id, token, user.Email, user.DisplayName));
         }
         catch (InvalidOperationException ex)
         {
@@ -36,6 +36,6 @@ public class AuthController(IAuthService authService, ITokenService tokenService
             return Unauthorized(new { message = "Invalid username/email or password." });
 
         var token = tokenService.GenerateToken(user);
-        return Ok(new AuthResponseDto(token, user.Email, user.DisplayName));
+        return Ok(new AuthResponseDto(user.Id, token, user.Email, user.DisplayName));
     }
 }

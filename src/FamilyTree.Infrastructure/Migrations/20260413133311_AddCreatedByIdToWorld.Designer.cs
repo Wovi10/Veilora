@@ -3,6 +3,7 @@ using System;
 using FamilyTree.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FamilyTree.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413133311_AddCreatedByIdToWorld")]
+    partial class AddCreatedByIdToWorld
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -358,37 +361,6 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.ToTable("Worlds");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.WorldPermission", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("CanEdit")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("WorldId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("WorldId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("WorldPermissions");
-                });
-
             modelBuilder.Entity("FamilyTree.Domain.Entities.Entity", b =>
                 {
                     b.HasOne("FamilyTree.Domain.Entities.Entity", "Parent1")
@@ -516,25 +488,6 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.Navigation("CreatedBy");
                 });
 
-            modelBuilder.Entity("FamilyTree.Domain.Entities.WorldPermission", b =>
-                {
-                    b.HasOne("FamilyTree.Domain.Entities.User", "User")
-                        .WithMany("WorldPermissions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FamilyTree.Domain.Entities.World", "World")
-                        .WithMany("Permissions")
-                        .HasForeignKey("WorldId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("World");
-                });
-
             modelBuilder.Entity("FamilyTree.Domain.Entities.Entity", b =>
                 {
                     b.Navigation("ChildrenAsParent1");
@@ -562,8 +515,6 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.Navigation("CreatedWorlds");
 
                     b.Navigation("TreePermissions");
-
-                    b.Navigation("WorldPermissions");
                 });
 
             modelBuilder.Entity("FamilyTree.Domain.Entities.World", b =>
@@ -573,8 +524,6 @@ namespace FamilyTree.Infrastructure.Migrations
                     b.Navigation("FamilyTrees");
 
                     b.Navigation("Notes");
-
-                    b.Navigation("Permissions");
                 });
 #pragma warning restore 612, 618
         }

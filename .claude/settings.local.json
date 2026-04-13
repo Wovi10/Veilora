@@ -3,7 +3,8 @@
     "allow": [
       "Bash(cd \"D:\\\\GitHub\\\\FamilyTree\" && dotnet build 2>&1)",
       "Bash(dotnet test:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(dotnet build:*)"
     ]
   }
 }

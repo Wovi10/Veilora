@@ -15,6 +15,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<User> Users => Set<User>();
     public DbSet<TreePermission> TreePermissions => Set<TreePermission>();
+    public DbSet<WorldPermission> WorldPermissions => Set<WorldPermission>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,3 +1,3 @@
 namespace FamilyTree.Application.DTOs.Auth;
 
-public record AuthResponseDto(string Token, string Email, string? DisplayName);
+public record AuthResponseDto(Guid Id, string Token, string Email, string? DisplayName);
