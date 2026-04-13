@@ -75,7 +75,7 @@ export default function WorldPage() {
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')}>
             Worlds
           </Button>
-          {world.createdById === userId && (
+          { world.createdById === userId && canEdit && (
             <Button startIcon={<SettingsIcon />} onClick={() => navigate(`/worlds/${worldId}/settings`)}>
               Settings
             </Button>
