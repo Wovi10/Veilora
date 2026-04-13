@@ -4,6 +4,7 @@ import { getToken } from './api/apiFetch';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import WorldPage from './pages/WorldPage';
+import WorldSettingsPage from './pages/WorldSettingsPage';
 import FamilyTreePage from './pages/FamilyTreePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -27,6 +28,7 @@ const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: 'worlds/:worldId', element: <WorldPage /> },
+      { path: 'worlds/:worldId/settings', element: <WorldSettingsPage /> },
       { path: 'family-trees/:familyTreeId', element: <FamilyTreePage /> },
     ],
   },

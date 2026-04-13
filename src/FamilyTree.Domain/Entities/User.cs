@@ -9,5 +9,7 @@ public class User : BaseEntity
     public string? DisplayName { get; set; }
 
     public ICollection<FamilyTree> CreatedFamilyTrees { get; set; } = [];
+    public ICollection<World> CreatedWorlds { get; set; } = [];
     public ICollection<TreePermission> TreePermissions { get; set; } = [];
+    public ICollection<WorldPermission> WorldPermissions { get; set; } = [];
 }

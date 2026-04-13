@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FamilyTree.Application.DTOs.World;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Services.Interfaces;
@@ -11,9 +12,15 @@ namespace FamilyTree.Api.Controllers;
 [Authorize]
 public class WorldsController(IWorldService worldService) : ControllerBase
 {
+    private Guid? CurrentUserId =>
+        Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+
     [HttpGet]
-    public async Task<IActionResult> GetAll() =>
-        Ok(await worldService.GetAllAsync());
+    public async Task<IActionResult> GetAll()
+    {
+        if (CurrentUserId is null) return Unauthorized();
+        return Ok(await worldService.GetAllByUserAsync(CurrentUserId.Value));
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
@@ -25,21 +32,42 @@ public class WorldsController(IWorldService worldService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateWorldDto dto)
     {
-        var created = await worldService.CreateAsync(dto);
+        var created = await worldService.CreateAsync(dto, CurrentUserId);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateWorldDto dto)
     {
+        var world = await worldService.GetByIdAsync(id);
+        if (world is null) return NotFound();
+        if (world.CreatedById != CurrentUserId) return Forbid();
+
         var updated = await worldService.UpdateAsync(id, dto);
         return Ok(updated);
+    }
+
+    [HttpPut("{id:guid}/owner")]
+    public async Task<IActionResult> TransferOwnership(Guid id, [FromBody] TransferOwnershipDto dto)
+    {
+        var world = await worldService.GetByIdAsync(id);
+        if (world is null) return NotFound();
+        if (world.CreatedById != CurrentUserId) return Forbid();
+
+        var found = await worldService.TransferOwnershipAsync(id, dto.Email);
+        return found ? NoContent() : NotFound(new { message = "No user found with that email address." });
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        var world = await worldService.GetByIdAsync(id);
+        if (world is null) return NotFound();
+        if (world.CreatedById != CurrentUserId) return Forbid();
+
         await worldService.DeleteAsync(id);
         return NoContent();
     }
 }
+
+public record TransferOwnershipDto(string Email);

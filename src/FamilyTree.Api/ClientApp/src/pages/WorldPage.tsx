@@ -7,6 +7,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { getWorld } from '../api/worldsApi';
 import { getEntities } from '../api/entitiesApi';
 import { getFamilyTrees } from '../api/familyTreesApi';
@@ -14,6 +15,7 @@ import type { WorldDto } from '../types/world';
 import type { EntityDto, EntityType } from '../types/entity';
 import type { FamilyTreeDto } from '../types/familyTree';
 import { useEditMode } from '../context/EditModeContext';
+import { useAuth } from '../context/AuthContext';
 import AddEntityDialog from '../components/AddEntityDialog';
 import NewFamilyTreeDialog from '../components/NewFamilyTreeDialog';
 
@@ -29,6 +31,7 @@ export default function WorldPage() {
   const { worldId } = useParams<{ worldId: string }>();
   const navigate = useNavigate();
   const { isEditMode } = useEditMode();
+  const { userId } = useAuth();
 
   const [world, setWorld] = useState<WorldDto | null>(null);
   const [entities, setEntities] = useState<EntityDto[]>([]);
@@ -56,6 +59,9 @@ export default function WorldPage() {
   if (error)   return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
   if (!world)  return null;
 
+  const isOwner = !!userId && world?.createdById === userId;
+  const canEdit = isEditMode && isOwner;
+
   const openAddEntity = (type: EntityType) => {
     setAddEntityType(type);
     setAddEntityOpen(true);
@@ -64,10 +70,17 @@ export default function WorldPage() {
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
       {/* Header */}
-      <Box display="flex" alignItems="flex-start" gap={2} mb={5}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} sx={{ mt: 0.5, flexShrink: 0 }}>
-          Worlds
-        </Button>
+      <Box display="flex" flexDirection="column" mb={5}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')}>
+            Worlds
+          </Button>
+          {world.createdById === userId && (
+            <Button startIcon={<SettingsIcon />} onClick={() => navigate(`/worlds/${worldId}/settings`)}>
+              Settings
+            </Button>
+          )}
+        </Box>
         <Box>
           <Typography variant="h3" fontWeight={700} lineHeight={1.1}>{world.name}</Typography>
           {world.author && (
@@ -88,7 +101,7 @@ export default function WorldPage() {
           <Box key={type} mb={5}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
               <Typography variant="h5" fontWeight={600}>{plural}</Typography>
-              {isEditMode && (
+              {canEdit && (
                 <Button size="small" startIcon={<AddIcon />} onClick={() => openAddEntity(type)}>
                   Add {type}
                 </Button>
@@ -116,7 +129,7 @@ export default function WorldPage() {
       <Box mb={5}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Typography variant="h5" fontWeight={600}>Family Trees</Typography>
-          {isEditMode && (
+          {canEdit && (
             <Button size="small" startIcon={<AddIcon />} onClick={() => setNewFamilyTreeOpen(true)}>
               New Family Tree
             </Button>
