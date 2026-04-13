@@ -4,7 +4,7 @@ public enum EntityType
 {
     Character,
     Place,
-    Faction,
+    Group,
     Event,
     Concept
 }
