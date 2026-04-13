@@ -1,4 +1,4 @@
-﻿using FamilyTree.Domain.Common;
+using FamilyTree.Domain.Common;
 using FamilyTree.Domain.Enums;
 
 namespace FamilyTree.Domain.Entities;
@@ -11,6 +11,6 @@ public class TreePermission : BaseEntity
     public DateTime GrantedAt { get; set; }
 
     // Navigation properties
-    public Tree Tree { get; set; } = null!;
+    public FamilyTree Tree { get; set; } = null!;
     public User User { get; set; } = null!;
 }

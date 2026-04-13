@@ -12,9 +12,11 @@ namespace FamilyTree.IntegrationTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    public Mock<IPersonService> PersonServiceMock { get; } = new();
-    public Mock<ITreeService> TreeServiceMock { get; } = new();
+    public Mock<IEntityService> EntityServiceMock { get; } = new();
+    public Mock<IFamilyTreeService> FamilyTreeServiceMock { get; } = new();
     public Mock<IRelationshipService> RelationshipServiceMock { get; } = new();
+    public Mock<IWorldService> WorldServiceMock { get; } = new();
+    public Mock<INoteService> NoteServiceMock { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -28,14 +30,18 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             if (dbDescriptor is not null) services.Remove(dbDescriptor);
 
             // Replace all services that pull in repositories/DbContext
-            RemoveAndMock<IPersonService>(services, PersonServiceMock.Object);
+            RemoveAndMock<IEntityService>(services, EntityServiceMock.Object);
+            RemoveAndMock<IFamilyTreeService>(services, FamilyTreeServiceMock.Object);
             RemoveAndMock<IRelationshipService>(services, RelationshipServiceMock.Object);
-            RemoveAndMock<ITreeService>(services, TreeServiceMock.Object);
+            RemoveAndMock<IWorldService>(services, WorldServiceMock.Object);
+            RemoveAndMock<INoteService>(services, NoteServiceMock.Object);
 
             // Remove repository registrations
-            RemoveAll<IPersonRepository>(services);
+            RemoveAll<IEntityRepository>(services);
+            RemoveAll<IFamilyTreeRepository>(services);
             RemoveAll<IRelationshipRepository>(services);
-            RemoveAll<ITreeRepository>(services);
+            RemoveAll<IWorldRepository>(services);
+            RemoveAll<INoteRepository>(services);
 
             // Replace JWT auth with a test scheme that always authenticates
             services.AddAuthentication(TestAuthHandler.SchemeName)

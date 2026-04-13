@@ -43,20 +43,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+builder.Services.AddScoped<IWorldRepository, WorldRepository>();
+builder.Services.AddScoped<IEntityRepository, EntityRepository>();
+builder.Services.AddScoped<IFamilyTreeRepository, FamilyTreeRepository>();
 builder.Services.AddScoped<IRelationshipRepository, RelationshipRepository>();
-builder.Services.AddScoped<ITreeRepository, TreeRepository>();
+builder.Services.AddScoped<INoteRepository, NoteRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
-builder.Services.AddScoped<IPersonService, PersonService>();
+builder.Services.AddScoped<IWorldService, WorldService>();
+builder.Services.AddScoped<IEntityService, EntityService>();
+builder.Services.AddScoped<IFamilyTreeService, FamilyTreeService>();
 builder.Services.AddScoped<IRelationshipService, RelationshipService>();
-builder.Services.AddScoped<ITreeService, TreeService>();
+builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // FluentValidation
-builder.Services.AddValidatorsFromAssemblyContaining<CreatePersonDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateWorldDtoValidator>();
 
 // CORS - Allow React app
 builder.Services.AddCors(options =>

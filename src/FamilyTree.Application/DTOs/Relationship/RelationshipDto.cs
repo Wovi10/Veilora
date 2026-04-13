@@ -1,14 +1,14 @@
-﻿namespace FamilyTree.Application.DTOs.Relationship;
+namespace FamilyTree.Application.DTOs.Relationship;
 
 public record RelationshipDto
 {
-    public Guid Id { get; init; }
-    public Guid Person1Id { get; init; }
-    public Guid Person2Id { get; init; }
-    public string RelationshipType { get; init; } = string.Empty;
+    public required Guid Id { get; init; }
+    public required Guid Entity1Id { get; init; }
+    public required Guid Entity2Id { get; init; }
+    public required string RelationshipType { get; init; }
     public DateOnly? StartDate { get; init; }
     public DateOnly? EndDate { get; init; }
     public string? Notes { get; init; }
-    public DateTime CreatedAt { get; init; }
-    public DateTime UpdatedAt { get; init; }
+    public required DateTime CreatedAt { get; init; }
+    public required DateTime UpdatedAt { get; init; }
 }

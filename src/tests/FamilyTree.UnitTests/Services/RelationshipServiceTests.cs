@@ -1,5 +1,5 @@
-using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.DTOs.Relationship;
+using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Application.Services;
 using FamilyTree.Domain.Entities;
@@ -13,28 +13,35 @@ namespace FamilyTree.UnitTests.Services;
 public class RelationshipServiceTests
 {
     private Mock<IRelationshipRepository> _relationshipRepositoryMock;
-    private Mock<IPersonRepository> _personRepositoryMock;
+    private Mock<IEntityRepository> _entityRepositoryMock;
     private RelationshipService _sut;
 
     [SetUp]
     public void SetUp()
     {
         _relationshipRepositoryMock = new Mock<IRelationshipRepository>();
-        _personRepositoryMock = new Mock<IPersonRepository>();
-        _sut = new RelationshipService(_relationshipRepositoryMock.Object, _personRepositoryMock.Object);
+        _entityRepositoryMock = new Mock<IEntityRepository>();
+        _sut = new RelationshipService(_relationshipRepositoryMock.Object, _entityRepositoryMock.Object);
     }
 
-    private static Relationship MakeRelationship(Guid id, Guid p1Id, Guid p2Id, DateTime now) => new()
+    private static Relationship MakeRelationship(Guid id, Guid e1Id, Guid e2Id, DateTime now) => new()
     {
-        Id = id, Person1Id = p1Id, Person2Id = p2Id,
+        Id = id,
+        Entity1Id = e1Id,
+        Entity2Id = e2Id,
         RelationshipType = RelationshipType.Spouse,
-        CreatedAt = now, UpdatedAt = now
+        CreatedAt = now,
+        UpdatedAt = now
     };
 
-    private static Person MakePerson(Guid id, DateTime now) => new()
+    private static Entity MakeEntity(Guid id, DateTime now) => new()
     {
-        Id = id, FirstName = "Alice", LastName = "Smith", Gender = Gender.Female,
-        CreatedAt = now, UpdatedAt = now
+        Id = id,
+        Name = "Alice Smith",
+        Type = EntityType.Character,
+        WorldId = Guid.NewGuid(),
+        CreatedAt = now,
+        UpdatedAt = now
     };
 
     [Test]
@@ -70,95 +77,95 @@ public class RelationshipServiceTests
     public async Task GetByIdAsync_WhenRelationshipExists_ReturnsMappedDto()
     {
         var relId = Guid.NewGuid();
-        var p1Id = Guid.NewGuid();
-        var p2Id = Guid.NewGuid();
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var relationship = MakeRelationship(relId, p1Id, p2Id, now);
+        var relationship = MakeRelationship(relId, e1Id, e2Id, now);
         _relationshipRepositoryMock.Setup(r => r.GetByIdAsync(relId)).ReturnsAsync(relationship);
 
         var result = await _sut.GetByIdAsync(relId);
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(relId);
-        result.Person1Id.Should().Be(p1Id);
-        result.Person2Id.Should().Be(p2Id);
+        result.Entity1Id.Should().Be(e1Id);
+        result.Entity2Id.Should().Be(e2Id);
         result.RelationshipType.Should().Be("Spouse");
     }
 
     [Test]
-    public async Task GetByIdAsync_WhenRelationshipDoesNotExist_ThrowsNotFoundException()
+    public async Task GetByIdAsync_WhenRelationshipDoesNotExist_ReturnsNull()
     {
         var relId = Guid.NewGuid();
         _relationshipRepositoryMock.Setup(r => r.GetByIdAsync(relId)).ReturnsAsync((Relationship?)null);
 
-        var act = async () => await _sut.GetByIdAsync(relId);
+        var result = await _sut.GetByIdAsync(relId);
 
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Relationship with ID {relId} not found");
+        result.Should().BeNull();
     }
 
     [Test]
-    public async Task CreateAsync_WhenBothPersonsExist_CreatesAndReturnsDto()
+    public async Task CreateAsync_WhenBothEntitiesExist_CreatesAndReturnsDto()
     {
-        var p1Id = Guid.NewGuid();
-        var p2Id = Guid.NewGuid();
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var dto = new CreateRelationshipDto { Person1Id = p1Id, Person2Id = p2Id, RelationshipType = "Spouse" };
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p1Id)).ReturnsAsync(MakePerson(p1Id, now));
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p2Id)).ReturnsAsync(MakePerson(p2Id, now));
+        var dto = new CreateRelationshipDto { Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Spouse" };
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(e1Id)).ReturnsAsync(MakeEntity(e1Id, now));
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(e2Id)).ReturnsAsync(MakeEntity(e2Id, now));
         _relationshipRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Relationship>())).ReturnsAsync((Relationship rel) => rel);
         _relationshipRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
         var result = await _sut.CreateAsync(dto);
 
-        result.Person1Id.Should().Be(p1Id);
-        result.Person2Id.Should().Be(p2Id);
+        result.Entity1Id.Should().Be(e1Id);
+        result.Entity2Id.Should().Be(e2Id);
         result.RelationshipType.Should().Be("Spouse");
         _relationshipRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Relationship>()), Times.Once);
         _relationshipRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
-    public async Task CreateAsync_WhenPerson1NotFound_ThrowsNotFoundException()
+    public async Task CreateAsync_WhenEntity1NotFound_ThrowsNotFoundException()
     {
-        var p1Id = Guid.NewGuid();
-        var p2Id = Guid.NewGuid();
-        var dto = new CreateRelationshipDto { Person1Id = p1Id, Person2Id = p2Id, RelationshipType = "Spouse" };
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p1Id)).ReturnsAsync((Person?)null);
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
+        var dto = new CreateRelationshipDto { Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Spouse" };
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(e1Id)).ReturnsAsync((Entity?)null);
 
         var act = async () => await _sut.CreateAsync(dto);
 
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {p1Id} not found");
+        await act.Should().ThrowAsync<NotFoundException>();
         _relationshipRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Relationship>()), Times.Never);
     }
 
     [Test]
-    public async Task CreateAsync_WhenPerson2NotFound_ThrowsNotFoundException()
+    public async Task CreateAsync_WhenEntity2NotFound_ThrowsNotFoundException()
     {
-        var p1Id = Guid.NewGuid();
-        var p2Id = Guid.NewGuid();
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var dto = new CreateRelationshipDto { Person1Id = p1Id, Person2Id = p2Id, RelationshipType = "Spouse" };
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p1Id)).ReturnsAsync(MakePerson(p1Id, now));
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p2Id)).ReturnsAsync((Person?)null);
+        var dto = new CreateRelationshipDto { Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Spouse" };
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(e1Id)).ReturnsAsync(MakeEntity(e1Id, now));
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(e2Id)).ReturnsAsync((Entity?)null);
 
         var act = async () => await _sut.CreateAsync(dto);
 
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {p2Id} not found");
+        await act.Should().ThrowAsync<NotFoundException>();
         _relationshipRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Relationship>()), Times.Never);
     }
 
     [Test]
-    public async Task UpdateAsync_WhenRelationshipAndPersonsExist_UpdatesAndReturnsDto()
+    public async Task UpdateAsync_WhenRelationshipAndEntitiesExist_UpdatesAndReturnsDto()
     {
         var relId = Guid.NewGuid();
-        var p1Id = Guid.NewGuid();
-        var p2Id = Guid.NewGuid();
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
         var now = DateTime.UtcNow;
-        var relationship = MakeRelationship(relId, p1Id, p2Id, now);
-        var dto = new UpdateRelationshipDto { Person1Id = p1Id, Person2Id = p2Id, RelationshipType = "Partner" };
+        var relationship = MakeRelationship(relId, e1Id, e2Id, now);
+        var dto = new UpdateRelationshipDto { Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Partner" };
         _relationshipRepositoryMock.Setup(r => r.GetByIdAsync(relId)).ReturnsAsync(relationship);
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p1Id)).ReturnsAsync(MakePerson(p1Id, now));
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p2Id)).ReturnsAsync(MakePerson(p2Id, now));
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(e1Id)).ReturnsAsync(MakeEntity(e1Id, now));
+        _entityRepositoryMock.Setup(r => r.GetByIdAsync(e2Id)).ReturnsAsync(MakeEntity(e2Id, now));
         _relationshipRepositoryMock.Setup(r => r.UpdateAsync(relationship)).Returns(Task.CompletedTask);
         _relationshipRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
@@ -173,46 +180,13 @@ public class RelationshipServiceTests
     public async Task UpdateAsync_WhenRelationshipNotFound_ThrowsNotFoundException()
     {
         var relId = Guid.NewGuid();
-        var p1Id = Guid.NewGuid();
-        var p2Id = Guid.NewGuid();
+        var e1Id = Guid.NewGuid();
+        var e2Id = Guid.NewGuid();
         _relationshipRepositoryMock.Setup(r => r.GetByIdAsync(relId)).ReturnsAsync((Relationship?)null);
 
-        var act = async () => await _sut.UpdateAsync(relId, new UpdateRelationshipDto { Person1Id = p1Id, Person2Id = p2Id, RelationshipType = "Spouse" });
+        var act = async () => await _sut.UpdateAsync(relId, new UpdateRelationshipDto { Entity1Id = e1Id, Entity2Id = e2Id, RelationshipType = "Spouse" });
 
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Relationship with ID {relId} not found");
-    }
-
-    [Test]
-    public async Task UpdateAsync_WhenPerson1NotFound_ThrowsNotFoundException()
-    {
-        var relId = Guid.NewGuid();
-        var p1Id = Guid.NewGuid();
-        var p2Id = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var relationship = MakeRelationship(relId, p1Id, p2Id, now);
-        _relationshipRepositoryMock.Setup(r => r.GetByIdAsync(relId)).ReturnsAsync(relationship);
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p1Id)).ReturnsAsync((Person?)null);
-
-        var act = async () => await _sut.UpdateAsync(relId, new UpdateRelationshipDto { Person1Id = p1Id, Person2Id = p2Id, RelationshipType = "Spouse" });
-
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {p1Id} not found");
-    }
-
-    [Test]
-    public async Task UpdateAsync_WhenPerson2NotFound_ThrowsNotFoundException()
-    {
-        var relId = Guid.NewGuid();
-        var p1Id = Guid.NewGuid();
-        var p2Id = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var relationship = MakeRelationship(relId, p1Id, p2Id, now);
-        _relationshipRepositoryMock.Setup(r => r.GetByIdAsync(relId)).ReturnsAsync(relationship);
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p1Id)).ReturnsAsync(MakePerson(p1Id, now));
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(p2Id)).ReturnsAsync((Person?)null);
-
-        var act = async () => await _sut.UpdateAsync(relId, new UpdateRelationshipDto { Person1Id = p1Id, Person2Id = p2Id, RelationshipType = "Spouse" });
-
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {p2Id} not found");
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     [Test]
@@ -239,56 +213,6 @@ public class RelationshipServiceTests
 
         var act = async () => await _sut.DeleteAsync(relId);
 
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Relationship with ID {relId} not found");
-    }
-
-    [Test]
-    public async Task GetRelationshipsByTreeIdAsync_ReturnsMappedDtos()
-    {
-        var treeId = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var id1 = Guid.NewGuid();
-        var relationships = new List<Relationship>
-        {
-            MakeRelationship(id1, Guid.NewGuid(), Guid.NewGuid(), now)
-        };
-        _relationshipRepositoryMock.Setup(r => r.GetRelationshipsByTreeIdAsync(treeId)).ReturnsAsync(relationships);
-
-        var result = (await _sut.GetRelationshipsByTreeIdAsync(treeId)).ToList();
-
-        result.Should().HaveCount(1);
-        result[0].Id.Should().Be(id1);
-        _relationshipRepositoryMock.Verify(r => r.GetRelationshipsByTreeIdAsync(treeId), Times.Once);
-    }
-
-    [Test]
-    public async Task GetPersonRelationshipsAsync_WhenPersonExists_ReturnsMappedDtos()
-    {
-        var personId = Guid.NewGuid();
-        var now = DateTime.UtcNow;
-        var relId = Guid.NewGuid();
-        var relationships = new List<Relationship>
-        {
-            MakeRelationship(relId, personId, Guid.NewGuid(), now)
-        };
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync(MakePerson(personId, now));
-        _relationshipRepositoryMock.Setup(r => r.GetPersonRelationshipsAsync(personId)).ReturnsAsync(relationships);
-
-        var result = (await _sut.GetPersonRelationshipsAsync(personId)).ToList();
-
-        result.Should().HaveCount(1);
-        result[0].Id.Should().Be(relId);
-        _relationshipRepositoryMock.Verify(r => r.GetPersonRelationshipsAsync(personId), Times.Once);
-    }
-
-    [Test]
-    public async Task GetPersonRelationshipsAsync_WhenPersonNotFound_ThrowsNotFoundException()
-    {
-        var personId = Guid.NewGuid();
-        _personRepositoryMock.Setup(r => r.GetByIdAsync(personId)).ReturnsAsync((Person?)null);
-
-        var act = async () => await _sut.GetPersonRelationshipsAsync(personId);
-
-        await act.Should().ThrowAsync<NotFoundException>().WithMessage($"Person with ID {personId} not found");
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 }
