@@ -9,6 +9,7 @@ public static class WorldMapper
     {
         Id = world.Id,
         Name = world.Name,
+        Author = world.Author,
         Description = world.Description,
         CreatedAt = world.CreatedAt,
         UpdatedAt = world.UpdatedAt
@@ -17,12 +18,14 @@ public static class WorldMapper
     public static World ToEntity(CreateWorldDto dto) => new()
     {
         Name = dto.Name,
+        Author = dto.Author,
         Description = dto.Description
     };
 
     public static void UpdateEntity(UpdateWorldDto dto, World world)
     {
         world.Name = dto.Name;
+        world.Author = dto.Author;
         world.Description = dto.Description;
     }
 }

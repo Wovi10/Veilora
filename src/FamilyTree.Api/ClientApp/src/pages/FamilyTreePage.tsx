@@ -4,23 +4,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ReactFlow, { Background, Controls, ConnectionMode, useNodesState } from 'reactflow';
 import type { Node, Edge, NodeMouseHandler, Connection, ReactFlowInstance } from 'reactflow';
 import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  IconButton,
-  Typography,
+  Alert, Box, Button, CircularProgress, IconButton, Typography,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getTreeDetails, getTreeRelationships, updatePersonPosition } from '../api/treeDetailApi';
-import type { TreeWithPersonsDto, PersonInTreeDto } from '../types/tree';
+import { getFamilyTreeWithEntities, getFamilyTreeRelationships, updateEntityPosition } from '../api/familyTreesApi';
+import type { FamilyTreeWithEntitiesDto, EntityInFamilyTreeDto } from '../types/familyTree';
 import type { RelationshipDto } from '../types/relationship';
-import type { PersonDto } from '../types/person';
-import PersonNode from '../components/PersonNode';
+import type { EntityDto } from '../types/entity';
+import EntityNode from '../components/EntityNode';
 import ParentEdge from '../components/ParentEdge';
 import RelationshipEdge from '../components/RelationshipEdge';
-import AddPersonDialog from '../components/AddPersonDialog';
-import EditPersonDialog from '../components/EditPersonDialog';
+import AddEntityToTreeDialog from '../components/AddEntityToTreeDialog';
+import EditEntityDialog from '../components/EditEntityDialog';
 import AddRelationshipDialog from '../components/AddRelationshipDialog';
 
 const COLS = 4;
@@ -28,18 +23,18 @@ const NODE_W = 180;
 const NODE_H = 100;
 const GAP = 60;
 
-const nodeTypes = { person: PersonNode };
+const nodeTypes = { entity: EntityNode };
 const edgeTypes = { parentEdge: ParentEdge, relationshipEdge: RelationshipEdge };
 
-function buildNodes(persons: PersonInTreeDto[], onEdit: (person: PersonDto) => void): Node[] {
-  return persons.map((pit, i) => ({
-    id: pit.person.id,
-    type: 'person',
+function buildNodes(entries: EntityInFamilyTreeDto[], onEdit: (entity: EntityDto) => void): Node[] {
+  return entries.map((entry, i) => ({
+    id: entry.entity.id,
+    type: 'entity',
     position: {
-      x: pit.positionX ?? (i % COLS) * (NODE_W + GAP),
-      y: pit.positionY ?? Math.floor(i / COLS) * (NODE_H + GAP),
+      x: entry.positionX ?? (i % COLS) * (NODE_W + GAP),
+      y: entry.positionY ?? Math.floor(i / COLS) * (NODE_H + GAP),
     },
-    data: { person: pit.person, onEdit },
+    data: { entity: entry.entity, onEdit },
   }));
 }
 
@@ -60,30 +55,29 @@ function pickHandles(p1: Pos, p2: Pos) {
 
 type ParentBendsFn = (edgeId: string, bends: Record<string, Array<{ x: number; y: number }>>) => void;
 
-function buildParentEdges(persons: PersonDto[], onBendsChange: ParentBendsFn): Edge[] {
+function buildParentEdges(entities: EntityDto[], onBendsChange: ParentBendsFn): Edge[] {
   const edges: Edge[] = [];
 
-  // Group children who have both parents by their sorted parent-pair key
   type FamilyGroup = { parent1Id: string; parent2Id: string; childIds: string[] };
   const familyMap = new Map<string, FamilyGroup>();
 
-  for (const person of persons) {
-    if (person.parent1Id && person.parent2Id) {
-      const [p1, p2] = [person.parent1Id, person.parent2Id].sort();
+  for (const entity of entities) {
+    if (entity.parent1Id && entity.parent2Id) {
+      const [p1, p2] = [entity.parent1Id, entity.parent2Id].sort();
       const key = `${p1}|${p2}`;
       const existing = familyMap.get(key);
       if (existing) {
-        existing.childIds.push(person.id);
+        existing.childIds.push(entity.id);
       } else {
-        familyMap.set(key, { parent1Id: p1, parent2Id: p2, childIds: [person.id] });
+        familyMap.set(key, { parent1Id: p1, parent2Id: p2, childIds: [entity.id] });
       }
     } else {
-      const parentId = person.parent1Id ?? person.parent2Id;
+      const parentId = entity.parent1Id ?? entity.parent2Id;
       if (parentId) {
         edges.push({
-          id: `parent-${person.id}-1`,
+          id: `parent-${entity.id}-1`,
           source: parentId,
-          target: person.id,
+          target: entity.id,
           type: 'parentEdge',
           sourceHandle: 'bottom',
           targetHandle: 'top',
@@ -96,7 +90,6 @@ function buildParentEdges(persons: PersonDto[], onBendsChange: ParentBendsFn): E
   for (const { parent1Id, parent2Id, childIds } of familyMap.values()) {
     const [primaryChild, ...otherChildren] = childIds;
 
-    // Primary edge: parent1 → firstChild, carries all drawing data
     edges.push({
       id: `parent-${primaryChild}-1`,
       source: parent1Id,
@@ -106,8 +99,6 @@ function buildParentEdges(persons: PersonDto[], onBendsChange: ParentBendsFn): E
       targetHandle: 'top',
       data: { siblingParentId: parent2Id, allChildIds: childIds, onBendsChange },
     });
-
-    // Silent: parent2 → firstChild
     edges.push({
       id: `parent-${primaryChild}-2`,
       source: parent2Id,
@@ -118,7 +109,6 @@ function buildParentEdges(persons: PersonDto[], onBendsChange: ParentBendsFn): E
       data: { silent: true },
     });
 
-    // Silent: both parents → remaining children
     for (const childId of otherChildren) {
       edges.push({
         id: `parent-${childId}-1`,
@@ -146,15 +136,15 @@ function buildParentEdges(persons: PersonDto[], onBendsChange: ParentBendsFn): E
 
 type BendChangeFn = (edgeId: string, bends: Array<{ x: number; y: number }>) => void;
 
-function buildEdges(relationships: RelationshipDto[], posMap: Map<string, Pos>, onBendChange: BendChangeFn): Edge[] {
-  return relationships.map((rel) => {
-    const p1 = posMap.get(rel.person1Id);
-    const p2 = posMap.get(rel.person2Id);
+function buildRelationshipEdges(relationships: RelationshipDto[], posMap: Map<string, Pos>, onBendChange: BendChangeFn): Edge[] {
+  return relationships.map(rel => {
+    const p1 = posMap.get(rel.entity1Id);
+    const p2 = posMap.get(rel.entity2Id);
     const handles = p1 && p2 ? pickHandles(p1, p2) : { sourceHandle: 'bottom', targetHandle: 'top' };
     return {
       id: rel.id,
-      source: rel.person1Id,
-      target: rel.person2Id,
+      source: rel.entity1Id,
+      target: rel.entity2Id,
       type: 'relationshipEdge',
       data: { relationshipType: rel.relationshipType, onBendChange },
       ...handles,
@@ -162,26 +152,26 @@ function buildEdges(relationships: RelationshipDto[], posMap: Map<string, Pos>, 
   });
 }
 
-export default function TreePage() {
-  const { id } = useParams<{ id: string }>();
+export default function FamilyTreePage() {
+  const { familyTreeId } = useParams<{ familyTreeId: string }>();
   const navigate = useNavigate();
 
-  const [tree, setTree] = useState<TreeWithPersonsDto | null>(null);
+  const [tree, setTree] = useState<FamilyTreeWithEntitiesDto | null>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingPerson, setEditingPerson] = useState<PersonDto | null>(null);
+  const [addToTreeOpen, setAddToTreeOpen] = useState(false);
+  const [editingEntity, setEditingEntity] = useState<EntityDto | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
   const flowContainerRef = useRef<HTMLDivElement | null>(null);
   const [pendingConnection, setPendingConnection] = useState<{
-    person1: PersonDto;
-    person2: PersonDto;
+    entity1: EntityDto;
+    entity2: EntityDto;
   } | null>(null);
 
-  const handleEdit = useCallback((person: PersonDto) => {
-    setEditingPerson(person);
+  const handleEdit = useCallback((entity: EntityDto) => {
+    setEditingEntity(entity);
   }, []);
 
   const handleEdgeBendChange = useCallback<BendChangeFn>((edgeId, bends) => {
@@ -197,28 +187,29 @@ export default function TreePage() {
   }, []);
 
   useEffect(() => {
-    if (!id) return;
-    Promise.all([getTreeDetails(id), getTreeRelationships(id)])
+    if (!familyTreeId) return;
+    Promise.all([getFamilyTreeWithEntities(familyTreeId), getFamilyTreeRelationships(familyTreeId)])
       .then(([treeData, rels]) => {
         setTree(treeData);
-        const builtNodes = buildNodes(treeData.persons, handleEdit);
+        const builtNodes = buildNodes(treeData.entities, handleEdit);
         setNodes(builtNodes);
         const posMap = new Map(builtNodes.map(n => [n.id, n.position]));
-        const persons = treeData.persons.map(pit => pit.person);
-        setEdges([...buildParentEdges(persons, handleParentBendsChange), ...buildEdges(rels, posMap, handleEdgeBendChange)]);
+        const entities = treeData.entities.map(e => e.entity);
+        setEdges([
+          ...buildParentEdges(entities, handleParentBendsChange),
+          ...buildRelationshipEdges(rels, posMap, handleEdgeBendChange),
+        ]);
       })
-      .catch((err: unknown) =>
-        setError(err instanceof Error ? err.message : 'Unexpected error')
-      )
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Unexpected error'))
       .finally(() => setLoading(false));
-  }, [id, handleEdit, handleEdgeBendChange, handleParentBendsChange]);
+  }, [familyTreeId, handleEdit, handleEdgeBendChange, handleParentBendsChange]);
 
-  const handlePersonCreated = useCallback((person: PersonDto) => {
-    setTree((prev) => {
+  const handleEntityAddedToTree = useCallback((entity: EntityDto) => {
+    setTree(prev => {
       if (!prev) return prev;
-      return { ...prev, persons: [...prev.persons, { person, positionX: null, positionY: null }] };
+      return { ...prev, entities: [...prev.entities, { entity, positionX: null, positionY: null }] };
     });
-    setNodes((prev) => {
+    setNodes(prev => {
       const vp = rfInstance.current?.getViewport() ?? { x: 0, y: 0, zoom: 1 };
       const rect = flowContainerRef.current?.getBoundingClientRect();
       const cx = rect ? rect.width / 2 : 400;
@@ -226,49 +217,49 @@ export default function TreePage() {
       const flowX = (-vp.x + cx) / vp.zoom - NODE_W / 2;
       const flowY = (-vp.y + cy) / vp.zoom - NODE_H / 2;
       return [...prev, {
-        id: person.id,
-        type: 'person',
+        id: entity.id,
+        type: 'entity',
         position: { x: flowX, y: flowY },
-        data: { person, onEdit: handleEdit, isNew: true },
+        data: { entity, onEdit: handleEdit, isNew: true },
       }];
     });
   }, [handleEdit]);
 
   const handleNodeDragStop = useCallback<NodeMouseHandler>((_event, node) => {
-    if (!id) return;
-    updatePersonPosition(id, node.id, node.position.x, node.position.y);
+    if (!familyTreeId) return;
+    updateEntityPosition(familyTreeId, node.id, { x: node.position.x, y: node.position.y });
     if (node.data.isNew) {
       setNodes(prev => prev.map(n =>
         n.id === node.id ? { ...n, data: { ...n.data, isNew: false } } : n
       ));
     }
-  }, [id]);
+  }, [familyTreeId]);
 
   const handleConnect = useCallback((connection: Connection) => {
     if (!connection.source || !connection.target) return;
-    const person1 = tree?.persons.find(p => p.person.id === connection.source)?.person;
-    const person2 = tree?.persons.find(p => p.person.id === connection.target)?.person;
-    if (!person1 || !person2) return;
-    setPendingConnection({ person1, person2 });
+    const entity1 = tree?.entities.find(e => e.entity.id === connection.source)?.entity;
+    const entity2 = tree?.entities.find(e => e.entity.id === connection.target)?.entity;
+    if (!entity1 || !entity2) return;
+    setPendingConnection({ entity1, entity2 });
   }, [tree]);
 
   const handleRedrawLines = useCallback(() => {
     if (!tree) return;
-    const persons = tree.persons.map(pit => pit.person);
+    const entities = tree.entities.map(e => e.entity);
     setEdges(prev => {
       const nonParentEdges = prev.filter(e => !e.id.startsWith('parent-'));
-      return [...nonParentEdges, ...buildParentEdges(persons, handleParentBendsChange)];
+      return [...nonParentEdges, ...buildParentEdges(entities, handleParentBendsChange)];
     });
   }, [tree, handleParentBendsChange]);
 
   const handleRelationshipCreated = useCallback((rel: RelationshipDto) => {
-    const n1 = nodes.find(n => n.id === rel.person1Id);
-    const n2 = nodes.find(n => n.id === rel.person2Id);
+    const n1 = nodes.find(n => n.id === rel.entity1Id);
+    const n2 = nodes.find(n => n.id === rel.entity2Id);
     const handles = n1 && n2 ? pickHandles(n1.position, n2.position) : { sourceHandle: 'bottom', targetHandle: 'top' };
     setEdges(prev => [...prev, {
       id: rel.id,
-      source: rel.person1Id,
-      target: rel.person2Id,
+      source: rel.entity1Id,
+      target: rel.entity2Id,
       type: 'relationshipEdge',
       data: { relationshipType: rel.relationshipType, onBendChange: handleEdgeBendChange },
       ...handles,
@@ -276,89 +267,56 @@ export default function TreePage() {
     setPendingConnection(null);
   }, [nodes, handleEdgeBendChange]);
 
-  const handlePersonSaved = useCallback((updated: PersonDto) => {
-    const updatedPersons = (tree?.persons ?? []).map(p =>
-      p.person.id === updated.id ? updated : p.person
+  const handleEntitySaved = useCallback((updated: EntityDto) => {
+    const updatedEntities = (tree?.entities ?? []).map(e =>
+      e.entity.id === updated.id ? updated : e.entity
     );
-    setTree((prev) => {
+    setTree(prev => {
       if (!prev) return prev;
-      return { ...prev, persons: prev.persons.map((p) => p.person.id === updated.id ? { ...p, person: updated } : p) };
+      return { ...prev, entities: prev.entities.map(e => e.entity.id === updated.id ? { ...e, entity: updated } : e) };
     });
-    setNodes((prev) =>
-      prev.map((n) =>
-        n.id === updated.id ? { ...n, data: { ...n.data, person: updated } } : n
-      )
-    );
-    setEdges((prev) => {
+    setNodes(prev => prev.map(n =>
+      n.id === updated.id ? { ...n, data: { ...n.data, entity: updated } } : n
+    ));
+    setEdges(prev => {
       const nonParentEdges = prev.filter(e => !e.id.startsWith('parent-'));
-      return [...nonParentEdges, ...buildParentEdges(updatedPersons, handleParentBendsChange)];
+      return [...nonParentEdges, ...buildParentEdges(updatedEntities, handleParentBendsChange)];
     });
-    setEditingPerson(null);
+    setEditingEntity(null);
   }, [tree, handleParentBendsChange]);
+
+  const backPath = tree ? `/worlds/${tree.worldId}` : '/';
 
   return (
     <>
-      <Box
-        sx={{
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          px: 2,
-          gap: 1,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <IconButton onClick={() => navigate('/')} size="small">
+      <Box sx={{ height: 64, display: 'flex', alignItems: 'center', px: 2, gap: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <IconButton onClick={() => navigate(backPath)} size="small">
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           {tree?.name ?? '…'}
         </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={handleRedrawLines}
-          disabled={loading || !!error}
-        >
+        <Button variant="outlined" size="small" onClick={handleRedrawLines} disabled={loading || !!error}>
           Redraw Lines
         </Button>
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => setDialogOpen(true)}
-          disabled={loading || !!error}
-        >
-          Add Person
+        <Button variant="contained" size="small" onClick={() => setAddToTreeOpen(true)} disabled={loading || !!error}>
+          Add to Tree
         </Button>
       </Box>
 
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-          <CircularProgress />
-        </Box>
-      )}
-
-      {error && (
-        <Alert severity="error" sx={{ m: 2 }}>
-          {error}
-        </Alert>
-      )}
+      {loading && <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>}
+      {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
 
       {!loading && !error && (
         <>
-          {tree && tree.persons.length === 0 && (
-            <Box sx={{ textAlign: 'center', mt: 8 }}>
-              <Typography color="text.secondary" gutterBottom>
-                No people in this tree yet.
-              </Typography>
-              <Button variant="outlined" onClick={() => setDialogOpen(true)}>
-                Add Person
-              </Button>
+          {tree && tree.entities.length === 0 && (
+            <Box textAlign="center" mt={8}>
+              <Typography color="text.secondary" gutterBottom>No entities in this tree yet.</Typography>
+              <Button variant="outlined" onClick={() => setAddToTreeOpen(true)}>Add to Tree</Button>
             </Box>
           )}
 
-          {tree && tree.persons.length > 0 && (
+          {tree && tree.entities.length > 0 && (
             <Box ref={flowContainerRef} sx={{ height: 'calc(100vh - 128px)' }}>
               <ReactFlow
                 nodes={nodes}
@@ -368,7 +326,7 @@ export default function TreePage() {
                 onNodesChange={onNodesChange}
                 onNodeDragStop={handleNodeDragStop}
                 onConnect={handleConnect}
-                onInit={(instance) => { rfInstance.current = instance; }}
+                onInit={instance => { rfInstance.current = instance; }}
                 connectionMode={ConnectionMode.Loose}
                 fitView
               >
@@ -380,30 +338,32 @@ export default function TreePage() {
         </>
       )}
 
-      {id && (
-        <AddPersonDialog
-          open={dialogOpen}
-          treeId={id}
-          onClose={() => setDialogOpen(false)}
-          onCreated={handlePersonCreated}
+      {familyTreeId && tree && (
+        <AddEntityToTreeDialog
+          open={addToTreeOpen}
+          familyTreeId={familyTreeId}
+          worldId={tree.worldId}
+          existingEntityIds={tree.entities.map(e => e.entity.id)}
+          onClose={() => setAddToTreeOpen(false)}
+          onAdded={handleEntityAddedToTree}
         />
       )}
 
-      {editingPerson && (
-        <EditPersonDialog
+      {editingEntity && (
+        <EditEntityDialog
           open
-          person={editingPerson}
-          persons={tree?.persons.map(pit => pit.person) ?? []}
-          onClose={() => setEditingPerson(null)}
-          onSaved={handlePersonSaved}
+          entity={editingEntity}
+          treeEntities={tree?.entities.map(e => e.entity) ?? []}
+          onClose={() => setEditingEntity(null)}
+          onSaved={handleEntitySaved}
         />
       )}
 
       {pendingConnection && (
         <AddRelationshipDialog
           open
-          person1={pendingConnection.person1}
-          person2={pendingConnection.person2}
+          entity1={pendingConnection.entity1}
+          entity2={pendingConnection.entity2}
           onClose={() => setPendingConnection(null)}
           onCreated={handleRelationshipCreated}
         />

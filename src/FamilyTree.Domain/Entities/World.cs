@@ -5,6 +5,7 @@ namespace FamilyTree.Domain.Entities;
 public class World : BaseEntity
 {
     public required string Name { get; set; }
+    public string? Author { get; set; }
     public string? Description { get; set; }
 
     public ICollection<Entity> Entities { get; set; } = [];

@@ -15,8 +15,11 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
+import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useAuth } from './context/AuthContext';
+import { useEditMode } from './context/EditModeContext';
 
 const theme = createTheme();
 
@@ -24,6 +27,7 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { isEditMode, toggleEditMode } = useEditMode();
 
   return (
     <ThemeProvider theme={theme}>
@@ -39,8 +43,24 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Family Tree
+            Lorekeeper
           </Typography>
+          <Button
+            color="inherit"
+            variant={isEditMode ? 'outlined' : 'text'}
+            startIcon={isEditMode ? <VisibilityIcon /> : <EditIcon />}
+            onClick={toggleEditMode}
+            sx={{
+              mr: 1,
+              borderColor: 'rgba(255,255,255,0.5)',
+              ...(isEditMode && {
+                bgcolor: 'rgba(255,255,255,0.15)',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+              }),
+            }}
+          >
+            {isEditMode ? 'View Mode' : 'Edit'}
+          </Button>
           <Button color="inherit" onClick={() => { logout(); navigate('/login', { replace: true }); }}>
             Logout
           </Button>
@@ -49,13 +69,13 @@ export default function App() {
 
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <Toolbar>
-          <Typography variant="h6">Family Tree</Typography>
+          <Typography variant="h6">Lorekeeper</Typography>
         </Toolbar>
         <Divider />
         <List sx={{ width: 220 }}>
           <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
             <ListItemIcon><HomeIcon /></ListItemIcon>
-            <ListItemText primary="Home" />
+            <ListItemText primary="Worlds" />
           </ListItemButton>
         </List>
       </Drawer>

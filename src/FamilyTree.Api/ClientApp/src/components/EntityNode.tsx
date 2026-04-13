@@ -11,7 +11,8 @@ import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import TransgenderIcon from '@mui/icons-material/Transgender';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
-import type { Gender, PersonDto } from '../types/person';
+import type { EntityDto, Gender } from '../types/entity';
+import { useEditMode } from '../context/EditModeContext';
 
 const glowPulse = keyframes`
   0%, 100% { box-shadow: 0 0 6px 2px rgba(99, 179, 237, 0.7); }
@@ -19,19 +20,20 @@ const glowPulse = keyframes`
 `;
 
 const genderIconMap: Record<Gender, React.ReactElement> = {
-  Male: <MaleIcon sx={{ fontSize: 14, color: 'info.main' }} />,
-  Female: <FemaleIcon sx={{ fontSize: 14, color: 'error.light' }} />,
-  Other: <TransgenderIcon sx={{ fontSize: 14, color: 'secondary.main' }} />,
+  Male:    <MaleIcon sx={{ fontSize: 14, color: 'info.main' }} />,
+  Female:  <FemaleIcon sx={{ fontSize: 14, color: 'error.light' }} />,
+  Other:   <TransgenderIcon sx={{ fontSize: 14, color: 'secondary.main' }} />,
   Unknown: <QuestionMarkIcon sx={{ fontSize: 14, color: 'text.disabled' }} />,
 };
 
-function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: PersonDto) => void; isNew?: boolean }>) {
-  const { person, onEdit, isNew } = data;
+function EntityNode({ data }: NodeProps<{ entity: EntityDto; onEdit: (entity: EntityDto) => void; isNew?: boolean }>) {
+  const { entity, onEdit, isNew } = data;
   const [hovered, setHovered] = useState(false);
+  const { isEditMode } = useEditMode();
 
-  const fullName = [person.firstName, person.middleName, person.lastName]
-    .filter(Boolean)
-    .join(' ');
+  const displayName = (entity.firstName || entity.lastName)
+    ? [entity.firstName, entity.lastName].filter(Boolean).join(' ')
+    : entity.name;
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('en-GB');
 
@@ -61,30 +63,28 @@ function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: Pe
           }),
         }}
       >
-        <Box sx={{ position: 'absolute', top: 4, left: 6, lineHeight: 0 }}>
-          {genderIconMap[person.gender]}
-        </Box>
+        {entity.gender && (
+          <Box sx={{ position: 'absolute', top: 4, left: 6, lineHeight: 0 }}>
+            {genderIconMap[entity.gender]}
+          </Box>
+        )}
         <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: '100%' }}>
-          {fullName}
+          {displayName}
         </Typography>
-        {(person.birthDate || person.deathDate) && (
+        {(entity.birthDate || entity.deathDate) && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.3 }}>
-            {person.birthDate && (
-              <Typography variant="caption" color="text.secondary">
-                ° {fmt(person.birthDate)}
-              </Typography>
+            {entity.birthDate && (
+              <Typography variant="caption" color="text.secondary">° {fmt(entity.birthDate)}</Typography>
             )}
-            {person.deathDate && (
-              <Typography variant="caption" color="text.secondary">
-                † {fmt(person.deathDate)}
-              </Typography>
+            {entity.deathDate && (
+              <Typography variant="caption" color="text.secondary">† {fmt(entity.deathDate)}</Typography>
             )}
           </Box>
         )}
-        {hovered && (
+        {hovered && isEditMode && (
           <IconButton
             size="small"
-            onClick={(e) => { e.stopPropagation(); onEdit(person); }}
+            onClick={e => { e.stopPropagation(); onEdit(entity); }}
             sx={{ position: 'absolute', top: 2, right: 2, p: '2px' }}
           >
             <EditIcon sx={{ fontSize: 14 }} />
@@ -95,4 +95,4 @@ function PersonNode({ data }: NodeProps<{ person: PersonDto; onEdit: (person: Pe
   );
 }
 
-export default React.memo(PersonNode);
+export default React.memo(EntityNode);
