@@ -11,12 +11,12 @@ public class EntityLocationConfiguration : IEntityTypeConfiguration<EntityLocati
         builder.HasKey(el => new { el.CharacterId, el.PlaceId });
 
         builder.HasOne(el => el.Character)
-            .WithMany(e => e.Locations)
+            .WithMany(c => c.Locations)
             .HasForeignKey(el => el.CharacterId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(el => el.Place)
-            .WithMany(e => e.CharactersLocatedHere)
+            .WithMany()
             .HasForeignKey(el => el.PlaceId)
             .OnDelete(DeleteBehavior.Cascade);
 

@@ -27,12 +27,9 @@ public class EntityServiceTests
     private static Entity MakeEntity(Guid id, DateTime now) => new()
     {
         Id = id,
-        Name = "Alice Smith",
-        Type = EntityType.Character,
+        Name = "The Shire",
+        Type = EntityType.Place,
         WorldId = Guid.NewGuid(),
-        FirstName = "Alice",
-        LastName = "Smith",
-        Gender = Gender.Female,
         CreatedAt = now,
         UpdatedAt = now
     };
@@ -50,8 +47,8 @@ public class EntityServiceTests
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(entityId);
-        result.Name.Should().Be("Alice Smith");
-        result.Type.Should().Be("Character");
+        result.Name.Should().Be("The Shire");
+        result.Type.Should().Be("Place");
         _entityRepositoryMock.Verify(r => r.GetByIdAsync(entityId), Times.Once);
     }
 
@@ -101,15 +98,15 @@ public class EntityServiceTests
         var worldId = Guid.NewGuid();
         var now = DateTime.UtcNow;
         var world = new World { Id = worldId, Name = "Middle Earth", CreatedAt = now, UpdatedAt = now };
-        var dto = new CreateEntityDto { Name = "Gandalf", Type = "Character", WorldId = worldId };
+        var dto = new CreateEntityDto { Name = "Rivendell", Type = "Place", WorldId = worldId };
         _worldRepositoryMock.Setup(r => r.GetByIdAsync(worldId)).ReturnsAsync(world);
         _entityRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Entity>())).ReturnsAsync((Entity e) => e);
         _entityRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
         var result = await _sut.CreateAsync(dto);
 
-        result.Name.Should().Be("Gandalf");
-        result.Type.Should().Be("Character");
+        result.Name.Should().Be("Rivendell");
+        result.Type.Should().Be("Place");
         _entityRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Entity>()), Times.Once);
         _entityRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
@@ -118,7 +115,7 @@ public class EntityServiceTests
     public async Task CreateAsync_WhenWorldNotFound_ThrowsNotFoundException()
     {
         var worldId = Guid.NewGuid();
-        var dto = new CreateEntityDto { Name = "Gandalf", Type = "Character", WorldId = worldId };
+        var dto = new CreateEntityDto { Name = "Rivendell", Type = "Place", WorldId = worldId };
         _worldRepositoryMock.Setup(r => r.GetByIdAsync(worldId)).ReturnsAsync((World?)null);
 
         var act = async () => await _sut.CreateAsync(dto);
@@ -133,14 +130,14 @@ public class EntityServiceTests
         var entityId = Guid.NewGuid();
         var now = DateTime.UtcNow;
         var entity = MakeEntity(entityId, now);
-        var dto = new UpdateEntityDto { Name = "Gandalf the White", Type = "Character" };
+        var dto = new UpdateEntityDto { Name = "Rivendell", Type = "Place" };
         _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync(entity);
         _entityRepositoryMock.Setup(r => r.UpdateAsync(entity)).Returns(Task.CompletedTask);
         _entityRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
         var result = await _sut.UpdateAsync(entityId, dto);
 
-        result.Name.Should().Be("Gandalf the White");
+        result.Name.Should().Be("Rivendell");
         _entityRepositoryMock.Verify(r => r.UpdateAsync(entity), Times.Once);
         _entityRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
@@ -151,7 +148,7 @@ public class EntityServiceTests
         var entityId = Guid.NewGuid();
         _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync((Entity?)null);
 
-        var act = async () => await _sut.UpdateAsync(entityId, new UpdateEntityDto { Name = "X", Type = "Character" });
+        var act = async () => await _sut.UpdateAsync(entityId, new UpdateEntityDto { Name = "X", Type = "Place" });
 
         await act.Should().ThrowAsync<NotFoundException>();
     }

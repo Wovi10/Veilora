@@ -9,8 +9,8 @@ public static class RelationshipMapper
     public static RelationshipDto ToDto(Relationship relationship) => new()
     {
         Id = relationship.Id,
-        Entity1Id = relationship.Entity1Id,
-        Entity2Id = relationship.Entity2Id,
+        Character1Id = relationship.Character1Id,
+        Character2Id = relationship.Character2Id,
         RelationshipType = relationship.RelationshipType.ToString(),
         StartDate = relationship.StartDate,
         EndDate = relationship.EndDate,
@@ -21,8 +21,8 @@ public static class RelationshipMapper
 
     public static Relationship ToEntity(CreateRelationshipDto dto) => new()
     {
-        Entity1Id = dto.Entity1Id,
-        Entity2Id = dto.Entity2Id,
+        Character1Id = dto.Character1Id,
+        Character2Id = dto.Character2Id,
         RelationshipType = Enum.Parse<RelationshipType>(dto.RelationshipType),
         StartDate = dto.StartDate,
         EndDate = dto.EndDate,
@@ -31,8 +31,8 @@ public static class RelationshipMapper
 
     public static void UpdateEntity(UpdateRelationshipDto dto, Relationship relationship)
     {
-        relationship.Entity1Id = dto.Entity1Id;
-        relationship.Entity2Id = dto.Entity2Id;
+        relationship.Character1Id = dto.Character1Id;
+        relationship.Character2Id = dto.Character2Id;
         relationship.RelationshipType = Enum.Parse<RelationshipType>(dto.RelationshipType);
         relationship.StartDate = dto.StartDate;
         relationship.EndDate = dto.EndDate;

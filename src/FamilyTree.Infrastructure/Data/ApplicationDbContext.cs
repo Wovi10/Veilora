@@ -9,8 +9,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<World> Worlds => Set<World>();
     public DbSet<Entity> Entities => Set<Entity>();
+    public DbSet<Character> Characters => Set<Character>();
     public DbSet<FamilyTreeEntity> FamilyTrees => Set<FamilyTreeEntity>();
-    public DbSet<EntityFamilyTree> EntityFamilyTrees => Set<EntityFamilyTree>();
+    public DbSet<CharacterFamilyTree> CharacterFamilyTrees => Set<CharacterFamilyTree>();
     public DbSet<Relationship> Relationships => Set<Relationship>();
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<User> Users => Set<User>();

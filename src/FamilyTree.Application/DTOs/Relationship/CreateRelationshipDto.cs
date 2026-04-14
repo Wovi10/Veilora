@@ -2,8 +2,8 @@ namespace FamilyTree.Application.DTOs.Relationship;
 
 public record CreateRelationshipDto
 {
-    public required Guid Entity1Id { get; init; }
-    public required Guid Entity2Id { get; init; }
+    public required Guid Character1Id { get; init; }
+    public required Guid Character2Id { get; init; }
     public required string RelationshipType { get; init; }
     public DateOnly? StartDate { get; init; }
     public DateOnly? EndDate { get; init; }

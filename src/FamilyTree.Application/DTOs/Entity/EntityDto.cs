@@ -1,5 +1,3 @@
-using FamilyTree.Application.DTOs.Language;
-
 namespace FamilyTree.Application.DTOs.Entity;
 
 public record EntityDto
@@ -9,39 +7,6 @@ public record EntityDto
     public required string Type { get; init; }
     public required Guid WorldId { get; init; }
     public string? Description { get; init; }
-
-    // Character-specific
-    public string? FirstName { get; init; }
-    public string? LastName { get; init; }
-    public string? MiddleName { get; init; }
-    public string? MaidenName { get; init; }
-    public string? Species { get; init; }
-    public DateOnly? BirthDate { get; init; }
-    public string? BirthDateSuffix { get; init; }
-    public DateOnly? DeathDate { get; init; }
-    public string? DeathDateSuffix { get; init; }
-    public Guid? BirthPlaceEntityId { get; init; }
-    public string? BirthPlaceEntityName { get; init; }
-    public Guid? DeathPlaceEntityId { get; init; }
-    public string? DeathPlaceEntityName { get; init; }
-    public string? Residence { get; init; }
-    public string? Gender { get; init; }
-    public string? Biography { get; init; }
-    public string? ProfilePhotoUrl { get; init; }
-    public string? OtherNames { get; init; }
-    public string? Position { get; init; }
-    public string? Height { get; init; }
-    public string? HairColour { get; init; }
-    public Guid? Parent1Id { get; init; }
-    public Guid? Parent2Id { get; init; }
-
-    // Relational collections (populated on detail fetch)
-    public IReadOnlyList<EntityRefDto> Locations { get; init; } = [];
-    public IReadOnlyList<EntityRefDto> Affiliations { get; init; } = [];
-    public IReadOnlyList<LanguageDto> Languages { get; init; } = [];
-    public IReadOnlyList<EntityRefDto> Spouses { get; init; } = [];
-    public IReadOnlyList<EntityRefDto> Children { get; init; } = [];
-
     public required DateTime CreatedAt { get; init; }
     public required DateTime UpdatedAt { get; init; }
 }

@@ -5,34 +5,4 @@ public record UpdateEntityDto
     public required string Name { get; init; }
     public required string Type { get; init; }
     public string? Description { get; init; }
-
-    // Character-specific
-    public string? FirstName { get; init; }
-    public string? LastName { get; init; }
-    public string? MiddleName { get; init; }
-    public string? MaidenName { get; init; }
-    public string? Species { get; init; }
-    public DateOnly? BirthDate { get; init; }
-    public string? BirthDateSuffix { get; init; }
-    public DateOnly? DeathDate { get; init; }
-    public string? DeathDateSuffix { get; init; }
-    public Guid? BirthPlaceEntityId { get; init; }
-    public Guid? DeathPlaceEntityId { get; init; }
-    public string? Residence { get; init; }
-    public string? Gender { get; init; }
-    public string? Biography { get; init; }
-    public string? ProfilePhotoUrl { get; init; }
-    public string? OtherNames { get; init; }
-    public string? Position { get; init; }
-    public string? Height { get; init; }
-    public string? HairColour { get; init; }
-    public Guid? Parent1Id { get; init; }
-    public Guid? Parent2Id { get; init; }
-
-    // Relational ID lists (for junction sync)
-    public IReadOnlyList<Guid> LocationIds { get; init; } = [];
-    public IReadOnlyList<Guid> AffiliationIds { get; init; } = [];
-    public IReadOnlyList<Guid> LanguageIds { get; init; } = [];
-    public IReadOnlyList<Guid> SpouseIds { get; init; } = [];
-    public IReadOnlyList<Guid> ChildIds { get; init; } = [];
 }

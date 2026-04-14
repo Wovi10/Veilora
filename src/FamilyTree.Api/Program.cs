@@ -45,6 +45,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IWorldRepository, WorldRepository>();
 builder.Services.AddScoped<IEntityRepository, EntityRepository>();
+builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 builder.Services.AddScoped<IFamilyTreeRepository, FamilyTreeRepository>();
 builder.Services.AddScoped<IRelationshipRepository, RelationshipRepository>();
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
@@ -55,6 +56,7 @@ builder.Services.AddScoped<ILanguageRepository, LanguageRepository>();
 // Services
 builder.Services.AddScoped<IWorldService, WorldService>();
 builder.Services.AddScoped<IEntityService, EntityService>();
+builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IFamilyTreeService, FamilyTreeService>();
 builder.Services.AddScoped<IRelationshipService, RelationshipService>();
 builder.Services.AddScoped<INoteService, NoteService>();

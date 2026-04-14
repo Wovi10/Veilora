@@ -6,8 +6,8 @@ public interface IFamilyTreeRepository : IRepository<FamilyTreeEntity>
 {
     Task<FamilyTreeEntity?> GetFamilyTreeWithEntitiesAsync(Guid familyTreeId);
     Task<IEnumerable<FamilyTreeEntity>> GetByWorldIdAsync(Guid worldId);
-    Task AddEntityToFamilyTreeAsync(Guid familyTreeId, Guid entityId);
-    Task RemoveEntityFromFamilyTreeAsync(Guid familyTreeId, Guid entityId);
-    Task<bool> IsEntityInFamilyTreeAsync(Guid familyTreeId, Guid entityId);
-    Task UpdateEntityPositionAsync(Guid familyTreeId, Guid entityId, double x, double y);
+    Task AddCharacterToFamilyTreeAsync(Guid familyTreeId, Guid characterId);
+    Task RemoveCharacterFromFamilyTreeAsync(Guid familyTreeId, Guid characterId);
+    Task<bool> IsCharacterInFamilyTreeAsync(Guid familyTreeId, Guid characterId);
+    Task UpdateCharacterPositionAsync(Guid familyTreeId, Guid characterId, double x, double y);
 }

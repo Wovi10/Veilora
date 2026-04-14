@@ -8,7 +8,9 @@ using FamilyTreeEntity = FamilyTree.Domain.Entities.FamilyTree;
 
 namespace FamilyTree.Application.Services;
 
-public class FamilyTreeService(IFamilyTreeRepository familyTreeRepository, IEntityRepository entityRepository) : IFamilyTreeService
+public class FamilyTreeService(
+    IFamilyTreeRepository familyTreeRepository,
+    ICharacterRepository characterRepository) : IFamilyTreeService
 {
     public async Task<IEnumerable<FamilyTreeDto>> GetAllAsync()
     {
@@ -60,30 +62,30 @@ public class FamilyTreeService(IFamilyTreeRepository familyTreeRepository, IEnti
         await familyTreeRepository.SaveChangesAsync();
     }
 
-    public async Task AddEntityToFamilyTreeAsync(Guid familyTreeId, Guid entityId)
+    public async Task AddCharacterToFamilyTreeAsync(Guid familyTreeId, Guid characterId)
     {
         _ = await familyTreeRepository.GetByIdAsync(familyTreeId)
             ?? throw new NotFoundException(nameof(FamilyTreeEntity), familyTreeId);
-        _ = await entityRepository.GetByIdAsync(entityId)
-            ?? throw new NotFoundException(nameof(Entity), entityId);
-        if (await familyTreeRepository.IsEntityInFamilyTreeAsync(familyTreeId, entityId))
-            throw new BusinessException("Entity is already in this family tree.");
-        await familyTreeRepository.AddEntityToFamilyTreeAsync(familyTreeId, entityId);
+        _ = await characterRepository.GetByIdAsync(characterId)
+            ?? throw new NotFoundException(nameof(Character), characterId);
+        if (await familyTreeRepository.IsCharacterInFamilyTreeAsync(familyTreeId, characterId))
+            throw new BusinessException("Character is already in this family tree.");
+        await familyTreeRepository.AddCharacterToFamilyTreeAsync(familyTreeId, characterId);
         await familyTreeRepository.SaveChangesAsync();
     }
 
-    public async Task RemoveEntityFromFamilyTreeAsync(Guid familyTreeId, Guid entityId)
+    public async Task RemoveCharacterFromFamilyTreeAsync(Guid familyTreeId, Guid characterId)
     {
-        if (!await familyTreeRepository.IsEntityInFamilyTreeAsync(familyTreeId, entityId))
-            throw new NotFoundException("EntityFamilyTree", $"{familyTreeId}/{entityId}");
-        await familyTreeRepository.RemoveEntityFromFamilyTreeAsync(familyTreeId, entityId);
+        if (!await familyTreeRepository.IsCharacterInFamilyTreeAsync(familyTreeId, characterId))
+            throw new NotFoundException("CharacterFamilyTree", $"{familyTreeId}/{characterId}");
+        await familyTreeRepository.RemoveCharacterFromFamilyTreeAsync(familyTreeId, characterId);
         await familyTreeRepository.SaveChangesAsync();
     }
 
-    public async Task UpdateEntityPositionAsync(Guid familyTreeId, Guid entityId, double x, double y)
+    public async Task UpdateCharacterPositionAsync(Guid familyTreeId, Guid characterId, double x, double y)
     {
-        if (!await familyTreeRepository.IsEntityInFamilyTreeAsync(familyTreeId, entityId))
-            throw new NotFoundException("EntityFamilyTree", $"{familyTreeId}/{entityId}");
-        await familyTreeRepository.UpdateEntityPositionAsync(familyTreeId, entityId, x, y);
+        if (!await familyTreeRepository.IsCharacterInFamilyTreeAsync(familyTreeId, characterId))
+            throw new NotFoundException("CharacterFamilyTree", $"{familyTreeId}/{characterId}");
+        await familyTreeRepository.UpdateCharacterPositionAsync(familyTreeId, characterId, x, y);
     }
 }
