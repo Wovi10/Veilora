@@ -9,7 +9,7 @@ namespace FamilyTree.Api.Controllers;
 [ApiController]
 [Route("api/family-trees")]
 [Authorize]
-public class FamilyTreesController(IFamilyTreeService familyTreeService, ICharacterService characterService) : ControllerBase
+public class FamilyTreesController(IFamilyTreeService familyTreeService, ICharacterService characterService, IRelationshipService relationshipService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
@@ -32,6 +32,10 @@ public class FamilyTreesController(IFamilyTreeService familyTreeService, ICharac
     [HttpGet("{familyTreeId:guid}/characters")]
     public async Task<IActionResult> GetCharacters(Guid familyTreeId) =>
         Ok(await characterService.GetByFamilyTreeIdAsync(familyTreeId));
+
+    [HttpGet("{familyTreeId:guid}/relationships")]
+    public async Task<IActionResult> GetRelationships(Guid familyTreeId) =>
+        Ok(await relationshipService.GetRelationshipsByFamilyTreeIdAsync(familyTreeId));
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateFamilyTreeDto dto)
