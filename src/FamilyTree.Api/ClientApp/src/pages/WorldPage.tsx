@@ -213,8 +213,8 @@ function EntityCard({ entity, onClick }: { entity: EntityDto; onClick?: () => vo
       )}
       {entity.birthDate && (
         <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-          °&nbsp;{new Date(entity.birthDate).toLocaleDateString('en-GB')}
-          {entity.deathDate && ` — †\u00a0${new Date(entity.deathDate).toLocaleDateString('en-GB')}`}
+          °&nbsp;{new Date(entity.birthDate).toLocaleDateString('en-GB')}{entity.birthDateSuffix && ` ${entity.birthDateSuffix}`}
+          {entity.deathDate && ` — †\u00a0${new Date(entity.deathDate).toLocaleDateString('en-GB')}${entity.deathDateSuffix ? ` ${entity.deathDateSuffix}` : ''}`}
         </Typography>
       )}
       {entity.description && !entity.birthDate && (

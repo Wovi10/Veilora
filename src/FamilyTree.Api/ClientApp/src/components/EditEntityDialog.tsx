@@ -22,7 +22,9 @@ export default function EditEntityDialog({ open, entity, treeEntities, onClose, 
   const [species, setSpecies] = useState('');
   const [gender, setGender] = useState<Gender>('Unknown');
   const [birthDate, setBirthDate] = useState('');
+  const [birthDateSuffix, setBirthDateSuffix] = useState('');
   const [deathDate, setDeathDate] = useState('');
+  const [deathDateSuffix, setDeathDateSuffix] = useState('');
   const [description, setDescription] = useState('');
   const [parent1Id, setParent1Id] = useState('');
   const [parent2Id, setParent2Id] = useState('');
@@ -36,7 +38,9 @@ export default function EditEntityDialog({ open, entity, treeEntities, onClose, 
       setSpecies(entity.species ?? '');
       setGender(entity.gender ?? 'Unknown');
       setBirthDate(entity.birthDate ?? '');
+      setBirthDateSuffix(entity.birthDateSuffix ?? '');
       setDeathDate(entity.deathDate ?? '');
+      setDeathDateSuffix(entity.deathDateSuffix ?? '');
       setDescription(entity.description ?? '');
       setParent1Id(entity.parent1Id ?? '');
       setParent2Id(entity.parent2Id ?? '');
@@ -58,7 +62,9 @@ export default function EditEntityDialog({ open, entity, treeEntities, onClose, 
         species: species.trim() || undefined,
         gender,
         birthDate: birthDate || undefined,
+        birthDateSuffix: birthDateSuffix.trim() || undefined,
         deathDate: deathDate || undefined,
+        deathDateSuffix: deathDateSuffix.trim() || undefined,
         parent1Id: parent1Id || null,
         parent2Id: parent2Id || null,
       });
@@ -93,7 +99,11 @@ export default function EditEntityDialog({ open, entity, treeEntities, onClose, 
               </FormControl>
               <Box display="flex" gap={2}>
                 <TextField label="Birth Date" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
+                <TextField label="Birth Era / Suffix" placeholder="e.g. TA, SA, FA" value={birthDateSuffix} onChange={e => setBirthDateSuffix(e.target.value)} sx={{ maxWidth: 160 }} />
+              </Box>
+              <Box display="flex" gap={2}>
                 <TextField label="Death Date" type="date" value={deathDate} onChange={e => setDeathDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
+                <TextField label="Death Era / Suffix" placeholder="e.g. TA, SA, FA" value={deathDateSuffix} onChange={e => setDeathDateSuffix(e.target.value)} sx={{ maxWidth: 160 }} />
               </Box>
               <FormControl fullWidth>
                 <InputLabel>Parent 1</InputLabel>

@@ -17,7 +17,9 @@ public class Entity : BaseEntity
     public string? MaidenName { get; set; }
     public string? Species { get; set; }
     public DateOnly? BirthDate { get; set; }
+    public string? BirthDateSuffix { get; set; }
     public DateOnly? DeathDate { get; set; }
+    public string? DeathDateSuffix { get; set; }
     public string? BirthPlace { get; set; }
     public string? Residence { get; set; }
     public Gender? Gender { get; set; }

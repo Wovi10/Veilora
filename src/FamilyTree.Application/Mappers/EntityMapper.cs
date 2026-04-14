@@ -19,7 +19,9 @@ public static class EntityMapper
         MaidenName = entity.MaidenName,
         Species = entity.Species,
         BirthDate = entity.BirthDate,
+        BirthDateSuffix = entity.BirthDateSuffix,
         DeathDate = entity.DeathDate,
+        DeathDateSuffix = entity.DeathDateSuffix,
         BirthPlace = entity.BirthPlace,
         Residence = entity.Residence,
         Gender = entity.Gender?.ToString(),
@@ -43,7 +45,9 @@ public static class EntityMapper
         MaidenName = dto.MaidenName,
         Species = dto.Species,
         BirthDate = dto.BirthDate,
+        BirthDateSuffix = dto.BirthDateSuffix,
         DeathDate = dto.DeathDate,
+        DeathDateSuffix = dto.DeathDateSuffix,
         BirthPlace = dto.BirthPlace,
         Residence = dto.Residence,
         Gender = dto.Gender is null ? null : Enum.Parse<Gender>(dto.Gender),
@@ -64,7 +68,9 @@ public static class EntityMapper
         entity.MaidenName = dto.MaidenName;
         entity.Species = dto.Species;
         entity.BirthDate = dto.BirthDate;
+        entity.BirthDateSuffix = dto.BirthDateSuffix;
         entity.DeathDate = dto.DeathDate;
+        entity.DeathDateSuffix = dto.DeathDateSuffix;
         entity.BirthPlace = dto.BirthPlace;
         entity.Residence = dto.Residence;
         entity.Gender = dto.Gender is null ? null : Enum.Parse<Gender>(dto.Gender);
