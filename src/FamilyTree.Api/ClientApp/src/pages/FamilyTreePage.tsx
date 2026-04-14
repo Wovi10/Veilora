@@ -248,6 +248,15 @@ export default function FamilyTreePage() {
     });
   }, [handleEdit]);
 
+  const handleCharacterDeleted = useCallback(() => {
+    if (!editingCharacter) return;
+    const id = editingCharacter.id;
+    setTree(prev => prev ? { ...prev, characters: prev.characters.filter(e => e.character.id !== id) } : prev);
+    setNodes(prev => prev.filter(n => n.id !== id));
+    setEdges(prev => prev.filter(e => e.source !== id && e.target !== id));
+    setEditingCharacter(null);
+  }, [editingCharacter]);
+
   const handleNodeDragStop = useCallback<NodeMouseHandler>((_event, node) => {
     if (!familyTreeId) return;
     updateCharacterPosition(familyTreeId, node.id, { x: node.position.x, y: node.position.y });
@@ -381,6 +390,7 @@ export default function FamilyTreePage() {
           worldId={tree.worldId}
           onClose={() => setEditingCharacter(null)}
           onSaved={handleCharacterSaved}
+          onDeleted={handleCharacterDeleted}
         />
       )}
 
