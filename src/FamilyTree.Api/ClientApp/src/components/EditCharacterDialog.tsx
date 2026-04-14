@@ -4,7 +4,7 @@ import {
   TextField, MenuItem, Box, Select, FormControl, InputLabel, Typography,
   Autocomplete, Chip,
 } from '@mui/material';
-import { updateCharacter } from '../api/charactersApi';
+import { updateCharacter, deleteCharacter } from '../api/charactersApi';
 import { getLanguagesByWorld, getOrCreateLanguage } from '../api/languagesApi';
 import type { CharacterDto, Gender, UpdateCharacterDto } from '../types/character';
 import type { EntityDto } from '../types/entity';
@@ -19,11 +19,12 @@ interface Props {
   worldId: string;
   onClose: () => void;
   onSaved: (character: CharacterDto) => void;
+  onDeleted?: () => void;
 }
 
 const GENDERS: Gender[] = ['Male', 'Female', 'Other', 'Unknown'];
 
-export default function EditCharacterDialog({ open, character, worldCharacters, worldEntities, worldId, onClose, onSaved }: Props) {
+export default function EditCharacterDialog({ open, character, worldCharacters, worldEntities, worldId, onClose, onSaved, onDeleted }: Props) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [species, setSpecies] = useState('');
@@ -51,6 +52,8 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   const [availableLanguages, setAvailableLanguages] = useState<LanguageDto[]>([]);
 
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState('');
 
   const placeOptions: EntityRefDto[] = worldEntities
@@ -65,6 +68,8 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
 
   useEffect(() => {
     if (!character) return;
+    setConfirmDelete(false);
+    setError('');
     setFirstName(character.firstName ?? '');
     setLastName(character.lastName ?? '');
     setSpecies(character.species ?? '');
@@ -97,6 +102,19 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
     if (!open || !worldId) return;
     getLanguagesByWorld(worldId).then(setAvailableLanguages).catch(() => {});
   }, [open, worldId]);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteCharacter(character.id);
+      onDeleted?.();
+    } catch {
+      setError('Failed to delete character');
+      setConfirmDelete(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -285,9 +303,28 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
           {error && <Typography color="error" variant="caption">{error}</Typography>}
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={submitting}>Save</Button>
+      <DialogActions sx={{ justifyContent: 'space-between' }}>
+        {!confirmDelete ? (
+          <Button color="error" onClick={() => setConfirmDelete(true)} disabled={submitting || deleting}>
+            Delete
+          </Button>
+        ) : (
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="body2" color="text.secondary">Delete this character?</Typography>
+            <Button color="error" variant="contained" onClick={handleDelete} disabled={deleting} size="small">
+              {deleting ? 'Deleting…' : 'Yes, Delete'}
+            </Button>
+            <Button onClick={() => setConfirmDelete(false)} disabled={deleting} size="small">
+              No
+            </Button>
+          </Box>
+        )}
+        {!confirmDelete && (
+          <Box display="flex" gap={1}>
+            <Button onClick={onClose} disabled={submitting}>Cancel</Button>
+            <Button onClick={handleSubmit} variant="contained" disabled={submitting}>Save</Button>
+          </Box>
+        )}
       </DialogActions>
     </Dialog>
   );

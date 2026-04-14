@@ -259,6 +259,7 @@ export default function CharacterPage() {
             setCharacter(updated);
             setEditOpen(false);
           }}
+          onDeleted={() => navigate(`/worlds/${worldId}/entities/Character`)}
         />
       )}
     </Box>
