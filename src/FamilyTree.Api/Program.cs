@@ -4,9 +4,9 @@ using FamilyTree.Api.Services;
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Application.Services;
 using FamilyTree.Application.Services.Interfaces;
+using FamilyTree.Infrastructure.Repositories;
 using FamilyTree.Application.Validators;
 using FamilyTree.Infrastructure.Data;
-using FamilyTree.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +50,7 @@ builder.Services.AddScoped<IRelationshipRepository, RelationshipRepository>();
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IWorldPermissionRepository, WorldPermissionRepository>();
+builder.Services.AddScoped<ILanguageRepository, LanguageRepository>();
 
 // Services
 builder.Services.AddScoped<IWorldService, WorldService>();
@@ -60,6 +61,7 @@ builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IWorldPermissionService, WorldPermissionService>();
+builder.Services.AddScoped<ILanguageService, LanguageService>();
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWorldDtoValidator>();

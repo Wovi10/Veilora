@@ -89,4 +89,19 @@ public class EntityRepository(ApplicationDbContext context) : Repository<Entity>
             await CollectDescendantsAsync(child.Id, descendants, visited);
         }
     }
+
+    public async Task<Entity?> GetByIdWithDetailsAsync(Guid id) =>
+        await _context.Entities
+            .Include(e => e.BirthPlaceEntity)
+            .Include(e => e.DeathPlaceEntity)
+            .Include(e => e.Locations).ThenInclude(l => l.Place)
+            .Include(e => e.Affiliations).ThenInclude(a => a.Group)
+            .Include(e => e.Languages).ThenInclude(l => l.Language)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+    public async Task<IEnumerable<Entity>> GetChildrenAsync(Guid characterId) =>
+        await _context.Entities
+            .AsNoTracking()
+            .Where(e => e.Parent1Id == characterId || e.Parent2Id == characterId)
+            .ToListAsync();
 }
