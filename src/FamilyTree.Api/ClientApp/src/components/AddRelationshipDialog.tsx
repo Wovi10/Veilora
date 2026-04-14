@@ -5,12 +5,12 @@ import {
 } from '@mui/material';
 import { createRelationship } from '../api/relationshipsApi';
 import type { RelationshipDto, RelationshipType } from '../types/relationship';
-import type { EntityDto } from '../types/entity';
+import type { CharacterDto } from '../types/character';
 
 interface Props {
   open: boolean;
-  entity1: EntityDto;
-  entity2: EntityDto;
+  character1: CharacterDto;
+  character2: CharacterDto;
   onClose: () => void;
   onCreated: (rel: RelationshipDto) => void;
 }
@@ -19,7 +19,7 @@ const RELATIONSHIP_TYPES: RelationshipType[] = [
   'Spouse', 'Partner', 'Godparent', 'Guardian', 'CloseFriend',
 ];
 
-export default function AddRelationshipDialog({ open, entity1, entity2, onClose, onCreated }: Props) {
+export default function AddRelationshipDialog({ open, character1, character2, onClose, onCreated }: Props) {
   const [relationshipType, setRelationshipType] = useState<RelationshipType | ''>('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -39,8 +39,8 @@ export default function AddRelationshipDialog({ open, entity1, entity2, onClose,
     setError(null);
     try {
       const rel = await createRelationship({
-        entity1Id: entity1.id,
-        entity2Id: entity2.id,
+        character1Id: character1.id,
+        character2Id: character2.id,
         relationshipType,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
@@ -61,10 +61,10 @@ export default function AddRelationshipDialog({ open, entity1, entity2, onClose,
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
         {error && <Alert severity="error">{error}</Alert>}
         <Typography variant="body2" color="text.secondary">
-          <strong>Entity 1:</strong> {entity1.name}
+          <strong>Character 1:</strong> {character1.name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          <strong>Entity 2:</strong> {entity2.name}
+          <strong>Character 2:</strong> {character2.name}
         </Typography>
         <FormControl fullWidth required>
           <InputLabel>Relationship Type</InputLabel>

@@ -2,8 +2,8 @@ export type RelationshipType = 'Spouse' | 'Partner' | 'Godparent' | 'Guardian' |
 
 export interface RelationshipDto {
   id: string;
-  entity1Id: string;
-  entity2Id: string;
+  character1Id: string;
+  character2Id: string;
   relationshipType: RelationshipType;
   startDate?: string;
   endDate?: string;
@@ -13,8 +13,8 @@ export interface RelationshipDto {
 }
 
 export interface CreateRelationshipDto {
-  entity1Id: string;
-  entity2Id: string;
+  character1Id: string;
+  character2Id: string;
   relationshipType: RelationshipType;
   startDate?: string;
   endDate?: string;

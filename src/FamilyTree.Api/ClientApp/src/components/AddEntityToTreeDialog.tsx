@@ -4,23 +4,23 @@ import {
   Box, List, ListItemButton, ListItemText, Typography,
   CircularProgress, TextField, Divider,
 } from '@mui/material';
-import { getEntities, createEntity } from '../api/entitiesApi';
-import { addEntityToFamilyTree } from '../api/familyTreesApi';
-import type { EntityDto } from '../types/entity';
+import { getCharactersByWorld, createCharacter } from '../api/charactersApi';
+import { addCharacterToFamilyTree } from '../api/familyTreesApi';
+import type { CharacterDto } from '../types/character';
 
 interface Props {
   open: boolean;
   familyTreeId: string;
   worldId: string;
-  existingEntityIds: string[];
+  existingCharacterIds: string[];
   onClose: () => void;
-  onAdded: (entity: EntityDto) => void;
+  onAdded: (character: CharacterDto) => void;
 }
 
 export default function AddEntityToTreeDialog({
-  open, familyTreeId, worldId, existingEntityIds, onClose, onAdded,
+  open, familyTreeId, worldId, existingCharacterIds, onClose, onAdded,
 }: Props) {
-  const [worldEntities, setWorldEntities] = useState<EntityDto[]>([]);
+  const [worldCharacters, setWorldCharacters] = useState<CharacterDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [newFirstName, setNewFirstName] = useState('');
   const [newLastName, setNewLastName] = useState('');
@@ -30,20 +30,20 @@ export default function AddEntityToTreeDialog({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    getEntities()
-      .then(all => setWorldEntities(all.filter(e => e.worldId === worldId && !existingEntityIds.includes(e.id))))
-      .catch(() => setError('Failed to load entities'))
+    getCharactersByWorld(worldId)
+      .then(all => setWorldCharacters(all.filter(c => !existingCharacterIds.includes(c.id))))
+      .catch(() => setError('Failed to load characters'))
       .finally(() => setLoading(false));
-  }, [open, worldId, existingEntityIds]);
+  }, [open, worldId, existingCharacterIds]);
 
-  const handleSelectExisting = async (entity: EntityDto) => {
+  const handleSelectExisting = async (character: CharacterDto) => {
     setSubmitting(true);
     try {
-      await addEntityToFamilyTree(familyTreeId, entity.id);
-      onAdded(entity);
+      await addCharacterToFamilyTree(familyTreeId, character.id);
+      onAdded(character);
       handleClose();
     } catch {
-      setError('Failed to add entity to tree');
+      setError('Failed to add character to tree');
     } finally {
       setSubmitting(false);
     }
@@ -54,15 +54,14 @@ export default function AddEntityToTreeDialog({
     if (!name) { setError('Name is required'); return; }
     setSubmitting(true);
     try {
-      const entity = await createEntity({
+      const character = await createCharacter({
         name,
-        type: 'Character',
         worldId,
         firstName: newFirstName.trim() || undefined,
         lastName: newLastName.trim() || undefined,
       });
-      await addEntityToFamilyTree(familyTreeId, entity.id);
-      onAdded(entity);
+      await addCharacterToFamilyTree(familyTreeId, character.id);
+      onAdded(character);
       handleClose();
     } catch {
       setError('Failed to create character');
@@ -90,16 +89,16 @@ export default function AddEntityToTreeDialog({
             Create & Add
           </Button>
 
-          {worldEntities.length > 0 && (
+          {worldCharacters.length > 0 && (
             <>
               <Divider><Typography variant="caption">or pick from world</Typography></Divider>
               {loading ? (
                 <CircularProgress size={24} sx={{ alignSelf: 'center' }} />
               ) : (
                 <List dense disablePadding sx={{ maxHeight: 240, overflow: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                  {worldEntities.map(entity => (
-                    <ListItemButton key={entity.id} onClick={() => handleSelectExisting(entity)} disabled={submitting}>
-                      <ListItemText primary={entity.name} secondary={entity.species || entity.type} />
+                  {worldCharacters.map(character => (
+                    <ListItemButton key={character.id} onClick={() => handleSelectExisting(character)} disabled={submitting}>
+                      <ListItemText primary={character.name} secondary={character.species} />
                     </ListItemButton>
                   ))}
                 </List>
