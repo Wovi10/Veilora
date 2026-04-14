@@ -77,7 +77,7 @@ export default function EditEntityDialog({ open, entity, treeEntities, onClose, 
     }
   };
 
-  const others = treeEntities.filter(e => e.id !== entity.id);
+  const others = treeEntities.filter(e => e.id !== entity.id && e.type === 'Character');
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
