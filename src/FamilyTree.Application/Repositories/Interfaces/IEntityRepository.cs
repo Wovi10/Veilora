@@ -10,4 +10,6 @@ public interface IEntityRepository : IRepository<Entity>
     Task<IEnumerable<Entity>> GetEntitiesByFamilyTreeIdAsync(Guid familyTreeId);
     Task<IEnumerable<Entity>> GetAncestorsAsync(Guid entityId);
     Task<IEnumerable<Entity>> GetDescendantsAsync(Guid entityId);
+    Task<Entity?> GetByIdWithDetailsAsync(Guid id);
+    Task<IEnumerable<Entity>> GetChildrenAsync(Guid characterId);
 }

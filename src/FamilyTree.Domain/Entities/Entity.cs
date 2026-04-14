@@ -20,11 +20,16 @@ public class Entity : BaseEntity
     public string? BirthDateSuffix { get; set; }
     public DateOnly? DeathDate { get; set; }
     public string? DeathDateSuffix { get; set; }
-    public string? BirthPlace { get; set; }
+    public Guid? BirthPlaceEntityId { get; set; }
+    public Guid? DeathPlaceEntityId { get; set; }
     public string? Residence { get; set; }
     public Gender? Gender { get; set; }
     public string? Biography { get; set; }
     public string? ProfilePhotoUrl { get; set; }
+    public string? OtherNames { get; set; }
+    public string? Position { get; set; }
+    public string? Height { get; set; }
+    public string? HairColour { get; set; }
 
     // Parent references (for family trees)
     public Guid? Parent1Id { get; set; }
@@ -34,10 +39,17 @@ public class Entity : BaseEntity
     public World World { get; set; } = null!;
     public Entity? Parent1 { get; set; }
     public Entity? Parent2 { get; set; }
+    public Entity? BirthPlaceEntity { get; set; }
+    public Entity? DeathPlaceEntity { get; set; }
     public ICollection<Entity> ChildrenAsParent1 { get; set; } = [];
     public ICollection<Entity> ChildrenAsParent2 { get; set; } = [];
     public ICollection<EntityFamilyTree> EntityFamilyTrees { get; set; } = [];
     public ICollection<Relationship> RelationshipsAsEntity1 { get; set; } = [];
     public ICollection<Relationship> RelationshipsAsEntity2 { get; set; } = [];
     public ICollection<Note> Notes { get; set; } = [];
+    public ICollection<EntityLocation> Locations { get; set; } = [];
+    public ICollection<EntityLocation> CharactersLocatedHere { get; set; } = [];
+    public ICollection<EntityAffiliation> Affiliations { get; set; } = [];
+    public ICollection<EntityAffiliation> CharactersAffiliated { get; set; } = [];
+    public ICollection<EntityLanguage> Languages { get; set; } = [];
 }
