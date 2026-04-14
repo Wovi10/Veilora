@@ -6,10 +6,9 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import { getEntity, getEntities } from '../api/entitiesApi';
-import { getRelationships } from '../api/relationshipsApi';
 import { getWorld } from '../api/worldsApi';
 import type { EntityDto } from '../types/entity';
-import type { RelationshipDto, RelationshipType } from '../types/relationship';
+import type { EntityRefDto } from '../types/entityRef';
 import type { WorldDto } from '../types/world';
 import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
@@ -19,14 +18,6 @@ function formatDate(date: string, suffix?: string) {
   const formatted = new Date(date).toLocaleDateString('en-GB');
   return suffix ? `${formatted} ${suffix}` : formatted;
 }
-
-const RELATIONSHIP_LABEL: Record<RelationshipType, string> = {
-  Spouse: 'Spouse',
-  Partner: 'Partner',
-  Godparent: 'Godparent',
-  Guardian: 'Guardian',
-  CloseFriend: 'Close Friend',
-};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -38,7 +29,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function EntityLink({ entity, worldId }: { entity: EntityDto; worldId: string }) {
+function CharacterLink({ entity, worldId }: { entity: EntityRefDto; worldId: string }) {
   const navigate = useNavigate();
   return (
     <Typography
@@ -60,19 +51,17 @@ export default function CharacterPage() {
   const [world, setWorld] = useState<WorldDto | null>(null);
   const [character, setCharacter] = useState<EntityDto | null>(null);
   const [worldEntities, setWorldEntities] = useState<EntityDto[]>([]);
-  const [relationships, setRelationships] = useState<RelationshipDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     if (!worldId || !entityId) return;
-    Promise.all([getWorld(worldId), getEntity(entityId), getEntities(), getRelationships()])
-      .then(([w, char, allEntities, allRels]) => {
+    Promise.all([getWorld(worldId), getEntity(entityId), getEntities()])
+      .then(([w, char, allEntities]) => {
         setWorld(w);
         setCharacter(char);
         setWorldEntities(allEntities.filter(e => e.worldId === worldId));
-        setRelationships(allRels.filter(r => r.entity1Id === entityId || r.entity2Id === entityId));
       })
       .catch(() => setError('Failed to load character'))
       .finally(() => setLoading(false));
@@ -88,13 +77,18 @@ export default function CharacterPage() {
   const entityMap = new Map(worldEntities.map(e => [e.id, e]));
   const parent1 = character.parent1Id ? entityMap.get(character.parent1Id) : undefined;
   const parent2 = character.parent2Id ? entityMap.get(character.parent2Id) : undefined;
-  const children = worldEntities.filter(
-    e => e.parent1Id === character.id || e.parent2Id === character.id
-  );
 
   const fullName = [character.firstName, character.middleName, character.lastName]
     .filter(Boolean)
     .join(' ') || character.name;
+
+  // Detail fields that are non-empty
+  const detailRows = [
+    character.otherNames && { label: 'Also known as', value: character.otherNames },
+    character.position   && { label: 'Position',      value: character.position },
+    character.height     && { label: 'Height',         value: character.height },
+    character.hairColour && { label: 'Hair',           value: character.hairColour },
+  ].filter(Boolean) as { label: string; value: string }[];
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', px: 3, py: 4 }}>
@@ -127,24 +121,40 @@ export default function CharacterPage() {
         {(character.birthDate || character.deathDate) && (
           <Typography variant="body2" color="text.secondary" mt={1.5}>
             {character.birthDate && (
-              <>Born {formatDate(character.birthDate, character.birthDateSuffix)}
-                {character.birthPlace && ` in ${character.birthPlace}`}</>
+              <>
+                Born {formatDate(character.birthDate, character.birthDateSuffix)}
+                {character.birthPlaceEntityName && ` in ${character.birthPlaceEntityName}`}
+              </>
             )}
             {character.birthDate && character.deathDate && ' · '}
-            {character.deathDate && <>Died {formatDate(character.deathDate, character.deathDateSuffix)}</>}
+            {character.deathDate && (
+              <>
+                Died {formatDate(character.deathDate, character.deathDateSuffix)}
+                {character.deathPlaceEntityName && ` in ${character.deathPlaceEntityName}`}
+              </>
+            )}
           </Typography>
         )}
-        {character.residence && !character.birthDate && !character.deathDate && (
-          <Typography variant="body2" color="text.secondary" mt={1}>
-            Lives in {character.residence}
-          </Typography>
-        )}
-        {character.residence && (character.birthDate || character.deathDate) && (
-          <Typography variant="body2" color="text.secondary">
+        {character.residence && (
+          <Typography variant="body2" color="text.secondary" mt={0.5}>
             Resides in {character.residence}
           </Typography>
         )}
       </Box>
+
+      {/* Detail fields */}
+      {detailRows.length > 0 && (
+        <Section title="Details">
+          <Box display="flex" flexDirection="column" gap={0.75}>
+            {detailRows.map(({ label, value }) => (
+              <Box key={label} display="flex" gap={1.5}>
+                <Typography variant="body2" color="text.secondary" sx={{ minWidth: 110 }}>{label}</Typography>
+                <Typography variant="body2">{value}</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Section>
+      )}
 
       {/* Description */}
       {character.description && (
@@ -163,25 +173,37 @@ export default function CharacterPage() {
       )}
 
       {/* Family */}
-      {(parent1 || parent2 || children.length > 0) && (
+      {(parent1 || parent2 || character.spouses?.length > 0 || character.children?.length > 0) && (
         <Section title="Family">
           {(parent1 || parent2) && (
-            <Box mb={children.length > 0 ? 2 : 0}>
+            <Box mb={2}>
               <Typography variant="body2" color="text.secondary" mb={0.5}>Parents</Typography>
               <Box display="flex" gap={2} flexWrap="wrap">
-                {parent1 && <EntityLink entity={parent1} worldId={worldId!} />}
-                {parent2 && <EntityLink entity={parent2} worldId={worldId!} />}
+                {parent1 && <CharacterLink entity={{ id: parent1.id, name: parent1.name }} worldId={worldId!} />}
+                {parent2 && <CharacterLink entity={{ id: parent2.id, name: parent2.name }} worldId={worldId!} />}
               </Box>
             </Box>
           )}
-          {children.length > 0 && (
-            <Box>
+          {character.spouses?.length > 0 && (
+            <Box mb={2}>
               <Typography variant="body2" color="text.secondary" mb={0.5}>
-                {children.length === 1 ? 'Child' : 'Children'}
+                {character.spouses.length === 1 ? 'Spouse' : 'Spouses'}
               </Typography>
               <Box display="flex" gap={2} flexWrap="wrap">
-                {children.map(child => (
-                  <EntityLink key={child.id} entity={child} worldId={worldId!} />
+                {character.spouses.map(s => (
+                  <CharacterLink key={s.id} entity={s} worldId={worldId!} />
+                ))}
+              </Box>
+            </Box>
+          )}
+          {character.children?.length > 0 && (
+            <Box>
+              <Typography variant="body2" color="text.secondary" mb={0.5}>
+                {character.children.length === 1 ? 'Child' : 'Children'}
+              </Typography>
+              <Box display="flex" gap={2} flexWrap="wrap">
+                {character.children.map(c => (
+                  <CharacterLink key={c.id} entity={c} worldId={worldId!} />
                 ))}
               </Box>
             </Box>
@@ -189,36 +211,35 @@ export default function CharacterPage() {
         </Section>
       )}
 
-      {/* Relationships */}
-      {relationships.length > 0 && (
-        <Section title="Relationships">
-          <Box display="flex" flexDirection="column" gap={1.5}>
-            {relationships.map(rel => {
-              const partnerId = rel.entity1Id === character.id ? rel.entity2Id : rel.entity1Id;
-              const partner = entityMap.get(partnerId);
-              return (
-                <Box key={rel.id} display="flex" alignItems="center" gap={2}>
-                  <Chip
-                    label={RELATIONSHIP_LABEL[rel.relationshipType]}
-                    size="small"
-                    variant="outlined"
-                    sx={{ minWidth: 90 }}
-                  />
-                  {partner ? (
-                    <EntityLink entity={partner} worldId={worldId!} />
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">Unknown</Typography>
-                  )}
-                  {(rel.startDate || rel.endDate) && (
-                    <Typography variant="caption" color="text.secondary">
-                      {rel.startDate && new Date(rel.startDate).toLocaleDateString('en-GB')}
-                      {rel.startDate && rel.endDate && ' – '}
-                      {rel.endDate && new Date(rel.endDate).toLocaleDateString('en-GB')}
-                    </Typography>
-                  )}
-                </Box>
-              );
-            })}
+      {/* Affiliations */}
+      {character.affiliations?.length > 0 && (
+        <Section title="Affiliations">
+          <Box display="flex" gap={1} flexWrap="wrap">
+            {character.affiliations.map(a => (
+              <Chip key={a.id} label={a.name} variant="outlined" />
+            ))}
+          </Box>
+        </Section>
+      )}
+
+      {/* Locations */}
+      {character.locations?.length > 0 && (
+        <Section title="Locations">
+          <Box display="flex" gap={1} flexWrap="wrap">
+            {character.locations.map(l => (
+              <Chip key={l.id} label={l.name} variant="outlined" />
+            ))}
+          </Box>
+        </Section>
+      )}
+
+      {/* Languages */}
+      {character.languages?.length > 0 && (
+        <Section title="Languages">
+          <Box display="flex" gap={1} flexWrap="wrap">
+            {character.languages.map(l => (
+              <Chip key={l.id} label={l.name} size="small" />
+            ))}
           </Box>
         </Section>
       )}
@@ -228,6 +249,7 @@ export default function CharacterPage() {
           open={editOpen}
           entity={character}
           treeEntities={worldEntities}
+          worldId={worldId!}
           onClose={() => setEditOpen(false)}
           onSaved={updated => {
             setCharacter(updated);
