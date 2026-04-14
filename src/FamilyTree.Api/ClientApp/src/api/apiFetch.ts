@@ -35,6 +35,10 @@ export async function apiFetch(input: string, init?: RequestInit): Promise<Respo
   if (res.status === 401) {
     clearToken();
     window.location.href = '/login';
+    return res;
+  }
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
   }
   return res;
 }
