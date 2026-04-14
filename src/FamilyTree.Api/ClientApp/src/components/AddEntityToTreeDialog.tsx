@@ -42,8 +42,8 @@ export default function AddEntityToTreeDialog({
       await addCharacterToFamilyTree(familyTreeId, character.id);
       onAdded(character);
       handleClose();
-    } catch {
-      setError('Failed to add character to tree');
+    } catch (err) {
+      setError(`Failed to add character to tree: ${err instanceof Error ? err.message : 'unknown error'}`);
     } finally {
       setSubmitting(false);
     }
@@ -53,18 +53,25 @@ export default function AddEntityToTreeDialog({
     const name = [newFirstName.trim(), newLastName.trim()].filter(Boolean).join(' ');
     if (!name) { setError('Name is required'); return; }
     setSubmitting(true);
+    let character: CharacterDto | undefined;
     try {
-      const character = await createCharacter({
+      character = await createCharacter({
         name,
         worldId,
         firstName: newFirstName.trim() || undefined,
         lastName: newLastName.trim() || undefined,
       });
+    } catch (err) {
+      setError(`Failed to create character: ${err instanceof Error ? err.message : 'unknown error'}`);
+      setSubmitting(false);
+      return;
+    }
+    try {
       await addCharacterToFamilyTree(familyTreeId, character.id);
       onAdded(character);
       handleClose();
-    } catch {
-      setError('Failed to create character');
+    } catch (err) {
+      setError(`Character created but failed to add to tree: ${err instanceof Error ? err.message : 'unknown error'}`);
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +113,7 @@ export default function AddEntityToTreeDialog({
             </>
           )}
 
-          {error && <Typography color="error" variant="caption">{error}</Typography>}
+          {error && <Typography color="error" variant="body2">{error}</Typography>}
         </Box>
       </DialogContent>
       <DialogActions>
