@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { getWorld } from '../api/worldsApi';
@@ -48,7 +49,11 @@ export default function WorldPage() {
     Promise.all([getWorld(worldId), getEntities(), getFamilyTrees()])
       .then(([w, allEntities, allTrees]) => {
         setWorld(w);
-        setEntities(allEntities.filter(e => e.worldId === worldId));
+        setEntities(
+          allEntities
+            .filter(e => e.worldId === worldId)
+            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        );
         setFamilyTrees(allTrees.filter(t => t.worldId === worldId));
       })
       .catch(() => setError('Failed to load world'))
@@ -100,7 +105,17 @@ export default function WorldPage() {
         return (
           <Box key={type} mb={5}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-              <Typography variant="h5" fontWeight={600}>{plural}</Typography>
+              <Box display="flex" alignItems="center" gap={1}>
+                <Typography variant="h5" fontWeight={600}>{plural}</Typography>
+                <Button
+                  size="small"
+                  startIcon={<OpenInFullIcon fontSize="small" />}
+                  onClick={() => navigate(`/worlds/${worldId}/entities/${type}`)}
+                  sx={{ textTransform: 'none', minWidth: 0 }}
+                >
+                  View all
+                </Button>
+              </Box>
               {canEdit && (
                 <Button size="small" startIcon={<AddIcon />} onClick={() => openAddEntity(type)}>
                   Add {type}
