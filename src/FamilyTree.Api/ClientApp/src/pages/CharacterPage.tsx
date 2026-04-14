@@ -15,6 +15,11 @@ import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
 import EditEntityDialog from '../components/EditEntityDialog';
 
+function formatDate(date: string, suffix?: string) {
+  const formatted = new Date(date).toLocaleDateString('en-GB');
+  return suffix ? `${formatted} ${suffix}` : formatted;
+}
+
 const RELATIONSHIP_LABEL: Record<RelationshipType, string> = {
   Spouse: 'Spouse',
   Partner: 'Partner',
@@ -122,11 +127,11 @@ export default function CharacterPage() {
         {(character.birthDate || character.deathDate) && (
           <Typography variant="body2" color="text.secondary" mt={1.5}>
             {character.birthDate && (
-              <>Born {new Date(character.birthDate).toLocaleDateString('en-GB')}
+              <>Born {formatDate(character.birthDate, character.birthDateSuffix)}
                 {character.birthPlace && ` in ${character.birthPlace}`}</>
             )}
             {character.birthDate && character.deathDate && ' · '}
-            {character.deathDate && <>Died {new Date(character.deathDate).toLocaleDateString('en-GB')}</>}
+            {character.deathDate && <>Died {formatDate(character.deathDate, character.deathDateSuffix)}</>}
           </Typography>
         )}
         {character.residence && !character.birthDate && !character.deathDate && (

@@ -13,7 +13,9 @@ export interface EntityDto {
   maidenName?: string;
   species?: string;
   birthDate?: string;
+  birthDateSuffix?: string;
   deathDate?: string;
+  deathDateSuffix?: string;
   birthPlace?: string;
   residence?: string;
   gender?: Gender;
@@ -36,7 +38,9 @@ export interface CreateEntityDto {
   maidenName?: string;
   species?: string;
   birthDate?: string;
+  birthDateSuffix?: string;
   deathDate?: string;
+  deathDateSuffix?: string;
   birthPlace?: string;
   residence?: string;
   gender?: Gender;
@@ -55,7 +59,9 @@ export interface UpdateEntityDto {
   maidenName?: string;
   species?: string;
   birthDate?: string;
+  birthDateSuffix?: string;
   deathDate?: string;
+  deathDateSuffix?: string;
   birthPlace?: string;
   residence?: string;
   gender?: Gender;

@@ -14,7 +14,9 @@ public record CreateEntityDto
     public string? MaidenName { get; init; }
     public string? Species { get; init; }
     public DateOnly? BirthDate { get; init; }
+    public string? BirthDateSuffix { get; init; }
     public DateOnly? DeathDate { get; init; }
+    public string? DeathDateSuffix { get; init; }
     public string? BirthPlace { get; init; }
     public string? Residence { get; init; }
     public string? Gender { get; init; }
