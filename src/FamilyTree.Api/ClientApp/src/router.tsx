@@ -7,6 +7,7 @@ import WorldPage from './pages/WorldPage';
 import WorldSettingsPage from './pages/WorldSettingsPage';
 import FamilyTreePage from './pages/FamilyTreePage';
 import EntityListPage from './pages/EntityListPage';
+import CharacterPage from './pages/CharacterPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Read from localStorage directly — always in sync, no React state batching issues
@@ -31,6 +32,7 @@ const routes: RouteObject[] = [
       { path: 'worlds/:worldId', element: <WorldPage /> },
       { path: 'worlds/:worldId/settings', element: <WorldSettingsPage /> },
       { path: 'worlds/:worldId/entities/:entityType', element: <EntityListPage /> },
+      { path: 'worlds/:worldId/characters/:entityId', element: <CharacterPage /> },
       { path: 'family-trees/:familyTreeId', element: <FamilyTreePage /> },
     ],
   },

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, CircularProgress, Alert, Button,
-  Card, CardContent, CardActionArea, Chip, Divider, Grid2,
+  Card, CardContent, CardActionArea, Chip, Divider, Grid2, Tooltip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -130,7 +130,12 @@ export default function WorldPage() {
               <Grid2 container spacing={2}>
                 {sectionEntities.map(entity => (
                   <Grid2 key={entity.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <EntityCard entity={entity} />
+                    <EntityCard
+                      entity={entity}
+                      onClick={entity.type === 'Character'
+                        ? () => navigate(`/worlds/${worldId}/characters/${entity.id}`)
+                        : undefined}
+                    />
                   </Grid2>
                 ))}
               </Grid2>
@@ -199,30 +204,33 @@ export default function WorldPage() {
   );
 }
 
-function EntityCard({ entity }: { entity: EntityDto }) {
+function EntityCard({ entity, onClick }: { entity: EntityDto; onClick?: () => void }) {
+  const content = (
+    <CardContent sx={{ pb: '12px !important' }}>
+      <Typography variant="subtitle1" fontWeight={600} noWrap>{entity.name}</Typography>
+      {entity.species && (
+        <Chip label={entity.species} size="small" variant="outlined" sx={{ mt: 0.5, mr: 0.5 }} />
+      )}
+      {entity.birthDate && (
+        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+          °&nbsp;{new Date(entity.birthDate).toLocaleDateString('en-GB')}
+          {entity.deathDate && ` — †\u00a0${new Date(entity.deathDate).toLocaleDateString('en-GB')}`}
+        </Typography>
+      )}
+      {entity.description && !entity.birthDate && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+        >
+          {entity.description}
+        </Typography>
+      )}
+    </CardContent>
+  );
   return (
     <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      <CardContent sx={{ pb: '12px !important' }}>
-        <Typography variant="subtitle1" fontWeight={600} noWrap>{entity.name}</Typography>
-        {entity.species && (
-          <Chip label={entity.species} size="small" variant="outlined" sx={{ mt: 0.5, mr: 0.5 }} />
-        )}
-        {entity.birthDate && (
-          <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-            °&nbsp;{new Date(entity.birthDate).toLocaleDateString('en-GB')}
-            {entity.deathDate && ` — †\u00a0${new Date(entity.deathDate).toLocaleDateString('en-GB')}`}
-          </Typography>
-        )}
-        {entity.description && !entity.birthDate && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-          >
-            {entity.description}
-          </Typography>
-        )}
-      </CardContent>
+      {onClick ? <CardActionArea onClick={onClick} sx={{ height: '100%' }}>{content}</CardActionArea> : content}
     </Card>
   );
 }
