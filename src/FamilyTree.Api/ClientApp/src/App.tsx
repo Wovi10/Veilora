@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -17,13 +17,16 @@ import HomeIcon from '@mui/icons-material/Home';
 import MenuIcon from '@mui/icons-material/Menu';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useAuth } from './context/AuthContext';
 import { useEditMode } from './context/EditModeContext';
-
-const theme = createTheme();
+import { useThemeMode } from './context/ThemeModeContext';
 
 export default function App() {
+  const { mode, toggleThemeMode } = useThemeMode();
+  const theme = useMemo(() => createTheme({ palette: { mode } }), [mode]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -62,6 +65,9 @@ export default function App() {
           >
             {isEditMode ? 'View Mode' : 'Edit'}
           </Button>
+          <IconButton color="inherit" onClick={toggleThemeMode} sx={{ mr: 1 }}>
+            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
           <Button color="inherit" onClick={() => { logout(); navigate('/login', { replace: true }); }}>
             Logout
           </Button>
