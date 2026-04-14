@@ -5,14 +5,16 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
-import { getEntity, getEntities } from '../api/entitiesApi';
+import { getCharacter, getCharactersByWorld } from '../api/charactersApi';
+import { getEntities } from '../api/entitiesApi';
 import { getWorld } from '../api/worldsApi';
+import type { CharacterDto } from '../types/character';
 import type { EntityDto } from '../types/entity';
 import type { EntityRefDto } from '../types/entityRef';
 import type { WorldDto } from '../types/world';
 import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
-import EditEntityDialog from '../components/EditEntityDialog';
+import EditCharacterDialog from '../components/EditCharacterDialog';
 
 function formatDate(date: string, suffix?: string) {
   const formatted = new Date(date).toLocaleDateString('en-GB');
@@ -49,7 +51,8 @@ export default function CharacterPage() {
   const { userId } = useAuth();
 
   const [world, setWorld] = useState<WorldDto | null>(null);
-  const [character, setCharacter] = useState<EntityDto | null>(null);
+  const [character, setCharacter] = useState<CharacterDto | null>(null);
+  const [worldCharacters, setWorldCharacters] = useState<CharacterDto[]>([]);
   const [worldEntities, setWorldEntities] = useState<EntityDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,10 +60,11 @@ export default function CharacterPage() {
 
   useEffect(() => {
     if (!worldId || !entityId) return;
-    Promise.all([getWorld(worldId), getEntity(entityId), getEntities()])
-      .then(([w, char, allEntities]) => {
+    Promise.all([getWorld(worldId), getCharacter(entityId), getCharactersByWorld(worldId), getEntities()])
+      .then(([w, char, chars, allEntities]) => {
         setWorld(w);
         setCharacter(char);
+        setWorldCharacters(chars);
         setWorldEntities(allEntities.filter(e => e.worldId === worldId));
       })
       .catch(() => setError('Failed to load character'))
@@ -74,15 +78,14 @@ export default function CharacterPage() {
   const isOwner = !!userId && world.createdById === userId;
   const canEdit = isEditMode && isOwner;
 
-  const entityMap = new Map(worldEntities.map(e => [e.id, e]));
-  const parent1 = character.parent1Id ? entityMap.get(character.parent1Id) : undefined;
-  const parent2 = character.parent2Id ? entityMap.get(character.parent2Id) : undefined;
+  const charMap = new Map(worldCharacters.map(c => [c.id, c]));
+  const parent1 = character.parent1Id ? charMap.get(character.parent1Id) : undefined;
+  const parent2 = character.parent2Id ? charMap.get(character.parent2Id) : undefined;
 
   const fullName = [character.firstName, character.middleName, character.lastName]
     .filter(Boolean)
     .join(' ') || character.name;
 
-  // Detail fields that are non-empty
   const detailRows = [
     character.otherNames && { label: 'Also known as', value: character.otherNames },
     character.position   && { label: 'Position',      value: character.position },
@@ -245,10 +248,11 @@ export default function CharacterPage() {
       )}
 
       {editOpen && (
-        <EditEntityDialog
+        <EditCharacterDialog
           open={editOpen}
-          entity={character}
-          treeEntities={worldEntities}
+          character={character}
+          worldCharacters={worldCharacters}
+          worldEntities={worldEntities}
           worldId={worldId!}
           onClose={() => setEditOpen(false)}
           onSaved={updated => {

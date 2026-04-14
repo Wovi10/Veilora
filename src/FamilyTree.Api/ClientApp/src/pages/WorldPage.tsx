@@ -11,21 +11,23 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { getWorld } from '../api/worldsApi';
 import { getEntities } from '../api/entitiesApi';
+import { getCharactersByWorld } from '../api/charactersApi';
 import { getFamilyTrees } from '../api/familyTreesApi';
 import type { WorldDto } from '../types/world';
 import type { EntityDto, EntityType } from '../types/entity';
+import type { CharacterDto } from '../types/character';
 import type { FamilyTreeDto } from '../types/familyTree';
 import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
+import AddCharacterDialog from '../components/AddCharacterDialog';
 import AddEntityDialog from '../components/AddEntityDialog';
 import NewFamilyTreeDialog from '../components/NewFamilyTreeDialog';
 
 const ENTITY_SECTIONS: { type: EntityType; plural: string }[] = [
-  { type: 'Character', plural: 'Characters' },
-  { type: 'Place',     plural: 'Places'     },
-  { type: 'Group',     plural: 'Groups'     },
-  { type: 'Event',     plural: 'Events'     },
-  { type: 'Concept',   plural: 'Concepts'   },
+  { type: 'Place',    plural: 'Places'   },
+  { type: 'Group',    plural: 'Groups'   },
+  { type: 'Event',    plural: 'Events'   },
+  { type: 'Concept',  plural: 'Concepts' },
 ];
 
 export default function WorldPage() {
@@ -35,20 +37,25 @@ export default function WorldPage() {
   const { userId } = useAuth();
 
   const [world, setWorld] = useState<WorldDto | null>(null);
+  const [characters, setCharacters] = useState<CharacterDto[]>([]);
   const [entities, setEntities] = useState<EntityDto[]>([]);
   const [familyTrees, setFamilyTrees] = useState<FamilyTreeDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [addCharacterOpen, setAddCharacterOpen] = useState(false);
   const [addEntityOpen, setAddEntityOpen] = useState(false);
-  const [addEntityType, setAddEntityType] = useState<EntityType>('Character');
+  const [addEntityType, setAddEntityType] = useState<EntityType>('Place');
   const [newFamilyTreeOpen, setNewFamilyTreeOpen] = useState(false);
 
   useEffect(() => {
     if (!worldId) return;
-    Promise.all([getWorld(worldId), getEntities(), getFamilyTrees()])
-      .then(([w, allEntities, allTrees]) => {
+    Promise.all([getWorld(worldId), getCharactersByWorld(worldId), getEntities(), getFamilyTrees()])
+      .then(([w, chars, allEntities, allTrees]) => {
         setWorld(w);
+        setCharacters(
+          chars.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        );
         setEntities(
           allEntities
             .filter(e => e.worldId === worldId)
@@ -80,7 +87,7 @@ export default function WorldPage() {
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')}>
             Worlds
           </Button>
-          { world.createdById === userId && canEdit && (
+          {world.createdById === userId && canEdit && (
             <Button startIcon={<SettingsIcon />} onClick={() => navigate(`/worlds/${worldId}/settings`)}>
               Settings
             </Button>
@@ -99,7 +106,46 @@ export default function WorldPage() {
         </Box>
       </Box>
 
-      {/* Entity sections */}
+      {/* Characters section */}
+      <Box mb={5}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h5" fontWeight={600}>Characters</Typography>
+            <Button
+              size="small"
+              startIcon={<OpenInFullIcon fontSize="small" />}
+              onClick={() => navigate(`/worlds/${worldId}/entities/Character`)}
+              sx={{ textTransform: 'none', minWidth: 0 }}
+            >
+              View all
+            </Button>
+          </Box>
+          {canEdit && (
+            <Button size="small" startIcon={<AddIcon />} onClick={() => setAddCharacterOpen(true)}>
+              Add Character
+            </Button>
+          )}
+        </Box>
+        {characters.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" fontStyle="italic">
+            No characters yet.
+          </Typography>
+        ) : (
+          <Grid2 container spacing={2}>
+            {characters.map(character => (
+              <Grid2 key={character.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                <CharacterCard
+                  character={character}
+                  onClick={() => navigate(`/worlds/${worldId}/characters/${character.id}`)}
+                />
+              </Grid2>
+            ))}
+          </Grid2>
+        )}
+        <Divider sx={{ mt: 4 }} />
+      </Box>
+
+      {/* Place / Group / Event / Concept sections */}
       {ENTITY_SECTIONS.map(({ type, plural }) => {
         const sectionEntities = entities.filter(e => e.type === type);
         return (
@@ -130,12 +176,7 @@ export default function WorldPage() {
               <Grid2 container spacing={2}>
                 {sectionEntities.map(entity => (
                   <Grid2 key={entity.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <EntityCard
-                      entity={entity}
-                      onClick={entity.type === 'Character'
-                        ? () => navigate(`/worlds/${worldId}/characters/${entity.id}`)
-                        : undefined}
-                    />
+                    <EntityCard entity={entity} />
                   </Grid2>
                 ))}
               </Grid2>
@@ -183,12 +224,21 @@ export default function WorldPage() {
       </Box>
 
       {worldId && (
+        <AddCharacterDialog
+          open={addCharacterOpen}
+          worldId={worldId}
+          onClose={() => setAddCharacterOpen(false)}
+          onCreated={character => { setCharacters(prev => [character, ...prev]); setAddCharacterOpen(false); }}
+        />
+      )}
+
+      {worldId && (
         <AddEntityDialog
           open={addEntityOpen}
           defaultType={addEntityType}
           worldId={worldId}
           onClose={() => setAddEntityOpen(false)}
-          onCreated={entity => { setEntities(prev => [...prev, entity]); setAddEntityOpen(false); }}
+          onCreated={entity => { setEntities(prev => [entity, ...prev]); setAddEntityOpen(false); }}
         />
       )}
 
@@ -204,33 +254,51 @@ export default function WorldPage() {
   );
 }
 
-function EntityCard({ entity, onClick }: { entity: EntityDto; onClick?: () => void }) {
-  const content = (
-    <CardContent sx={{ pb: '12px !important' }}>
-      <Typography variant="subtitle1" fontWeight={600} noWrap>{entity.name}</Typography>
-      {entity.species && (
-        <Chip label={entity.species} size="small" variant="outlined" sx={{ mt: 0.5, mr: 0.5 }} />
-      )}
-      {entity.birthDate && (
-        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-          °&nbsp;{new Date(entity.birthDate).toLocaleDateString('en-GB')}{entity.birthDateSuffix && ` ${entity.birthDateSuffix}`}
-          {entity.deathDate && ` — †\u00a0${new Date(entity.deathDate).toLocaleDateString('en-GB')}${entity.deathDateSuffix ? ` ${entity.deathDateSuffix}` : ''}`}
-        </Typography>
-      )}
-      {entity.description && !entity.birthDate && (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-        >
-          {entity.description}
-        </Typography>
-      )}
-    </CardContent>
-  );
+function CharacterCard({ character, onClick }: { character: CharacterDto; onClick: () => void }) {
   return (
     <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      {onClick ? <CardActionArea onClick={onClick} sx={{ height: '100%' }}>{content}</CardActionArea> : content}
+      <CardActionArea onClick={onClick} sx={{ height: '100%' }}>
+        <CardContent sx={{ pb: '12px !important' }}>
+          <Typography variant="subtitle1" fontWeight={600} noWrap>{character.name}</Typography>
+          {character.species && (
+            <Chip label={character.species} size="small" variant="outlined" sx={{ mt: 0.5, mr: 0.5 }} />
+          )}
+          {character.birthDate && (
+            <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+              °&nbsp;{new Date(character.birthDate).toLocaleDateString('en-GB')}{character.birthDateSuffix && ` ${character.birthDateSuffix}`}
+              {character.deathDate && ` — †\u00a0${new Date(character.deathDate).toLocaleDateString('en-GB')}${character.deathDateSuffix ? ` ${character.deathDateSuffix}` : ''}`}
+            </Typography>
+          )}
+          {character.description && !character.birthDate && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+            >
+              {character.description}
+            </Typography>
+          )}
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  );
+}
+
+function EntityCard({ entity }: { entity: EntityDto }) {
+  return (
+    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
+      <CardContent sx={{ pb: '12px !important' }}>
+        <Typography variant="subtitle1" fontWeight={600} noWrap>{entity.name}</Typography>
+        {entity.description && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
+            {entity.description}
+          </Typography>
+        )}
+      </CardContent>
     </Card>
   );
 }
