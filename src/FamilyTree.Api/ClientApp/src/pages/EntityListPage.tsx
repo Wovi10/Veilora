@@ -8,13 +8,16 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import { getWorld } from '../api/worldsApi';
 import { getEntities } from '../api/entitiesApi';
+import { getCharactersByWorld } from '../api/charactersApi';
 import type { WorldDto } from '../types/world';
 import type { EntityDto, EntityType } from '../types/entity';
+import type { CharacterDto } from '../types/character';
 import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
+import AddCharacterDialog from '../components/AddCharacterDialog';
 import AddEntityDialog from '../components/AddEntityDialog';
 
-const PLURAL: Record<EntityType, string> = {
+const PLURAL: Record<string, string> = {
   Character: 'Characters',
   Place: 'Places',
   Group: 'Groups',
@@ -28,28 +31,39 @@ export default function EntityListPage() {
   const { isEditMode } = useEditMode();
   const { userId } = useAuth();
 
-  const type = entityType as EntityType;
-  const plural = PLURAL[type] ?? type;
+  const isCharacterType = entityType === 'Character';
+  const plural = PLURAL[entityType ?? ''] ?? entityType ?? '';
 
   const [world, setWorld] = useState<WorldDto | null>(null);
+  const [characters, setCharacters] = useState<CharacterDto[]>([]);
   const [entities, setEntities] = useState<EntityDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [addEntityOpen, setAddEntityOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
 
   useEffect(() => {
-    if (!worldId) return;
-    Promise.all([getWorld(worldId), getEntities()])
-      .then(([w, allEntities]) => {
-        setWorld(w);
-        const filtered = allEntities
-          .filter(e => e.worldId === worldId && e.type === type)
-          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-        setEntities(filtered);
-      })
-      .catch(() => setError('Failed to load'))
-      .finally(() => setLoading(false));
-  }, [worldId, type]);
+    if (!worldId || !entityType) return;
+    if (isCharacterType) {
+      Promise.all([getWorld(worldId), getCharactersByWorld(worldId)])
+        .then(([w, chars]) => {
+          setWorld(w);
+          setCharacters(chars.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
+        })
+        .catch(() => setError('Failed to load'))
+        .finally(() => setLoading(false));
+    } else {
+      Promise.all([getWorld(worldId), getEntities()])
+        .then(([w, allEntities]) => {
+          setWorld(w);
+          const filtered = allEntities
+            .filter(e => e.worldId === worldId && e.type === entityType)
+            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+          setEntities(filtered);
+        })
+        .catch(() => setError('Failed to load'))
+        .finally(() => setLoading(false));
+    }
+  }, [worldId, entityType, isCharacterType]);
 
   if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
   if (error)   return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
@@ -57,6 +71,7 @@ export default function EntityListPage() {
 
   const isOwner = !!userId && world.createdById === userId;
   const canEdit = isEditMode && isOwner;
+  const count = isCharacterType ? characters.length : entities.length;
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
@@ -66,8 +81,8 @@ export default function EntityListPage() {
           {world.name}
         </Button>
         {canEdit && (
-          <Button size="small" startIcon={<AddIcon />} onClick={() => setAddEntityOpen(true)}>
-            Add {type}
+          <Button size="small" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
+            Add {entityType}
           </Button>
         )}
       </Box>
@@ -75,42 +90,64 @@ export default function EntityListPage() {
       <Typography variant="h4" fontWeight={700} mb={3}>
         {plural}
         <Typography component="span" variant="h6" color="text.secondary" fontWeight={400} ml={1.5}>
-          {entities.length}
+          {count}
         </Typography>
       </Typography>
 
-      {entities.length === 0 ? (
+      {count === 0 ? (
         <Typography variant="body2" color="text.secondary" fontStyle="italic">
           No {plural.toLowerCase()} yet.
         </Typography>
+      ) : isCharacterType ? (
+        <Grid2 container spacing={2}>
+          {characters.map(character => (
+            <Grid2 key={character.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              <CharacterCard
+                character={character}
+                onClick={() => navigate(`/worlds/${worldId}/characters/${character.id}`)}
+              />
+            </Grid2>
+          ))}
+        </Grid2>
       ) : (
         <Grid2 container spacing={2}>
           {entities.map(entity => (
             <Grid2 key={entity.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-              <EntityCard
-                entity={entity}
-                onClick={entity.type === 'Character'
-                  ? () => navigate(`/worlds/${worldId}/characters/${entity.id}`)
-                  : undefined}
-              />
+              <EntityCard entity={entity} />
             </Grid2>
           ))}
         </Grid2>
       )}
 
-      {worldId && (
-        <AddEntityDialog
-          open={addEntityOpen}
-          defaultType={type}
+      {worldId && isCharacterType && (
+        <AddCharacterDialog
+          open={addOpen}
           worldId={worldId}
-          onClose={() => setAddEntityOpen(false)}
+          onClose={() => setAddOpen(false)}
+          onCreated={character => {
+            setCharacters(prev =>
+              [character, ...prev].sort(
+                (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+              )
+            );
+            setAddOpen(false);
+          }}
+        />
+      )}
+
+      {worldId && !isCharacterType && (
+        <AddEntityDialog
+          open={addOpen}
+          defaultType={entityType as EntityType}
+          worldId={worldId}
+          onClose={() => setAddOpen(false)}
           onCreated={entity => {
             setEntities(prev =>
               [entity, ...prev].sort(
                 (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
               )
             );
-            setAddEntityOpen(false);
+            setAddOpen(false);
           }}
         />
       )}
@@ -118,36 +155,57 @@ export default function EntityListPage() {
   );
 }
 
-function EntityCard({ entity, onClick }: { entity: EntityDto; onClick?: () => void }) {
-  const content = (
-    <CardContent sx={{ pb: '12px !important' }}>
-      <Typography variant="subtitle1" fontWeight={600} noWrap>{entity.name}</Typography>
-      {entity.species && (
-        <Chip label={entity.species} size="small" variant="outlined" sx={{ mt: 0.5, mr: 0.5 }} />
-      )}
-      {entity.birthDate && (
-        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-          °&nbsp;{new Date(entity.birthDate).toLocaleDateString('en-GB')}{entity.birthDateSuffix && ` ${entity.birthDateSuffix}`}
-          {entity.deathDate && ` — †\u00a0${new Date(entity.deathDate).toLocaleDateString('en-GB')}${entity.deathDateSuffix ? ` ${entity.deathDateSuffix}` : ''}`}
-        </Typography>
-      )}
-      {entity.description && !entity.birthDate && (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-        >
-          {entity.description}
-        </Typography>
-      )}
-      <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-        Updated {new Date(entity.updatedAt).toLocaleDateString('en-GB')}
-      </Typography>
-    </CardContent>
-  );
+function CharacterCard({ character, onClick }: { character: CharacterDto; onClick: () => void }) {
   return (
     <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      {onClick ? <CardActionArea onClick={onClick} sx={{ height: '100%' }}>{content}</CardActionArea> : content}
+      <CardActionArea onClick={onClick} sx={{ height: '100%' }}>
+        <CardContent sx={{ pb: '12px !important' }}>
+          <Typography variant="subtitle1" fontWeight={600} noWrap>{character.name}</Typography>
+          {character.species && (
+            <Chip label={character.species} size="small" variant="outlined" sx={{ mt: 0.5, mr: 0.5 }} />
+          )}
+          {character.birthDate && (
+            <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+              °&nbsp;{new Date(character.birthDate).toLocaleDateString('en-GB')}{character.birthDateSuffix && ` ${character.birthDateSuffix}`}
+              {character.deathDate && ` — †\u00a0${new Date(character.deathDate).toLocaleDateString('en-GB')}${character.deathDateSuffix ? ` ${character.deathDateSuffix}` : ''}`}
+            </Typography>
+          )}
+          {character.description && !character.birthDate && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+            >
+              {character.description}
+            </Typography>
+          )}
+          <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+            Updated {new Date(character.updatedAt).toLocaleDateString('en-GB')}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  );
+}
+
+function EntityCard({ entity }: { entity: EntityDto }) {
+  return (
+    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
+      <CardContent sx={{ pb: '12px !important' }}>
+        <Typography variant="subtitle1" fontWeight={600} noWrap>{entity.name}</Typography>
+        {entity.description && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
+            {entity.description}
+          </Typography>
+        )}
+        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+          Updated {new Date(entity.updatedAt).toLocaleDateString('en-GB')}
+        </Typography>
+      </CardContent>
     </Card>
   );
 }
