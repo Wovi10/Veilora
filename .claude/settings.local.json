@@ -5,7 +5,9 @@
       "Bash(dotnet test:*)",
       "Bash(git add:*)",
       "Bash(dotnet build:*)",
-      "Bash(git commit -m ':*)"
+      "Bash(git commit -m ':*)",
+      "Bash(npx tsc:*)",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }
