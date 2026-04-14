@@ -1,10 +1,10 @@
-using FamilyTree.Application.DTOs.Entity;
+using FamilyTree.Application.DTOs.Character;
 
 namespace FamilyTree.Application.DTOs.FamilyTree;
 
-public record EntityInFamilyTreeDto
+public record CharacterInFamilyTreeDto
 {
-    public required EntityDto Entity { get; init; }
+    public required CharacterDto Character { get; init; }
     public double? PositionX { get; init; }
     public double? PositionY { get; init; }
 }

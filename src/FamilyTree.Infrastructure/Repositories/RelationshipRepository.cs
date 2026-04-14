@@ -9,19 +9,19 @@ public class RelationshipRepository(ApplicationDbContext context) : Repository<R
 {
     public async Task<IEnumerable<Relationship>> GetRelationshipsByFamilyTreeIdAsync(Guid familyTreeId)
     {
-        var entityIds = await _context.EntityFamilyTrees
-            .Where(eft => eft.FamilyTreeId == familyTreeId)
-            .Select(eft => eft.EntityId)
+        var characterIds = await _context.CharacterFamilyTrees
+            .Where(cft => cft.FamilyTreeId == familyTreeId)
+            .Select(cft => cft.CharacterId)
             .ToListAsync();
         return await _context.Relationships
             .AsNoTracking()
-            .Where(r => entityIds.Contains(r.Entity1Id) && entityIds.Contains(r.Entity2Id))
+            .Where(r => characterIds.Contains(r.Character1Id) && characterIds.Contains(r.Character2Id))
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Relationship>> GetEntityRelationshipsAsync(Guid entityId) =>
+    public async Task<IEnumerable<Relationship>> GetEntityRelationshipsAsync(Guid characterId) =>
         await _context.Relationships
             .AsNoTracking()
-            .Where(r => r.Entity1Id == entityId || r.Entity2Id == entityId)
+            .Where(r => r.Character1Id == characterId || r.Character2Id == characterId)
             .ToListAsync();
 }

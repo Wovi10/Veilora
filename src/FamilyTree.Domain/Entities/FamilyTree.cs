@@ -11,5 +11,5 @@ public class FamilyTree : BaseEntity
 
     public World World { get; set; } = null!;
     public User? Creator { get; set; }
-    public ICollection<EntityFamilyTree> EntityFamilyTrees { get; set; } = [];
+    public ICollection<CharacterFamilyTree> CharacterFamilyTrees { get; set; } = [];
 }

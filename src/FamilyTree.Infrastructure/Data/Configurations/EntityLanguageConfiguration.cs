@@ -11,7 +11,7 @@ public class EntityLanguageConfiguration : IEntityTypeConfiguration<EntityLangua
         builder.HasKey(el => new { el.CharacterId, el.LanguageId });
 
         builder.HasOne(el => el.Character)
-            .WithMany(e => e.Languages)
+            .WithMany(c => c.Languages)
             .HasForeignKey(el => el.CharacterId)
             .OnDelete(DeleteBehavior.Cascade);
 

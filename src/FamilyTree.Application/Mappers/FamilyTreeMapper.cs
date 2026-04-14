@@ -34,11 +34,11 @@ public static class FamilyTreeMapper
         Name = familyTree.Name,
         Description = familyTree.Description,
         WorldId = familyTree.WorldId,
-        Entities = familyTree.EntityFamilyTrees.Select(eft => new EntityInFamilyTreeDto
+        Characters = familyTree.CharacterFamilyTrees.Select(cft => new CharacterInFamilyTreeDto
         {
-            Entity = EntityMapper.ToDto(eft.Entity),
-            PositionX = eft.PositionX,
-            PositionY = eft.PositionY
+            Character = CharacterMapper.ToDto(cft.Character),
+            PositionX = cft.PositionX,
+            PositionY = cft.PositionY
         }),
         CreatedAt = familyTree.CreatedAt,
         UpdatedAt = familyTree.UpdatedAt

@@ -11,12 +11,12 @@ public class EntityAffiliationConfiguration : IEntityTypeConfiguration<EntityAff
         builder.HasKey(ea => new { ea.CharacterId, ea.GroupId });
 
         builder.HasOne(ea => ea.Character)
-            .WithMany(e => e.Affiliations)
+            .WithMany(c => c.Affiliations)
             .HasForeignKey(ea => ea.CharacterId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(ea => ea.Group)
-            .WithMany(e => e.CharactersAffiliated)
+            .WithMany()
             .HasForeignKey(ea => ea.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
 

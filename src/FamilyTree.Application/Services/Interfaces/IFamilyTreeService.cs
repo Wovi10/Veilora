@@ -11,7 +11,7 @@ public interface IFamilyTreeService
     Task<FamilyTreeDto> CreateAsync(CreateFamilyTreeDto dto);
     Task<FamilyTreeDto> UpdateAsync(Guid id, UpdateFamilyTreeDto dto);
     Task DeleteAsync(Guid id);
-    Task AddEntityToFamilyTreeAsync(Guid familyTreeId, Guid entityId);
-    Task RemoveEntityFromFamilyTreeAsync(Guid familyTreeId, Guid entityId);
-    Task UpdateEntityPositionAsync(Guid familyTreeId, Guid entityId, double x, double y);
+    Task AddCharacterToFamilyTreeAsync(Guid familyTreeId, Guid characterId);
+    Task RemoveCharacterFromFamilyTreeAsync(Guid familyTreeId, Guid characterId);
+    Task UpdateCharacterPositionAsync(Guid familyTreeId, Guid characterId, double x, double y);
 }

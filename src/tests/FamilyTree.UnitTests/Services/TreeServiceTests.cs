@@ -13,15 +13,15 @@ namespace FamilyTree.UnitTests.Services;
 public class FamilyTreeServiceTests
 {
     private Mock<IFamilyTreeRepository> _familyTreeRepositoryMock;
-    private Mock<IEntityRepository> _entityRepositoryMock;
+    private Mock<ICharacterRepository> _characterRepositoryMock;
     private FamilyTreeService _sut;
 
     [SetUp]
     public void SetUp()
     {
         _familyTreeRepositoryMock = new Mock<IFamilyTreeRepository>();
-        _entityRepositoryMock = new Mock<IEntityRepository>();
-        _sut = new FamilyTreeService(_familyTreeRepositoryMock.Object, _entityRepositoryMock.Object);
+        _characterRepositoryMock = new Mock<ICharacterRepository>();
+        _sut = new FamilyTreeService(_familyTreeRepositoryMock.Object, _characterRepositoryMock.Object);
     }
 
     private static FamilyTreeEntity MakeFamilyTree(Guid id, DateTime now) => new()

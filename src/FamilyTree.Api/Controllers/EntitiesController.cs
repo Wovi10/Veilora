@@ -9,7 +9,7 @@ namespace FamilyTree.Api.Controllers;
 [ApiController]
 [Route("api/entities")]
 [Authorize]
-public class EntitiesController(IEntityService entityService, IRelationshipService relationshipService) : ControllerBase
+public class EntitiesController(IEntityService entityService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
@@ -28,18 +28,6 @@ public class EntitiesController(IEntityService entityService, IRelationshipServi
         if (string.IsNullOrWhiteSpace(q)) return BadRequest("Search term is required.");
         return Ok(await entityService.SearchAsync(q));
     }
-
-    [HttpGet("{id:guid}/ancestors")]
-    public async Task<IActionResult> GetAncestors(Guid id) =>
-        Ok(await entityService.GetAncestorsAsync(id));
-
-    [HttpGet("{id:guid}/descendants")]
-    public async Task<IActionResult> GetDescendants(Guid id) =>
-        Ok(await entityService.GetDescendantsAsync(id));
-
-    [HttpGet("{id:guid}/relationships")]
-    public async Task<IActionResult> GetRelationships(Guid id) =>
-        Ok(await relationshipService.GetEntityRelationshipsAsync(id));
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateEntityDto dto)

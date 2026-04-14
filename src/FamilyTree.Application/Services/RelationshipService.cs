@@ -7,7 +7,7 @@ using FamilyTree.Domain.Entities;
 
 namespace FamilyTree.Application.Services;
 
-public class RelationshipService(IRelationshipRepository relationshipRepository, IEntityRepository entityRepository) : IRelationshipService
+public class RelationshipService(IRelationshipRepository relationshipRepository, ICharacterRepository characterRepository) : IRelationshipService
 {
     public async Task<IEnumerable<RelationshipDto>> GetAllAsync()
     {
@@ -29,10 +29,10 @@ public class RelationshipService(IRelationshipRepository relationshipRepository,
 
     public async Task<RelationshipDto> CreateAsync(CreateRelationshipDto dto)
     {
-        _ = await entityRepository.GetByIdAsync(dto.Entity1Id)
-            ?? throw new NotFoundException(nameof(Entity), dto.Entity1Id);
-        _ = await entityRepository.GetByIdAsync(dto.Entity2Id)
-            ?? throw new NotFoundException(nameof(Entity), dto.Entity2Id);
+        _ = await characterRepository.GetByIdAsync(dto.Character1Id)
+            ?? throw new NotFoundException(nameof(Character), dto.Character1Id);
+        _ = await characterRepository.GetByIdAsync(dto.Character2Id)
+            ?? throw new NotFoundException(nameof(Character), dto.Character2Id);
         var relationship = RelationshipMapper.ToEntity(dto);
         await relationshipRepository.AddAsync(relationship);
         await relationshipRepository.SaveChangesAsync();
@@ -43,10 +43,10 @@ public class RelationshipService(IRelationshipRepository relationshipRepository,
     {
         var relationship = await relationshipRepository.GetByIdAsync(id)
             ?? throw new NotFoundException(nameof(Relationship), id);
-        _ = await entityRepository.GetByIdAsync(dto.Entity1Id)
-            ?? throw new NotFoundException(nameof(Entity), dto.Entity1Id);
-        _ = await entityRepository.GetByIdAsync(dto.Entity2Id)
-            ?? throw new NotFoundException(nameof(Entity), dto.Entity2Id);
+        _ = await characterRepository.GetByIdAsync(dto.Character1Id)
+            ?? throw new NotFoundException(nameof(Character), dto.Character1Id);
+        _ = await characterRepository.GetByIdAsync(dto.Character2Id)
+            ?? throw new NotFoundException(nameof(Character), dto.Character2Id);
         RelationshipMapper.UpdateEntity(dto, relationship);
         await relationshipRepository.UpdateAsync(relationship);
         await relationshipRepository.SaveChangesAsync();
@@ -61,9 +61,9 @@ public class RelationshipService(IRelationshipRepository relationshipRepository,
         await relationshipRepository.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<RelationshipDto>> GetEntityRelationshipsAsync(Guid entityId)
+    public async Task<IEnumerable<RelationshipDto>> GetEntityRelationshipsAsync(Guid characterId)
     {
-        var relationships = await relationshipRepository.GetEntityRelationshipsAsync(entityId);
+        var relationships = await relationshipRepository.GetEntityRelationshipsAsync(characterId);
         return relationships.Select(RelationshipMapper.ToDto);
     }
 }

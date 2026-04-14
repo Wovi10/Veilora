@@ -9,7 +9,7 @@ namespace FamilyTree.Api.Controllers;
 [ApiController]
 [Route("api/family-trees")]
 [Authorize]
-public class FamilyTreesController(IFamilyTreeService familyTreeService, IEntityService entityService) : ControllerBase
+public class FamilyTreesController(IFamilyTreeService familyTreeService, ICharacterService characterService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
@@ -29,9 +29,9 @@ public class FamilyTreesController(IFamilyTreeService familyTreeService, IEntity
         return tree is null ? NotFound() : Ok(tree);
     }
 
-    [HttpGet("{familyTreeId:guid}/entities")]
-    public async Task<IActionResult> GetEntities(Guid familyTreeId) =>
-        Ok(await entityService.GetEntitiesByFamilyTreeIdAsync(familyTreeId));
+    [HttpGet("{familyTreeId:guid}/characters")]
+    public async Task<IActionResult> GetCharacters(Guid familyTreeId) =>
+        Ok(await characterService.GetByFamilyTreeIdAsync(familyTreeId));
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateFamilyTreeDto dto)
@@ -54,24 +54,24 @@ public class FamilyTreesController(IFamilyTreeService familyTreeService, IEntity
         return NoContent();
     }
 
-    [HttpPost("{familyTreeId:guid}/entities/{entityId:guid}")]
-    public async Task<IActionResult> AddEntity(Guid familyTreeId, Guid entityId)
+    [HttpPost("{familyTreeId:guid}/characters/{characterId:guid}")]
+    public async Task<IActionResult> AddCharacter(Guid familyTreeId, Guid characterId)
     {
-        await familyTreeService.AddEntityToFamilyTreeAsync(familyTreeId, entityId);
+        await familyTreeService.AddCharacterToFamilyTreeAsync(familyTreeId, characterId);
         return NoContent();
     }
 
-    [HttpDelete("{familyTreeId:guid}/entities/{entityId:guid}")]
-    public async Task<IActionResult> RemoveEntity(Guid familyTreeId, Guid entityId)
+    [HttpDelete("{familyTreeId:guid}/characters/{characterId:guid}")]
+    public async Task<IActionResult> RemoveCharacter(Guid familyTreeId, Guid characterId)
     {
-        await familyTreeService.RemoveEntityFromFamilyTreeAsync(familyTreeId, entityId);
+        await familyTreeService.RemoveCharacterFromFamilyTreeAsync(familyTreeId, characterId);
         return NoContent();
     }
 
-    [HttpPut("{familyTreeId:guid}/entities/{entityId:guid}/position")]
-    public async Task<IActionResult> UpdateEntityPosition(Guid familyTreeId, Guid entityId, [FromBody] UpdateEntityPositionDto dto)
+    [HttpPut("{familyTreeId:guid}/characters/{characterId:guid}/position")]
+    public async Task<IActionResult> UpdateCharacterPosition(Guid familyTreeId, Guid characterId, [FromBody] UpdateEntityPositionDto dto)
     {
-        await familyTreeService.UpdateEntityPositionAsync(familyTreeId, entityId, dto.X, dto.Y);
+        await familyTreeService.UpdateCharacterPositionAsync(familyTreeId, characterId, dto.X, dto.Y);
         return NoContent();
     }
 }

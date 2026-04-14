@@ -11,8 +11,21 @@ public class FamilyTreeRepository(ApplicationDbContext context) : Repository<Fam
     public async Task<FamilyTreeEntity?> GetFamilyTreeWithEntitiesAsync(Guid familyTreeId) =>
         await _context.FamilyTrees
             .AsNoTracking()
-            .Include(ft => ft.EntityFamilyTrees)
-                .ThenInclude(eft => eft.Entity)
+            .Include(ft => ft.CharacterFamilyTrees)
+                .ThenInclude(cft => cft.Character)
+                    .ThenInclude(c => c.BirthPlaceEntity)
+            .Include(ft => ft.CharacterFamilyTrees)
+                .ThenInclude(cft => cft.Character)
+                    .ThenInclude(c => c.DeathPlaceEntity)
+            .Include(ft => ft.CharacterFamilyTrees)
+                .ThenInclude(cft => cft.Character)
+                    .ThenInclude(c => c.Locations).ThenInclude(l => l.Place)
+            .Include(ft => ft.CharacterFamilyTrees)
+                .ThenInclude(cft => cft.Character)
+                    .ThenInclude(c => c.Affiliations).ThenInclude(a => a.Group)
+            .Include(ft => ft.CharacterFamilyTrees)
+                .ThenInclude(cft => cft.Character)
+                    .ThenInclude(c => c.Languages).ThenInclude(l => l.Language)
             .FirstOrDefaultAsync(ft => ft.Id == familyTreeId);
 
     public async Task<IEnumerable<FamilyTreeEntity>> GetByWorldIdAsync(Guid worldId) =>
@@ -21,27 +34,27 @@ public class FamilyTreeRepository(ApplicationDbContext context) : Repository<Fam
             .Where(ft => ft.WorldId == worldId)
             .ToListAsync();
 
-    public async Task AddEntityToFamilyTreeAsync(Guid familyTreeId, Guid entityId)
+    public async Task AddCharacterToFamilyTreeAsync(Guid familyTreeId, Guid characterId)
     {
-        var junction = new EntityFamilyTree { FamilyTreeId = familyTreeId, EntityId = entityId };
-        await _context.EntityFamilyTrees.AddAsync(junction);
+        var junction = new CharacterFamilyTree { FamilyTreeId = familyTreeId, CharacterId = characterId };
+        await _context.CharacterFamilyTrees.AddAsync(junction);
     }
 
-    public async Task RemoveEntityFromFamilyTreeAsync(Guid familyTreeId, Guid entityId)
+    public async Task RemoveCharacterFromFamilyTreeAsync(Guid familyTreeId, Guid characterId)
     {
-        var junction = await _context.EntityFamilyTrees
-            .FirstOrDefaultAsync(eft => eft.FamilyTreeId == familyTreeId && eft.EntityId == entityId);
-        if (junction is not null) _context.EntityFamilyTrees.Remove(junction);
+        var junction = await _context.CharacterFamilyTrees
+            .FirstOrDefaultAsync(cft => cft.FamilyTreeId == familyTreeId && cft.CharacterId == characterId);
+        if (junction is not null) _context.CharacterFamilyTrees.Remove(junction);
     }
 
-    public async Task<bool> IsEntityInFamilyTreeAsync(Guid familyTreeId, Guid entityId) =>
-        await _context.EntityFamilyTrees
-            .AnyAsync(eft => eft.FamilyTreeId == familyTreeId && eft.EntityId == entityId);
+    public async Task<bool> IsCharacterInFamilyTreeAsync(Guid familyTreeId, Guid characterId) =>
+        await _context.CharacterFamilyTrees
+            .AnyAsync(cft => cft.FamilyTreeId == familyTreeId && cft.CharacterId == characterId);
 
-    public async Task UpdateEntityPositionAsync(Guid familyTreeId, Guid entityId, double x, double y)
+    public async Task UpdateCharacterPositionAsync(Guid familyTreeId, Guid characterId, double x, double y)
     {
-        var junction = await _context.EntityFamilyTrees
-            .FirstOrDefaultAsync(eft => eft.FamilyTreeId == familyTreeId && eft.EntityId == entityId);
+        var junction = await _context.CharacterFamilyTrees
+            .FirstOrDefaultAsync(cft => cft.FamilyTreeId == familyTreeId && cft.CharacterId == characterId);
         if (junction is null) return;
         junction.PositionX = x;
         junction.PositionY = y;

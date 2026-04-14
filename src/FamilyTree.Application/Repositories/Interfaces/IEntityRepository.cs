@@ -7,9 +7,4 @@ public interface IEntityRepository : IRepository<Entity>
     Task<IEnumerable<Entity>> SearchAsync(string searchTerm);
     Task<IEnumerable<Entity>> GetByWorldIdAsync(Guid worldId);
     Task<IEnumerable<Entity>> GetByWorldIdAndTypeAsync(Guid worldId, string type);
-    Task<IEnumerable<Entity>> GetEntitiesByFamilyTreeIdAsync(Guid familyTreeId);
-    Task<IEnumerable<Entity>> GetAncestorsAsync(Guid entityId);
-    Task<IEnumerable<Entity>> GetDescendantsAsync(Guid entityId);
-    Task<Entity?> GetByIdWithDetailsAsync(Guid id);
-    Task<IEnumerable<Entity>> GetChildrenAsync(Guid characterId);
 }
