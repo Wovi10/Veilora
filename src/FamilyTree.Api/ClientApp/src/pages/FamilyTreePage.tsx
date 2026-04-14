@@ -200,13 +200,13 @@ export default function FamilyTreePage() {
       try {
         const [treeData, rels] = await Promise.all([
           getFamilyTreeWithEntities(familyTreeId),
-          getFamilyTreeRelationships(familyTreeId),
+          getFamilyTreeRelationships(familyTreeId).catch(() => [] as RelationshipDto[]),
         ]);
         setTree(treeData);
 
         const [worldChars, allEntities] = await Promise.all([
-          getCharactersByWorld(treeData.worldId),
-          getEntities(),
+          getCharactersByWorld(treeData.worldId).catch(() => [] as CharacterDto[]),
+          getEntities().catch(() => []),
         ]);
         setWorldCharacters(worldChars);
         setWorldEntities(allEntities.filter(e => e.worldId === treeData.worldId));
