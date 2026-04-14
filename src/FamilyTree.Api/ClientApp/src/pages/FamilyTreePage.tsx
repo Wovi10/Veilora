@@ -349,11 +349,12 @@ export default function FamilyTreePage() {
         />
       )}
 
-      {editingEntity && (
+      {editingEntity && tree && (
         <EditEntityDialog
           open
           entity={editingEntity}
-          treeEntities={tree?.entities.map(e => e.entity) ?? []}
+          treeEntities={tree.entities.map(e => e.entity)}
+          worldId={tree.worldId}
           onClose={() => setEditingEntity(null)}
           onSaved={handleEntitySaved}
         />

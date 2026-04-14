@@ -15,3 +15,7 @@ export async function createRelationship(dto: CreateRelationshipDto): Promise<Re
   if (!res.ok) throw new Error('Failed to create relationship');
   return res.json() as Promise<RelationshipDto>;
 }
+
+export async function deleteRelationship(id: string): Promise<void> {
+  await apiFetch(`/api/relationships/${id}`, { method: 'DELETE' });
+}
