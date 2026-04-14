@@ -31,22 +31,22 @@ export async function createFamilyTree(dto: CreateFamilyTreeDto): Promise<Family
   return res.json();
 }
 
-export async function updateEntityPosition(
+export async function updateCharacterPosition(
   familyTreeId: string,
-  entityId: string,
+  characterId: string,
   dto: UpdateEntityPositionDto,
 ): Promise<void> {
-  await apiFetch(`/api/family-trees/${familyTreeId}/entities/${entityId}/position`, {
+  await apiFetch(`/api/family-trees/${familyTreeId}/characters/${characterId}/position`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(dto),
   });
 }
 
-export async function addEntityToFamilyTree(familyTreeId: string, entityId: string): Promise<void> {
-  await apiFetch(`/api/family-trees/${familyTreeId}/entities/${entityId}`, { method: 'POST' });
+export async function addCharacterToFamilyTree(familyTreeId: string, characterId: string): Promise<void> {
+  await apiFetch(`/api/family-trees/${familyTreeId}/characters/${characterId}`, { method: 'POST' });
 }
 
-export async function removeEntityFromFamilyTree(familyTreeId: string, entityId: string): Promise<void> {
-  await apiFetch(`/api/family-trees/${familyTreeId}/entities/${entityId}`, { method: 'DELETE' });
+export async function removeCharacterFromFamilyTree(familyTreeId: string, characterId: string): Promise<void> {
+  await apiFetch(`/api/family-trees/${familyTreeId}/characters/${characterId}`, { method: 'DELETE' });
 }

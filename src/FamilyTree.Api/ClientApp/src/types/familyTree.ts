@@ -1,4 +1,4 @@
-import type { EntityDto } from './entity';
+import type { CharacterDto } from './character';
 
 export interface FamilyTreeDto {
   id: string;
@@ -9,8 +9,8 @@ export interface FamilyTreeDto {
   updatedAt: string;
 }
 
-export interface EntityInFamilyTreeDto {
-  entity: EntityDto;
+export interface CharacterInFamilyTreeDto {
+  character: CharacterDto;
   positionX: number | null;
   positionY: number | null;
 }
@@ -20,7 +20,7 @@ export interface FamilyTreeWithEntitiesDto {
   name: string;
   description?: string;
   worldId: string;
-  entities: EntityInFamilyTreeDto[];
+  characters: CharacterInFamilyTreeDto[];
   createdAt: string;
   updatedAt: string;
 }
