@@ -46,14 +46,14 @@ public class CharacterConfiguration : IEntityTypeConfiguration<Character>
             .HasForeignKey(c => c.Parent2Id)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne(c => c.BirthPlaceEntity)
+        builder.HasOne(c => c.BirthPlaceLocation)
             .WithMany()
-            .HasForeignKey(c => c.BirthPlaceEntityId)
+            .HasForeignKey(c => c.BirthPlaceLocationId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne(c => c.DeathPlaceEntity)
+        builder.HasOne(c => c.DeathPlaceLocation)
             .WithMany()
-            .HasForeignKey(c => c.DeathPlaceEntityId)
+            .HasForeignKey(c => c.DeathPlaceLocationId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(c => c.WorldId);

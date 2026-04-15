@@ -28,7 +28,7 @@ public class EntityServiceTests
     {
         Id = id,
         Name = "The Shire",
-        Type = EntityType.Place,
+        Type = EntityType.Group,
         WorldId = Guid.NewGuid(),
         CreatedAt = now,
         UpdatedAt = now
@@ -48,7 +48,7 @@ public class EntityServiceTests
         result.Should().NotBeNull();
         result!.Id.Should().Be(entityId);
         result.Name.Should().Be("The Shire");
-        result.Type.Should().Be("Place");
+        result.Type.Should().Be("Group");
         _entityRepositoryMock.Verify(r => r.GetByIdAsync(entityId), Times.Once);
     }
 
@@ -98,7 +98,7 @@ public class EntityServiceTests
         var worldId = Guid.NewGuid();
         var now = DateTime.UtcNow;
         var world = new World { Id = worldId, Name = "Middle Earth", CreatedAt = now, UpdatedAt = now };
-        var dto = new CreateEntityDto { Name = "Rivendell", Type = "Place", WorldId = worldId };
+        var dto = new CreateEntityDto { Name = "Rivendell", Type = "Group", WorldId = worldId };
         _worldRepositoryMock.Setup(r => r.GetByIdAsync(worldId)).ReturnsAsync(world);
         _entityRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Entity>())).ReturnsAsync((Entity e) => e);
         _entityRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
@@ -106,7 +106,7 @@ public class EntityServiceTests
         var result = await _sut.CreateAsync(dto);
 
         result.Name.Should().Be("Rivendell");
-        result.Type.Should().Be("Place");
+        result.Type.Should().Be("Group");
         _entityRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Entity>()), Times.Once);
         _entityRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
@@ -115,7 +115,7 @@ public class EntityServiceTests
     public async Task CreateAsync_WhenWorldNotFound_ThrowsNotFoundException()
     {
         var worldId = Guid.NewGuid();
-        var dto = new CreateEntityDto { Name = "Rivendell", Type = "Place", WorldId = worldId };
+        var dto = new CreateEntityDto { Name = "Rivendell", Type = "Group", WorldId = worldId };
         _worldRepositoryMock.Setup(r => r.GetByIdAsync(worldId)).ReturnsAsync((World?)null);
 
         var act = async () => await _sut.CreateAsync(dto);
@@ -130,7 +130,7 @@ public class EntityServiceTests
         var entityId = Guid.NewGuid();
         var now = DateTime.UtcNow;
         var entity = MakeEntity(entityId, now);
-        var dto = new UpdateEntityDto { Name = "Rivendell", Type = "Place" };
+        var dto = new UpdateEntityDto { Name = "Rivendell", Type = "Group" };
         _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync(entity);
         _entityRepositoryMock.Setup(r => r.UpdateAsync(entity)).Returns(Task.CompletedTask);
         _entityRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
@@ -148,7 +148,7 @@ public class EntityServiceTests
         var entityId = Guid.NewGuid();
         _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync((Entity?)null);
 
-        var act = async () => await _sut.UpdateAsync(entityId, new UpdateEntityDto { Name = "X", Type = "Place" });
+        var act = async () => await _sut.UpdateAsync(entityId, new UpdateEntityDto { Name = "X", Type = "Group" });
 
         await act.Should().ThrowAsync<NotFoundException>();
     }

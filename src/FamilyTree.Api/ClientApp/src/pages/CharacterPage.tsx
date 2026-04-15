@@ -126,14 +126,14 @@ export default function CharacterPage() {
             {character.birthDate && (
               <>
                 Born {formatDate(character.birthDate, character.birthDateSuffix)}
-                {character.birthPlaceEntityName && ` in ${character.birthPlaceEntityName}`}
+                {character.birthPlaceLocationName && ` in ${character.birthPlaceLocationName}`}
               </>
             )}
             {character.birthDate && character.deathDate && ' · '}
             {character.deathDate && (
               <>
                 Died {formatDate(character.deathDate, character.deathDateSuffix)}
-                {character.deathPlaceEntityName && ` in ${character.deathPlaceEntityName}`}
+                {character.deathPlaceLocationName && ` in ${character.deathPlaceLocationName}`}
               </>
             )}
           </Typography>

@@ -18,10 +18,10 @@ export interface CharacterDto {
   birthDateSuffix?: string;
   deathDate?: string;
   deathDateSuffix?: string;
-  birthPlaceEntityId?: string;
-  birthPlaceEntityName?: string;
-  deathPlaceEntityId?: string;
-  deathPlaceEntityName?: string;
+  birthPlaceLocationId?: string;
+  birthPlaceLocationName?: string;
+  deathPlaceLocationId?: string;
+  deathPlaceLocationName?: string;
   residence?: string;
   biography?: string;
   profilePhotoUrl?: string;
@@ -54,9 +54,9 @@ export interface CreateCharacterDto {
   birthDateSuffix?: string;
   deathDate?: string;
   deathDateSuffix?: string;
-  birthPlaceEntityId?: string;
+  birthPlaceLocationId?: string;
   birthPlaceName?: string;
-  deathPlaceEntityId?: string;
+  deathPlaceLocationId?: string;
   deathPlaceName?: string;
   residence?: string;
   biography?: string;
@@ -88,9 +88,9 @@ export interface UpdateCharacterDto {
   birthDateSuffix?: string;
   deathDate?: string;
   deathDateSuffix?: string;
-  birthPlaceEntityId?: string | null;
+  birthPlaceLocationId?: string | null;
   birthPlaceName?: string;
-  deathPlaceEntityId?: string | null;
+  deathPlaceLocationId?: string | null;
   deathPlaceName?: string;
   residence?: string;
   biography?: string;

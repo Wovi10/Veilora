@@ -19,10 +19,10 @@ public record CharacterDto
     public string? BirthDateSuffix { get; init; }
     public DateOnly? DeathDate { get; init; }
     public string? DeathDateSuffix { get; init; }
-    public Guid? BirthPlaceEntityId { get; init; }
-    public string? BirthPlaceEntityName { get; init; }
-    public Guid? DeathPlaceEntityId { get; init; }
-    public string? DeathPlaceEntityName { get; init; }
+    public Guid? BirthPlaceLocationId { get; init; }
+    public string? BirthPlaceLocationName { get; init; }
+    public Guid? DeathPlaceLocationId { get; init; }
+    public string? DeathPlaceLocationName { get; init; }
     public string? Residence { get; init; }
     public string? Gender { get; init; }
     public string? Biography { get; init; }
