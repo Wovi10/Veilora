@@ -9,9 +9,12 @@ interface EditModeContextValue {
 const EditModeContext = createContext<EditModeContextValue | null>(null);
 
 export function EditModeProvider({ children }: { children: ReactNode }) {
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(() => localStorage.getItem('editMode') === 'true');
 
-  const toggleEditMode = () => setIsEditMode(prev => !prev);
+  const toggleEditMode = () => setIsEditMode(prev => {
+    localStorage.setItem('editMode', String(!prev));
+    return !prev;
+  });
 
   return (
     <EditModeContext.Provider value={{ isEditMode, toggleEditMode }}>
