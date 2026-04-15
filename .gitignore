@@ -7,3 +7,6 @@ riderModule.iml
 # Frontend
 src/FamilyTree.Api/ClientApp/node_modules/
 src/FamilyTree.Api/ClientApp/dist/
+
+# Generated SQL scripts
+setup.sql
