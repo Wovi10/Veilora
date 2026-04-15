@@ -15,7 +15,9 @@ public record UpdateCharacterDto
     public DateOnly? DeathDate { get; init; }
     public string? DeathDateSuffix { get; init; }
     public Guid? BirthPlaceEntityId { get; init; }
+    public string? BirthPlaceName { get; init; }
     public Guid? DeathPlaceEntityId { get; init; }
+    public string? DeathPlaceName { get; init; }
     public string? Residence { get; init; }
     public string? Gender { get; init; }
     public string? Biography { get; init; }
@@ -28,7 +30,9 @@ public record UpdateCharacterDto
     public Guid? Parent2Id { get; init; }
 
     public IReadOnlyList<Guid> LocationIds { get; init; } = [];
+    public IReadOnlyList<string> LocationNames { get; init; } = [];
     public IReadOnlyList<Guid> AffiliationIds { get; init; } = [];
+    public IReadOnlyList<string> AffiliationNames { get; init; } = [];
     public IReadOnlyList<Guid> LanguageIds { get; init; } = [];
     public IReadOnlyList<Guid> SpouseIds { get; init; } = [];
     public IReadOnlyList<Guid> ChildIds { get; init; } = [];

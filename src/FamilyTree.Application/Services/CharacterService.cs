@@ -58,10 +58,36 @@ public class CharacterService(
         _ = await worldRepository.GetByIdAsync(dto.WorldId)
             ?? throw new NotFoundException(nameof(Character), dto.WorldId);
         await ValidateParentsAreCharactersAsync(dto.Parent1Id, dto.Parent2Id);
+
+        var birthPlaceId = await ResolveOrCreatePlaceAsync(dto.BirthPlaceEntityId, dto.BirthPlaceName, dto.WorldId);
+        var deathPlaceId = await ResolveOrCreatePlaceAsync(dto.DeathPlaceEntityId, dto.DeathPlaceName, dto.WorldId);
+        await ValidatePlaceReferencesAsync(birthPlaceId, deathPlaceId);
+
+        var locationIds = await ResolveOrCreateEntityListAsync(dto.LocationIds, dto.LocationNames, EntityType.Place, dto.WorldId);
+        var affiliationIds = await ResolveOrCreateEntityListAsync(dto.AffiliationIds, dto.AffiliationNames, EntityType.Group, dto.WorldId);
+        await ValidateLocationIdsArePlacesAsync(locationIds);
+        await ValidateAffiliationIdsAreGroupsAsync(affiliationIds);
+
         var character = CharacterMapper.ToEntity(dto);
+        character.BirthPlaceEntityId = birthPlaceId;
+        character.DeathPlaceEntityId = deathPlaceId;
+
+        foreach (var placeId in locationIds)
+            character.Locations.Add(new EntityLocation { CharacterId = character.Id, PlaceId = placeId });
+        foreach (var groupId in affiliationIds)
+            character.Affiliations.Add(new EntityAffiliation { CharacterId = character.Id, GroupId = groupId });
+        foreach (var languageId in dto.LanguageIds)
+            character.Languages.Add(new EntityLanguage { CharacterId = character.Id, LanguageId = languageId });
+
         await characterRepository.AddAsync(character);
         await characterRepository.SaveChangesAsync();
-        return CharacterMapper.ToDto(character);
+
+        await SyncSpousesAsync(character.Id, dto.SpouseIds);
+        await SyncChildrenAsync(character.Id, dto.ChildIds);
+
+        var created = await characterRepository.GetByIdWithDetailsAsync(character.Id)!;
+        var createdDto = CharacterMapper.ToDto(created!);
+        return await EnrichWithRelationalDataAsync(createdDto, character.Id);
     }
 
     public async Task<CharacterDto> UpdateAsync(Guid id, UpdateCharacterDto dto)
@@ -70,18 +96,26 @@ public class CharacterService(
             ?? throw new NotFoundException(nameof(Character), id);
 
         await ValidateParentsAreCharactersAsync(dto.Parent1Id, dto.Parent2Id);
-        await ValidatePlaceReferencesAsync(dto.BirthPlaceEntityId, dto.DeathPlaceEntityId);
-        await ValidateLocationIdsArePlacesAsync(dto.LocationIds);
-        await ValidateAffiliationIdsAreGroupsAsync(dto.AffiliationIds);
+
+        var birthPlaceId = await ResolveOrCreatePlaceAsync(dto.BirthPlaceEntityId, dto.BirthPlaceName, character.WorldId);
+        var deathPlaceId = await ResolveOrCreatePlaceAsync(dto.DeathPlaceEntityId, dto.DeathPlaceName, character.WorldId);
+        await ValidatePlaceReferencesAsync(birthPlaceId, deathPlaceId);
+
+        var locationIds = await ResolveOrCreateEntityListAsync(dto.LocationIds, dto.LocationNames, EntityType.Place, character.WorldId);
+        var affiliationIds = await ResolveOrCreateEntityListAsync(dto.AffiliationIds, dto.AffiliationNames, EntityType.Group, character.WorldId);
+        await ValidateLocationIdsArePlacesAsync(locationIds);
+        await ValidateAffiliationIdsAreGroupsAsync(affiliationIds);
 
         CharacterMapper.UpdateCharacter(dto, character);
+        character.BirthPlaceEntityId = birthPlaceId;
+        character.DeathPlaceEntityId = deathPlaceId;
 
         character.Locations.Clear();
-        foreach (var placeId in dto.LocationIds)
+        foreach (var placeId in locationIds)
             character.Locations.Add(new EntityLocation { CharacterId = character.Id, PlaceId = placeId });
 
         character.Affiliations.Clear();
-        foreach (var groupId in dto.AffiliationIds)
+        foreach (var groupId in affiliationIds)
             character.Affiliations.Add(new EntityAffiliation { CharacterId = character.Id, GroupId = groupId });
 
         character.Languages.Clear();
@@ -204,6 +238,31 @@ public class CharacterService(
             _ = await characterRepository.GetByIdAsync(parent2Id.Value)
                 ?? throw new NotFoundException(nameof(Character), parent2Id.Value);
         }
+    }
+
+    private async Task<Guid?> ResolveOrCreatePlaceAsync(Guid? existingId, string? name, Guid worldId)
+    {
+        if (existingId is not null) return existingId;
+        if (string.IsNullOrWhiteSpace(name)) return null;
+
+        var newEntity = new Entity { Name = name.Trim(), Type = EntityType.Place, WorldId = worldId };
+        await entityRepository.AddAsync(newEntity);
+        await entityRepository.SaveChangesAsync();
+        return newEntity.Id;
+    }
+
+    private async Task<IReadOnlyList<Guid>> ResolveOrCreateEntityListAsync(
+        IReadOnlyList<Guid> existingIds, IReadOnlyList<string> names, EntityType type, Guid worldId)
+    {
+        var result = new List<Guid>(existingIds);
+        foreach (var name in names.Where(n => !string.IsNullOrWhiteSpace(n)))
+        {
+            var newEntity = new Entity { Name = name.Trim(), Type = type, WorldId = worldId };
+            await entityRepository.AddAsync(newEntity);
+            await entityRepository.SaveChangesAsync();
+            result.Add(newEntity.Id);
+        }
+        return result;
     }
 
     private async Task ValidatePlaceReferencesAsync(Guid? birthPlaceId, Guid? deathPlaceId)

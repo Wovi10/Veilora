@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, CircularProgress, Alert, Button,
-  Card, CardActionArea, CardContent, Chip, Grid2,
+  Card, CardActionArea, CardContent, Chip, Grid2, IconButton,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 import { getWorld } from '../api/worldsApi';
 import { getEntities } from '../api/entitiesApi';
 import { getCharactersByWorld } from '../api/charactersApi';
@@ -16,6 +17,7 @@ import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
 import AddCharacterDialog from '../components/AddCharacterDialog';
 import AddEntityDialog from '../components/AddEntityDialog';
+import EditEntityDialog from '../components/EditEntityDialog';
 
 const PLURAL: Record<string, string> = {
   Character: 'Characters',
@@ -40,14 +42,16 @@ export default function EntityListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [addOpen, setAddOpen] = useState(false);
+  const [editingEntity, setEditingEntity] = useState<EntityDto | null>(null);
 
   useEffect(() => {
     if (!worldId || !entityType) return;
     if (isCharacterType) {
-      Promise.all([getWorld(worldId), getCharactersByWorld(worldId)])
-        .then(([w, chars]) => {
+      Promise.all([getWorld(worldId), getCharactersByWorld(worldId), getEntities()])
+        .then(([w, chars, allEntities]) => {
           setWorld(w);
           setCharacters(chars.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
+          setEntities(allEntities.filter(e => e.worldId === worldId));
         })
         .catch(() => setError('Failed to load'))
         .finally(() => setLoading(false));
@@ -113,7 +117,11 @@ export default function EntityListPage() {
         <Grid2 container spacing={2}>
           {entities.map(entity => (
             <Grid2 key={entity.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-              <EntityCard entity={entity} />
+              <EntityCard
+                entity={entity}
+                canEdit={canEdit}
+                onEdit={() => setEditingEntity(entity)}
+              />
             </Grid2>
           ))}
         </Grid2>
@@ -123,6 +131,8 @@ export default function EntityListPage() {
         <AddCharacterDialog
           open={addOpen}
           worldId={worldId}
+          worldCharacters={characters}
+          worldEntities={entities}
           onClose={() => setAddOpen(false)}
           onCreated={character => {
             setCharacters(prev =>
@@ -148,6 +158,22 @@ export default function EntityListPage() {
               )
             );
             setAddOpen(false);
+          }}
+        />
+      )}
+
+      {editingEntity && (
+        <EditEntityDialog
+          open
+          entity={editingEntity}
+          onClose={() => setEditingEntity(null)}
+          onSaved={updated => {
+            setEntities(prev => prev.map(e => e.id === updated.id ? updated : e));
+            setEditingEntity(null);
+          }}
+          onDeleted={() => {
+            setEntities(prev => prev.filter(e => e.id !== editingEntity.id));
+            setEditingEntity(null);
           }}
         />
       )}
@@ -188,11 +214,18 @@ function CharacterCard({ character, onClick }: { character: CharacterDto; onClic
   );
 }
 
-function EntityCard({ entity }: { entity: EntityDto }) {
+function EntityCard({ entity, canEdit, onEdit }: { entity: EntityDto; canEdit: boolean; onEdit: () => void }) {
   return (
     <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
       <CardContent sx={{ pb: '12px !important' }}>
-        <Typography variant="subtitle1" fontWeight={600} noWrap>{entity.name}</Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+          <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ flex: 1 }}>{entity.name}</Typography>
+          {canEdit && (
+            <IconButton size="small" onClick={onEdit} sx={{ ml: 0.5, mt: -0.5 }}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
         {entity.description && (
           <Typography
             variant="body2"
