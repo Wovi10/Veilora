@@ -6,11 +6,13 @@ import {
 } from '@mui/material';
 import { createCharacter } from '../api/charactersApi';
 import { getLanguagesByWorld, getOrCreateLanguage } from '../api/languagesApi';
+import { getLocationsByWorld } from '../api/locationsApi';
 import type { CharacterDto } from '../types/character';
 import type { Gender } from '../types/character';
 import type { EntityDto } from '../types/entity';
 import type { EntityRefDto } from '../types/entityRef';
 import type { LanguageDto } from '../types/language';
+import type { LocationDto } from '../types/location';
 
 interface Props {
   open: boolean;
@@ -34,16 +36,17 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
   const [hairColour, setHairColour] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [birthDateSuffix, setBirthDateSuffix] = useState('');
-  const [birthPlaceEntity, setBirthPlaceEntity] = useState<EntityRefDto | string | null>(null);
+  const [birthPlaceLocation, setBirthPlaceLocation] = useState<EntityRefDto | string | null>(null);
   const [birthPlaceInput, setBirthPlaceInput] = useState('');
   const [deathDate, setDeathDate] = useState('');
   const [deathDateSuffix, setDeathDateSuffix] = useState('');
-  const [deathPlaceEntity, setDeathPlaceEntity] = useState<EntityRefDto | string | null>(null);
+  const [deathPlaceLocation, setDeathPlaceLocation] = useState<EntityRefDto | string | null>(null);
   const [deathPlaceInput, setDeathPlaceInput] = useState('');
   const [selectedLocations, setSelectedLocations] = useState<Array<EntityRefDto | string>>([]);
   const [selectedAffiliations, setSelectedAffiliations] = useState<Array<EntityRefDto | string>>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<Array<LanguageDto | string>>([]);
   const [availableLanguages, setAvailableLanguages] = useState<LanguageDto[]>([]);
+  const [availableLocations, setAvailableLocations] = useState<LocationDto[]>([]);
   const [selectedSpouses, setSelectedSpouses] = useState<EntityRefDto[]>([]);
   const [selectedChildren, setSelectedChildren] = useState<EntityRefDto[]>([]);
   const [parent1Id, setParent1Id] = useState('');
@@ -55,13 +58,14 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
   useEffect(() => {
     if (!open || !worldId) return;
     getLanguagesByWorld(worldId).then(setAvailableLanguages).catch(() => {});
+    getLocationsByWorld(worldId).then(setAvailableLocations).catch(() => {});
   }, [open, worldId]);
 
   const resetForm = () => {
     setFirstName(''); setLastName(''); setOtherNames(''); setPosition('');
     setSpecies(''); setGender('Unknown'); setHeight(''); setHairColour('');
-    setBirthDate(''); setBirthDateSuffix(''); setBirthPlaceEntity(null); setBirthPlaceInput('');
-    setDeathDate(''); setDeathDateSuffix(''); setDeathPlaceEntity(null); setDeathPlaceInput('');
+    setBirthDate(''); setBirthDateSuffix(''); setBirthPlaceLocation(null); setBirthPlaceInput('');
+    setDeathDate(''); setDeathDateSuffix(''); setDeathPlaceLocation(null); setDeathPlaceInput('');
     setSelectedLocations([]); setSelectedAffiliations([]); setSelectedLanguages([]);
     setSelectedSpouses([]); setSelectedChildren([]);
     setParent1Id(''); setParent2Id('');
@@ -99,12 +103,12 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
         hairColour: hairColour.trim() || undefined,
         birthDate: birthDate || undefined,
         birthDateSuffix: birthDateSuffix.trim() || undefined,
-        birthPlaceEntityId: typeof birthPlaceEntity !== 'string' ? birthPlaceEntity?.id : undefined,
-        birthPlaceName: typeof birthPlaceEntity === 'string' ? birthPlaceEntity.trim() : (birthPlaceInput.trim() && !birthPlaceEntity ? birthPlaceInput.trim() : undefined),
+        birthPlaceLocationId: typeof birthPlaceLocation !== 'string' ? birthPlaceLocation?.id : undefined,
+        birthPlaceName: typeof birthPlaceLocation === 'string' ? birthPlaceLocation.trim() : (birthPlaceInput.trim() && !birthPlaceLocation ? birthPlaceInput.trim() : undefined),
         deathDate: deathDate || undefined,
         deathDateSuffix: deathDateSuffix.trim() || undefined,
-        deathPlaceEntityId: typeof deathPlaceEntity !== 'string' ? deathPlaceEntity?.id : undefined,
-        deathPlaceName: typeof deathPlaceEntity === 'string' ? deathPlaceEntity.trim() : (deathPlaceInput.trim() && !deathPlaceEntity ? deathPlaceInput.trim() : undefined),
+        deathPlaceLocationId: typeof deathPlaceLocation !== 'string' ? deathPlaceLocation?.id : undefined,
+        deathPlaceName: typeof deathPlaceLocation === 'string' ? deathPlaceLocation.trim() : (deathPlaceInput.trim() && !deathPlaceLocation ? deathPlaceInput.trim() : undefined),
         parent1Id: parent1Id || undefined,
         parent2Id: parent2Id || undefined,
         locationIds: selectedLocations.filter((l): l is EntityRefDto => typeof l !== 'string').map(l => l.id),
@@ -124,9 +128,7 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
     }
   };
 
-  const placeOptions: EntityRefDto[] = worldEntities
-    .filter(e => e.type === 'Place')
-    .map(e => ({ id: e.id, name: e.name }));
+  const locationOptions: EntityRefDto[] = availableLocations.map(l => ({ id: l.id, name: l.name }));
   const groupOptions: EntityRefDto[] = worldEntities
     .filter(e => e.type === 'Group')
     .map(e => ({ id: e.id, name: e.name }));
@@ -163,11 +165,11 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
           </Box>
           <Autocomplete
             freeSolo
-            options={placeOptions}
+            options={locationOptions}
             getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={birthPlaceEntity}
+            value={birthPlaceLocation}
             inputValue={birthPlaceInput}
-            onChange={(_, val) => setBirthPlaceEntity(val)}
+            onChange={(_, val) => setBirthPlaceLocation(val)}
             onInputChange={(_, val) => setBirthPlaceInput(val)}
             renderInput={params => <TextField {...params} label="Birth Place" placeholder="Select or type to create…" />}
           />
@@ -177,18 +179,18 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
           </Box>
           <Autocomplete
             freeSolo
-            options={placeOptions}
+            options={locationOptions}
             getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={deathPlaceEntity}
+            value={deathPlaceLocation}
             inputValue={deathPlaceInput}
-            onChange={(_, val) => setDeathPlaceEntity(val)}
+            onChange={(_, val) => setDeathPlaceLocation(val)}
             onInputChange={(_, val) => setDeathPlaceInput(val)}
             renderInput={params => <TextField {...params} label="Death Place" placeholder="Select or type to create…" />}
           />
           <Autocomplete
             multiple
             freeSolo
-            options={placeOptions}
+            options={locationOptions}
             getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
             value={selectedLocations}
             onChange={(_, val) => setSelectedLocations(val as Array<EntityRefDto | string>)}

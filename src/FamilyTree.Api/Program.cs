@@ -52,6 +52,7 @@ builder.Services.AddScoped<INoteRepository, NoteRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IWorldPermissionRepository, WorldPermissionRepository>();
 builder.Services.AddScoped<ILanguageRepository, LanguageRepository>();
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
 // Services
 builder.Services.AddScoped<IWorldService, WorldService>();
@@ -64,6 +65,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IWorldPermissionService, WorldPermissionService>();
 builder.Services.AddScoped<ILanguageService, LanguageService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWorldDtoValidator>();

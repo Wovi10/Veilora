@@ -1,49 +1,40 @@
 import { useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
-  TextField, MenuItem, Box, Select, FormControl, InputLabel,
+  TextField, Box,
 } from '@mui/material';
-import { createEntity } from '../api/entitiesApi';
-import type { EntityDto, EntityType } from '../types/entity';
+import { createLocation } from '../api/locationsApi';
+import type { LocationDto } from '../types/location';
 
 interface Props {
   open: boolean;
   worldId: string;
-  defaultType: EntityType;
   onClose: () => void;
-  onCreated: (entity: EntityDto) => void;
+  onCreated: (location: LocationDto) => void;
 }
 
-const ENTITY_TYPES: EntityType[] = ['Group', 'Event', 'Concept'];
-
-export default function AddEntityDialog({ open, worldId, defaultType, onClose, onCreated }: Props) {
-  const [type, setType] = useState<EntityType>(defaultType);
+export default function AddLocationDialog({ open, worldId, onClose, onCreated }: Props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const resetForm = () => {
-    setName(''); setDescription(''); setError('');
-    setType(defaultType);
-  };
-
+  const resetForm = () => { setName(''); setDescription(''); setError(''); };
   const handleClose = () => { resetForm(); onClose(); };
 
   const handleSubmit = async () => {
     if (!name.trim()) { setError('Name is required'); return; }
     setSubmitting(true);
     try {
-      const entity = await createEntity({
+      const location = await createLocation({
         name: name.trim(),
-        type,
         worldId,
         description: description.trim() || undefined,
       });
-      onCreated(entity);
+      onCreated(location);
       resetForm();
     } catch {
-      setError('Failed to create entity');
+      setError('Failed to create location');
     } finally {
       setSubmitting(false);
     }
@@ -51,15 +42,9 @@ export default function AddEntityDialog({ open, worldId, defaultType, onClose, o
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add {type}</DialogTitle>
+      <DialogTitle>Add Location</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} pt={1}>
-          <FormControl fullWidth>
-            <InputLabel>Type</InputLabel>
-            <Select value={type} label="Type" onChange={e => setType(e.target.value as EntityType)}>
-              {ENTITY_TYPES.map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
-            </Select>
-          </FormControl>
           <TextField
             label="Name"
             value={name}
@@ -69,7 +54,13 @@ export default function AddEntityDialog({ open, worldId, defaultType, onClose, o
             helperText={error || ''}
             autoFocus
           />
-          <TextField label="Description" value={description} onChange={e => setDescription(e.target.value)} multiline rows={2} />
+          <TextField
+            label="Description"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            multiline
+            rows={2}
+          />
         </Box>
       </DialogContent>
       <DialogActions>

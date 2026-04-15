@@ -9,9 +9,9 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
 {
     public async Task<Character?> GetByIdWithDetailsAsync(Guid id) =>
         await _context.Characters
-            .Include(c => c.BirthPlaceEntity)
-            .Include(c => c.DeathPlaceEntity)
-            .Include(c => c.Locations).ThenInclude(l => l.Place)
+            .Include(c => c.BirthPlaceLocation)
+            .Include(c => c.DeathPlaceLocation)
+            .Include(c => c.Locations).ThenInclude(l => l.Location)
             .Include(c => c.Affiliations).ThenInclude(a => a.Group)
             .Include(c => c.Languages).ThenInclude(l => l.Language)
             .FirstOrDefaultAsync(c => c.Id == id);

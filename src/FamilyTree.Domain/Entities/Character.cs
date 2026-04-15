@@ -19,8 +19,8 @@ public class Character : BaseEntity
     public string? BirthDateSuffix { get; set; }
     public DateOnly? DeathDate { get; set; }
     public string? DeathDateSuffix { get; set; }
-    public Guid? BirthPlaceEntityId { get; set; }
-    public Guid? DeathPlaceEntityId { get; set; }
+    public Guid? BirthPlaceLocationId { get; set; }
+    public Guid? DeathPlaceLocationId { get; set; }
     public string? Residence { get; set; }
     public string? Biography { get; set; }
     public string? ProfilePhotoUrl { get; set; }
@@ -34,8 +34,8 @@ public class Character : BaseEntity
 
     // Navigation
     public World World { get; set; } = null!;
-    public Entity? BirthPlaceEntity { get; set; }
-    public Entity? DeathPlaceEntity { get; set; }
+    public Location? BirthPlaceLocation { get; set; }
+    public Location? DeathPlaceLocation { get; set; }
     public Character? Parent1 { get; set; }
     public Character? Parent2 { get; set; }
     public ICollection<Character> ChildrenAsParent1 { get; set; } = [];
@@ -43,7 +43,7 @@ public class Character : BaseEntity
     public ICollection<CharacterFamilyTree> CharacterFamilyTrees { get; set; } = [];
     public ICollection<Relationship> RelationshipsAsCharacter1 { get; set; } = [];
     public ICollection<Relationship> RelationshipsAsCharacter2 { get; set; } = [];
-    public ICollection<EntityLocation> Locations { get; set; } = [];
+    public ICollection<CharacterLocation> Locations { get; set; } = [];
     public ICollection<EntityAffiliation> Affiliations { get; set; } = [];
     public ICollection<EntityLanguage> Languages { get; set; } = [];
 }

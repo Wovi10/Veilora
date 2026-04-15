@@ -24,10 +24,10 @@ public static class CharacterMapper
         BirthDateSuffix = character.BirthDateSuffix,
         DeathDate = character.DeathDate,
         DeathDateSuffix = character.DeathDateSuffix,
-        BirthPlaceEntityId = character.BirthPlaceEntityId,
-        BirthPlaceEntityName = character.BirthPlaceEntity?.Name,
-        DeathPlaceEntityId = character.DeathPlaceEntityId,
-        DeathPlaceEntityName = character.DeathPlaceEntity?.Name,
+        BirthPlaceLocationId = character.BirthPlaceLocationId,
+        BirthPlaceLocationName = character.BirthPlaceLocation?.Name,
+        DeathPlaceLocationId = character.DeathPlaceLocationId,
+        DeathPlaceLocationName = character.DeathPlaceLocation?.Name,
         Residence = character.Residence,
         Biography = character.Biography,
         ProfilePhotoUrl = character.ProfilePhotoUrl,
@@ -38,7 +38,7 @@ public static class CharacterMapper
         Parent1Id = character.Parent1Id,
         Parent2Id = character.Parent2Id,
         Locations = character.Locations
-            .Select(l => new EntityRefDto(l.PlaceId, l.Place?.Name ?? string.Empty)).ToList(),
+            .Select(l => new EntityRefDto(l.LocationId, l.Location?.Name ?? string.Empty)).ToList(),
         Affiliations = character.Affiliations
             .Select(a => new EntityRefDto(a.GroupId, a.Group?.Name ?? string.Empty)).ToList(),
         Languages = character.Languages
@@ -63,8 +63,8 @@ public static class CharacterMapper
         BirthDateSuffix = dto.BirthDateSuffix,
         DeathDate = dto.DeathDate,
         DeathDateSuffix = dto.DeathDateSuffix,
-        BirthPlaceEntityId = dto.BirthPlaceEntityId,
-        DeathPlaceEntityId = dto.DeathPlaceEntityId,
+        BirthPlaceLocationId = dto.BirthPlaceLocationId,
+        DeathPlaceLocationId = dto.DeathPlaceLocationId,
         Residence = dto.Residence,
         Biography = dto.Biography,
         ProfilePhotoUrl = dto.ProfilePhotoUrl,
@@ -90,7 +90,7 @@ public static class CharacterMapper
         character.BirthDateSuffix = dto.BirthDateSuffix;
         character.DeathDate = dto.DeathDate;
         character.DeathDateSuffix = dto.DeathDateSuffix;
-        // BirthPlaceEntityId and DeathPlaceEntityId are resolved and set by the service
+        // BirthPlaceLocationId and DeathPlaceLocationId are resolved and set by the service
         character.Residence = dto.Residence;
         character.Biography = dto.Biography;
         character.ProfilePhotoUrl = dto.ProfilePhotoUrl;

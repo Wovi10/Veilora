@@ -10,14 +10,18 @@ import EditIcon from '@mui/icons-material/Edit';
 import { getWorld } from '../api/worldsApi';
 import { getEntities } from '../api/entitiesApi';
 import { getCharactersByWorld } from '../api/charactersApi';
+import { getLocationsByWorld } from '../api/locationsApi';
 import type { WorldDto } from '../types/world';
 import type { EntityDto, EntityType } from '../types/entity';
 import type { CharacterDto } from '../types/character';
+import type { LocationDto } from '../types/location';
 import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
 import AddCharacterDialog from '../components/AddCharacterDialog';
 import AddEntityDialog from '../components/AddEntityDialog';
 import EditEntityDialog from '../components/EditEntityDialog';
+import AddLocationDialog from '../components/AddLocationDialog';
+import EditLocationDialog from '../components/EditLocationDialog';
 
 const PLURAL: Record<string, string> = {
   Character: 'Characters',
@@ -34,15 +38,18 @@ export default function EntityListPage() {
   const { userId } = useAuth();
 
   const isCharacterType = entityType === 'Character';
+  const isLocationType = entityType === 'Place';
   const plural = PLURAL[entityType ?? ''] ?? entityType ?? '';
 
   const [world, setWorld] = useState<WorldDto | null>(null);
   const [characters, setCharacters] = useState<CharacterDto[]>([]);
   const [entities, setEntities] = useState<EntityDto[]>([]);
+  const [locations, setLocations] = useState<LocationDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<EntityDto | null>(null);
+  const [editingLocation, setEditingLocation] = useState<LocationDto | null>(null);
 
   useEffect(() => {
     if (!worldId || !entityType) return;
@@ -52,6 +59,14 @@ export default function EntityListPage() {
           setWorld(w);
           setCharacters(chars.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
           setEntities(allEntities.filter(e => e.worldId === worldId));
+        })
+        .catch(() => setError('Failed to load'))
+        .finally(() => setLoading(false));
+    } else if (isLocationType) {
+      Promise.all([getWorld(worldId), getLocationsByWorld(worldId)])
+        .then(([w, locs]) => {
+          setWorld(w);
+          setLocations(locs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
         })
         .catch(() => setError('Failed to load'))
         .finally(() => setLoading(false));
@@ -67,7 +82,7 @@ export default function EntityListPage() {
         .catch(() => setError('Failed to load'))
         .finally(() => setLoading(false));
     }
-  }, [worldId, entityType, isCharacterType]);
+  }, [worldId, entityType, isCharacterType, isLocationType]);
 
   if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
   if (error)   return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
@@ -75,7 +90,7 @@ export default function EntityListPage() {
 
   const isOwner = !!userId && world.createdById === userId;
   const canEdit = isEditMode && isOwner;
-  const count = isCharacterType ? characters.length : entities.length;
+  const count = isCharacterType ? characters.length : isLocationType ? locations.length : entities.length;
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
@@ -113,6 +128,18 @@ export default function EntityListPage() {
             </Grid2>
           ))}
         </Grid2>
+      ) : isLocationType ? (
+        <Grid2 container spacing={2}>
+          {locations.map(location => (
+            <Grid2 key={location.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              <LocationCard
+                location={location}
+                canEdit={canEdit}
+                onEdit={() => setEditingLocation(location)}
+              />
+            </Grid2>
+          ))}
+        </Grid2>
       ) : (
         <Grid2 container spacing={2}>
           {entities.map(entity => (
@@ -145,7 +172,23 @@ export default function EntityListPage() {
         />
       )}
 
-      {worldId && !isCharacterType && (
+      {worldId && isLocationType && (
+        <AddLocationDialog
+          open={addOpen}
+          worldId={worldId}
+          onClose={() => setAddOpen(false)}
+          onCreated={location => {
+            setLocations(prev =>
+              [location, ...prev].sort(
+                (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+              )
+            );
+            setAddOpen(false);
+          }}
+        />
+      )}
+
+      {worldId && !isCharacterType && !isLocationType && (
         <AddEntityDialog
           open={addOpen}
           defaultType={entityType as EntityType}
@@ -174,6 +217,22 @@ export default function EntityListPage() {
           onDeleted={() => {
             setEntities(prev => prev.filter(e => e.id !== editingEntity.id));
             setEditingEntity(null);
+          }}
+        />
+      )}
+
+      {editingLocation && (
+        <EditLocationDialog
+          open
+          location={editingLocation}
+          onClose={() => setEditingLocation(null)}
+          onSaved={updated => {
+            setLocations(prev => prev.map(l => l.id === updated.id ? updated : l));
+            setEditingLocation(null);
+          }}
+          onDeleted={() => {
+            setLocations(prev => prev.filter(l => l.id !== editingLocation.id));
+            setEditingLocation(null);
           }}
         />
       )}
@@ -210,6 +269,35 @@ function CharacterCard({ character, onClick }: { character: CharacterDto; onClic
           </Typography>
         </CardContent>
       </CardActionArea>
+    </Card>
+  );
+}
+
+function LocationCard({ location, canEdit, onEdit }: { location: LocationDto; canEdit: boolean; onEdit: () => void }) {
+  return (
+    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
+      <CardContent sx={{ pb: '12px !important' }}>
+        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+          <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ flex: 1 }}>{location.name}</Typography>
+          {canEdit && (
+            <IconButton size="small" onClick={onEdit} sx={{ ml: 0.5, mt: -0.5 }}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
+        {location.description && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
+            {location.description}
+          </Typography>
+        )}
+        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+          Updated {new Date(location.updatedAt).toLocaleDateString('en-GB')}
+        </Typography>
+      </CardContent>
     </Card>
   );
 }

@@ -6,10 +6,12 @@ import {
 } from '@mui/material';
 import { updateCharacter, deleteCharacter } from '../api/charactersApi';
 import { getLanguagesByWorld, getOrCreateLanguage } from '../api/languagesApi';
+import { getLocationsByWorld } from '../api/locationsApi';
 import type { CharacterDto, Gender, UpdateCharacterDto } from '../types/character';
 import type { EntityDto } from '../types/entity';
 import type { EntityRefDto } from '../types/entityRef';
 import type { LanguageDto } from '../types/language';
+import type { LocationDto } from '../types/location';
 
 interface Props {
   open: boolean;
@@ -22,7 +24,7 @@ interface Props {
   onDeleted?: () => void;
 }
 
-type PlaceOrString = EntityRefDto | string;
+type LocationOrString = EntityRefDto | string;
 
 const GENDERS: Gender[] = ['Male', 'Female', 'Other', 'Unknown'];
 
@@ -43,9 +45,9 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   const [height, setHeight] = useState('');
   const [hairColour, setHairColour] = useState('');
 
-  const [birthPlaceEntity, setBirthPlaceEntity] = useState<EntityRefDto | string | null>(null);
+  const [birthPlaceLocation, setBirthPlaceLocation] = useState<EntityRefDto | string | null>(null);
   const [birthPlaceInput, setBirthPlaceInput] = useState('');
-  const [deathPlaceEntity, setDeathPlaceEntity] = useState<EntityRefDto | string | null>(null);
+  const [deathPlaceLocation, setDeathPlaceLocation] = useState<EntityRefDto | string | null>(null);
   const [deathPlaceInput, setDeathPlaceInput] = useState('');
   const [selectedLocations, setSelectedLocations] = useState<Array<EntityRefDto | string>>([]);
   const [selectedAffiliations, setSelectedAffiliations] = useState<Array<EntityRefDto | string>>([]);
@@ -54,15 +56,14 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
 
   const [selectedLanguages, setSelectedLanguages] = useState<Array<LanguageDto | string>>([]);
   const [availableLanguages, setAvailableLanguages] = useState<LanguageDto[]>([]);
+  const [availableLocations, setAvailableLocations] = useState<LocationDto[]>([]);
 
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState('');
 
-  const placeOptions: EntityRefDto[] = worldEntities
-    .filter(e => e.type === 'Place')
-    .map(e => ({ id: e.id, name: e.name }));
+  const locationOptions: EntityRefDto[] = availableLocations.map(l => ({ id: l.id, name: l.name }));
   const groupOptions: EntityRefDto[] = worldEntities
     .filter(e => e.type === 'Group')
     .map(e => ({ id: e.id, name: e.name }));
@@ -89,15 +90,15 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
     setPosition(character.position ?? '');
     setHeight(character.height ?? '');
     setHairColour(character.hairColour ?? '');
-    const birthPlace = character.birthPlaceEntityId
-      ? { id: character.birthPlaceEntityId, name: character.birthPlaceEntityName ?? '' }
+    const birthPlace = character.birthPlaceLocationId
+      ? { id: character.birthPlaceLocationId, name: character.birthPlaceLocationName ?? '' }
       : null;
-    setBirthPlaceEntity(birthPlace);
+    setBirthPlaceLocation(birthPlace);
     setBirthPlaceInput(birthPlace?.name ?? '');
-    const deathPlace = character.deathPlaceEntityId
-      ? { id: character.deathPlaceEntityId, name: character.deathPlaceEntityName ?? '' }
+    const deathPlace = character.deathPlaceLocationId
+      ? { id: character.deathPlaceLocationId, name: character.deathPlaceLocationName ?? '' }
       : null;
-    setDeathPlaceEntity(deathPlace);
+    setDeathPlaceLocation(deathPlace);
     setDeathPlaceInput(deathPlace?.name ?? '');
     setSelectedLocations(character.locations ?? [] as Array<EntityRefDto | string>);
     setSelectedAffiliations(character.affiliations ?? [] as Array<EntityRefDto | string>);
@@ -109,6 +110,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   useEffect(() => {
     if (!open || !worldId) return;
     getLanguagesByWorld(worldId).then(setAvailableLanguages).catch(() => {});
+    getLocationsByWorld(worldId).then(setAvailableLocations).catch(() => {});
   }, [open, worldId]);
 
   const handleDelete = async () => {
@@ -151,12 +153,12 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
         gender,
         birthDate: birthDate || undefined,
         birthDateSuffix: birthDateSuffix.trim() || undefined,
-        birthPlaceEntityId: typeof birthPlaceEntity !== 'string' ? (birthPlaceEntity?.id ?? null) : null,
-        birthPlaceName: typeof birthPlaceEntity === 'string' ? birthPlaceEntity.trim() : (birthPlaceInput.trim() && !birthPlaceEntity ? birthPlaceInput.trim() : undefined),
+        birthPlaceLocationId: typeof birthPlaceLocation !== 'string' ? (birthPlaceLocation?.id ?? null) : null,
+        birthPlaceName: typeof birthPlaceLocation === 'string' ? birthPlaceLocation.trim() : (birthPlaceInput.trim() && !birthPlaceLocation ? birthPlaceInput.trim() : undefined),
         deathDate: deathDate || undefined,
         deathDateSuffix: deathDateSuffix.trim() || undefined,
-        deathPlaceEntityId: typeof deathPlaceEntity !== 'string' ? (deathPlaceEntity?.id ?? null) : null,
-        deathPlaceName: typeof deathPlaceEntity === 'string' ? deathPlaceEntity.trim() : (deathPlaceInput.trim() && !deathPlaceEntity ? deathPlaceInput.trim() : undefined),
+        deathPlaceLocationId: typeof deathPlaceLocation !== 'string' ? (deathPlaceLocation?.id ?? null) : null,
+        deathPlaceName: typeof deathPlaceLocation === 'string' ? deathPlaceLocation.trim() : (deathPlaceInput.trim() && !deathPlaceLocation ? deathPlaceInput.trim() : undefined),
         otherNames: otherNames.trim() || undefined,
         position: position.trim() || undefined,
         height: height.trim() || undefined,
@@ -171,7 +173,6 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
         spouseIds: selectedSpouses.map(s => s.id),
         childIds: selectedChildren.map(c => c.id),
       };
-      console.log(dto)
       const updated = await updateCharacter(character.id, dto);
       onSaved(updated);
     } catch {
@@ -213,11 +214,11 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
           </Box>
           <Autocomplete
             freeSolo
-            options={placeOptions}
+            options={locationOptions}
             getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={birthPlaceEntity}
+            value={birthPlaceLocation}
             inputValue={birthPlaceInput}
-            onChange={(_, val) => setBirthPlaceEntity(val as PlaceOrString | null)}
+            onChange={(_, val) => setBirthPlaceLocation(val as LocationOrString | null)}
             onInputChange={(_, val) => setBirthPlaceInput(val)}
             renderInput={params => <TextField {...params} label="Birth Place" placeholder="Select or type to create…" />}
           />
@@ -227,21 +228,21 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
           </Box>
           <Autocomplete
             freeSolo
-            options={placeOptions}
+            options={locationOptions}
             getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={deathPlaceEntity}
+            value={deathPlaceLocation}
             inputValue={deathPlaceInput}
-            onChange={(_, val) => setDeathPlaceEntity(val as PlaceOrString | null)}
+            onChange={(_, val) => setDeathPlaceLocation(val as LocationOrString | null)}
             onInputChange={(_, val) => setDeathPlaceInput(val)}
             renderInput={params => <TextField {...params} label="Death Place" placeholder="Select or type to create…" />}
           />
           <Autocomplete
             multiple
             freeSolo
-            options={placeOptions}
+            options={locationOptions}
             getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
             value={selectedLocations}
-            onChange={(_, val) => setSelectedLocations(val as Array<PlaceOrString>)}
+            onChange={(_, val) => setSelectedLocations(val as Array<LocationOrString>)}
             renderTags={(val, getTagProps) =>
               val.map((opt, i) => (
                 <Chip {...getTagProps({ index: i })} key={typeof opt === 'string' ? opt : opt.id} label={typeof opt === 'string' ? opt : opt.name} size="small" />
@@ -255,7 +256,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
             options={groupOptions}
             getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
             value={selectedAffiliations}
-            onChange={(_, val) => setSelectedAffiliations(val as Array<PlaceOrString>)}
+            onChange={(_, val) => setSelectedAffiliations(val as Array<LocationOrString>)}
             renderTags={(val, getTagProps) =>
               val.map((opt, i) => (
                 <Chip {...getTagProps({ index: i })} key={typeof opt === 'string' ? opt : opt.id} label={typeof opt === 'string' ? opt : opt.name} size="small" />

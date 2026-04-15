@@ -14,9 +14,9 @@ public record UpdateCharacterDto
     public string? BirthDateSuffix { get; init; }
     public DateOnly? DeathDate { get; init; }
     public string? DeathDateSuffix { get; init; }
-    public Guid? BirthPlaceEntityId { get; init; }
+    public Guid? BirthPlaceLocationId { get; init; }
     public string? BirthPlaceName { get; init; }
-    public Guid? DeathPlaceEntityId { get; init; }
+    public Guid? DeathPlaceLocationId { get; init; }
     public string? DeathPlaceName { get; init; }
     public string? Residence { get; init; }
     public string? Gender { get; init; }
