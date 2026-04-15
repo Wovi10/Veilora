@@ -13,18 +13,20 @@ import { getWorld } from '../api/worldsApi';
 import { getEntities } from '../api/entitiesApi';
 import { getCharactersByWorld } from '../api/charactersApi';
 import { getFamilyTrees } from '../api/familyTreesApi';
+import { getLocationsByWorld } from '../api/locationsApi';
 import type { WorldDto } from '../types/world';
 import type { EntityDto, EntityType } from '../types/entity';
 import type { CharacterDto } from '../types/character';
 import type { FamilyTreeDto } from '../types/familyTree';
+import type { LocationDto } from '../types/location';
 import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
 import AddCharacterDialog from '../components/AddCharacterDialog';
 import AddEntityDialog from '../components/AddEntityDialog';
+import AddLocationDialog from '../components/AddLocationDialog';
 import NewFamilyTreeDialog from '../components/NewFamilyTreeDialog';
 
 const ENTITY_SECTIONS: { type: EntityType; plural: string }[] = [
-  { type: 'Place',    plural: 'Places'   },
   { type: 'Group',    plural: 'Groups'   },
   { type: 'Event',    plural: 'Events'   },
   { type: 'Concept',  plural: 'Concepts' },
@@ -39,19 +41,21 @@ export default function WorldPage() {
   const [world, setWorld] = useState<WorldDto | null>(null);
   const [characters, setCharacters] = useState<CharacterDto[]>([]);
   const [entities, setEntities] = useState<EntityDto[]>([]);
+  const [locations, setLocations] = useState<LocationDto[]>([]);
   const [familyTrees, setFamilyTrees] = useState<FamilyTreeDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const [addCharacterOpen, setAddCharacterOpen] = useState(false);
   const [addEntityOpen, setAddEntityOpen] = useState(false);
-  const [addEntityType, setAddEntityType] = useState<EntityType>('Place');
+  const [addEntityType, setAddEntityType] = useState<EntityType>('Group');
+  const [addLocationOpen, setAddLocationOpen] = useState(false);
   const [newFamilyTreeOpen, setNewFamilyTreeOpen] = useState(false);
 
   useEffect(() => {
     if (!worldId) return;
-    Promise.all([getWorld(worldId), getCharactersByWorld(worldId), getEntities(), getFamilyTrees()])
-      .then(([w, chars, allEntities, allTrees]) => {
+    Promise.all([getWorld(worldId), getCharactersByWorld(worldId), getEntities(), getFamilyTrees(), getLocationsByWorld(worldId)])
+      .then(([w, chars, allEntities, allTrees, locs]) => {
         setWorld(w);
         setCharacters(
           chars.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -60,6 +64,9 @@ export default function WorldPage() {
           allEntities
             .filter(e => e.worldId === worldId)
             .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        );
+        setLocations(
+          locs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
         );
         setFamilyTrees(allTrees.filter(t => t.worldId === worldId));
       })
@@ -145,7 +152,43 @@ export default function WorldPage() {
         <Divider sx={{ mt: 4 }} />
       </Box>
 
-      {/* Place / Group / Event / Concept sections */}
+      {/* Places (Locations) section */}
+      <Box mb={5}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h5" fontWeight={600}>Places</Typography>
+            <Button
+              size="small"
+              startIcon={<OpenInFullIcon fontSize="small" />}
+              onClick={() => navigate(`/worlds/${worldId}/entities/Place`)}
+              sx={{ textTransform: 'none', minWidth: 0 }}
+            >
+              View all
+            </Button>
+          </Box>
+          {canEdit && (
+            <Button size="small" startIcon={<AddIcon />} onClick={() => setAddLocationOpen(true)}>
+              Add Place
+            </Button>
+          )}
+        </Box>
+        {locations.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" fontStyle="italic">
+            No places yet.
+          </Typography>
+        ) : (
+          <Grid2 container spacing={2}>
+            {locations.map(location => (
+              <Grid2 key={location.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                <LocationCard location={location} />
+              </Grid2>
+            ))}
+          </Grid2>
+        )}
+        <Divider sx={{ mt: 4 }} />
+      </Box>
+
+      {/* Group / Event / Concept sections */}
       {ENTITY_SECTIONS.map(({ type, plural }) => {
         const sectionEntities = entities.filter(e => e.type === type);
         return (
@@ -235,6 +278,15 @@ export default function WorldPage() {
       )}
 
       {worldId && (
+        <AddLocationDialog
+          open={addLocationOpen}
+          worldId={worldId}
+          onClose={() => setAddLocationOpen(false)}
+          onCreated={location => { setLocations(prev => [location, ...prev]); setAddLocationOpen(false); }}
+        />
+      )}
+
+      {worldId && (
         <AddEntityDialog
           open={addEntityOpen}
           defaultType={addEntityType}
@@ -282,6 +334,25 @@ function CharacterCard({ character, onClick }: { character: CharacterDto; onClic
           )}
         </CardContent>
       </CardActionArea>
+    </Card>
+  );
+}
+
+function LocationCard({ location }: { location: LocationDto }) {
+  return (
+    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
+      <CardContent sx={{ pb: '12px !important' }}>
+        <Typography variant="subtitle1" fontWeight={600} noWrap>{location.name}</Typography>
+        {location.description && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
+            {location.description}
+          </Typography>
+        )}
+      </CardContent>
     </Card>
   );
 }
