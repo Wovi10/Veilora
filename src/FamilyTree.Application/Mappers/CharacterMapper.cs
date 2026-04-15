@@ -63,9 +63,15 @@ public static class CharacterMapper
         BirthDateSuffix = dto.BirthDateSuffix,
         DeathDate = dto.DeathDate,
         DeathDateSuffix = dto.DeathDateSuffix,
+        BirthPlaceEntityId = dto.BirthPlaceEntityId,
+        DeathPlaceEntityId = dto.DeathPlaceEntityId,
         Residence = dto.Residence,
         Biography = dto.Biography,
         ProfilePhotoUrl = dto.ProfilePhotoUrl,
+        OtherNames = dto.OtherNames,
+        Position = dto.Position,
+        Height = dto.Height,
+        HairColour = dto.HairColour,
         Parent1Id = dto.Parent1Id,
         Parent2Id = dto.Parent2Id
     };
@@ -84,8 +90,7 @@ public static class CharacterMapper
         character.BirthDateSuffix = dto.BirthDateSuffix;
         character.DeathDate = dto.DeathDate;
         character.DeathDateSuffix = dto.DeathDateSuffix;
-        character.BirthPlaceEntityId = dto.BirthPlaceEntityId;
-        character.DeathPlaceEntityId = dto.DeathPlaceEntityId;
+        // BirthPlaceEntityId and DeathPlaceEntityId are resolved and set by the service
         character.Residence = dto.Residence;
         character.Biography = dto.Biography;
         character.ProfilePhotoUrl = dto.ProfilePhotoUrl;

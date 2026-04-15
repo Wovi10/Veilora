@@ -227,6 +227,8 @@ export default function WorldPage() {
         <AddCharacterDialog
           open={addCharacterOpen}
           worldId={worldId}
+          worldCharacters={characters}
+          worldEntities={entities}
           onClose={() => setAddCharacterOpen(false)}
           onCreated={character => { setCharacters(prev => [character, ...prev]); setAddCharacterOpen(false); }}
         />

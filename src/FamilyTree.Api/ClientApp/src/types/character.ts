@@ -54,10 +54,25 @@ export interface CreateCharacterDto {
   birthDateSuffix?: string;
   deathDate?: string;
   deathDateSuffix?: string;
+  birthPlaceEntityId?: string;
+  birthPlaceName?: string;
+  deathPlaceEntityId?: string;
+  deathPlaceName?: string;
   residence?: string;
   biography?: string;
+  otherNames?: string;
+  position?: string;
+  height?: string;
+  hairColour?: string;
   parent1Id?: string;
   parent2Id?: string;
+  locationIds?: string[];
+  locationNames?: string[];
+  affiliationIds?: string[];
+  affiliationNames?: string[];
+  languageIds?: string[];
+  spouseIds?: string[];
+  childIds?: string[];
 }
 
 export interface UpdateCharacterDto {
@@ -74,7 +89,9 @@ export interface UpdateCharacterDto {
   deathDate?: string;
   deathDateSuffix?: string;
   birthPlaceEntityId?: string | null;
+  birthPlaceName?: string;
   deathPlaceEntityId?: string | null;
+  deathPlaceName?: string;
   residence?: string;
   biography?: string;
   profilePhotoUrl?: string;
@@ -85,7 +102,9 @@ export interface UpdateCharacterDto {
   parent1Id?: string | null;
   parent2Id?: string | null;
   locationIds: string[];
+  locationNames?: string[];
   affiliationIds: string[];
+  affiliationNames?: string[];
   languageIds: string[];
   spouseIds: string[];
   childIds: string[];

@@ -22,6 +22,8 @@ interface Props {
   onDeleted?: () => void;
 }
 
+type PlaceOrString = EntityRefDto | string;
+
 const GENDERS: Gender[] = ['Male', 'Female', 'Other', 'Unknown'];
 
 export default function EditCharacterDialog({ open, character, worldCharacters, worldEntities, worldId, onClose, onSaved, onDeleted }: Props) {
@@ -41,10 +43,12 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   const [height, setHeight] = useState('');
   const [hairColour, setHairColour] = useState('');
 
-  const [birthPlaceEntity, setBirthPlaceEntity] = useState<EntityRefDto | null>(null);
-  const [deathPlaceEntity, setDeathPlaceEntity] = useState<EntityRefDto | null>(null);
-  const [selectedLocations, setSelectedLocations] = useState<EntityRefDto[]>([]);
-  const [selectedAffiliations, setSelectedAffiliations] = useState<EntityRefDto[]>([]);
+  const [birthPlaceEntity, setBirthPlaceEntity] = useState<EntityRefDto | string | null>(null);
+  const [birthPlaceInput, setBirthPlaceInput] = useState('');
+  const [deathPlaceEntity, setDeathPlaceEntity] = useState<EntityRefDto | string | null>(null);
+  const [deathPlaceInput, setDeathPlaceInput] = useState('');
+  const [selectedLocations, setSelectedLocations] = useState<Array<EntityRefDto | string>>([]);
+  const [selectedAffiliations, setSelectedAffiliations] = useState<Array<EntityRefDto | string>>([]);
   const [selectedSpouses, setSelectedSpouses] = useState<EntityRefDto[]>([]);
   const [selectedChildren, setSelectedChildren] = useState<EntityRefDto[]>([]);
 
@@ -85,14 +89,18 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
     setPosition(character.position ?? '');
     setHeight(character.height ?? '');
     setHairColour(character.hairColour ?? '');
-    setBirthPlaceEntity(character.birthPlaceEntityId
+    const birthPlace = character.birthPlaceEntityId
       ? { id: character.birthPlaceEntityId, name: character.birthPlaceEntityName ?? '' }
-      : null);
-    setDeathPlaceEntity(character.deathPlaceEntityId
+      : null;
+    setBirthPlaceEntity(birthPlace);
+    setBirthPlaceInput(birthPlace?.name ?? '');
+    const deathPlace = character.deathPlaceEntityId
       ? { id: character.deathPlaceEntityId, name: character.deathPlaceEntityName ?? '' }
-      : null);
-    setSelectedLocations(character.locations ?? []);
-    setSelectedAffiliations(character.affiliations ?? []);
+      : null;
+    setDeathPlaceEntity(deathPlace);
+    setDeathPlaceInput(deathPlace?.name ?? '');
+    setSelectedLocations(character.locations ?? [] as Array<EntityRefDto | string>);
+    setSelectedAffiliations(character.affiliations ?? [] as Array<EntityRefDto | string>);
     setSelectedLanguages(character.languages ?? []);
     setSelectedSpouses(character.spouses ?? []);
     setSelectedChildren(character.children ?? []);
@@ -143,23 +151,27 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
         gender,
         birthDate: birthDate || undefined,
         birthDateSuffix: birthDateSuffix.trim() || undefined,
+        birthPlaceEntityId: typeof birthPlaceEntity !== 'string' ? (birthPlaceEntity?.id ?? null) : null,
+        birthPlaceName: typeof birthPlaceEntity === 'string' ? birthPlaceEntity.trim() : (birthPlaceInput.trim() && !birthPlaceEntity ? birthPlaceInput.trim() : undefined),
         deathDate: deathDate || undefined,
         deathDateSuffix: deathDateSuffix.trim() || undefined,
-        birthPlaceEntityId: birthPlaceEntity?.id ?? null,
-        deathPlaceEntityId: deathPlaceEntity?.id ?? null,
+        deathPlaceEntityId: typeof deathPlaceEntity !== 'string' ? (deathPlaceEntity?.id ?? null) : null,
+        deathPlaceName: typeof deathPlaceEntity === 'string' ? deathPlaceEntity.trim() : (deathPlaceInput.trim() && !deathPlaceEntity ? deathPlaceInput.trim() : undefined),
         otherNames: otherNames.trim() || undefined,
         position: position.trim() || undefined,
         height: height.trim() || undefined,
         hairColour: hairColour.trim() || undefined,
         parent1Id: parent1Id || null,
         parent2Id: parent2Id || null,
-        locationIds: selectedLocations.map(l => l.id),
-        affiliationIds: selectedAffiliations.map(a => a.id),
+        locationIds: selectedLocations.filter((l): l is EntityRefDto => typeof l !== 'string').map(l => l.id),
+        locationNames: selectedLocations.filter((l): l is string => typeof l === 'string'),
+        affiliationIds: selectedAffiliations.filter((a): a is EntityRefDto => typeof a !== 'string').map(a => a.id),
+        affiliationNames: selectedAffiliations.filter((a): a is string => typeof a === 'string'),
         languageIds: resolvedLanguageIds,
         spouseIds: selectedSpouses.map(s => s.id),
         childIds: selectedChildren.map(c => c.id),
       };
-
+      console.log(dto)
       const updated = await updateCharacter(character.id, dto);
       onSaved(updated);
     } catch {
@@ -200,48 +212,56 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
             <TextField label="Birth Era / Suffix" placeholder="e.g. TA, SA, FA" value={birthDateSuffix} onChange={e => setBirthDateSuffix(e.target.value)} sx={{ maxWidth: 160 }} />
           </Box>
           <Autocomplete
+            freeSolo
             options={placeOptions}
-            getOptionLabel={opt => opt.name}
+            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
             value={birthPlaceEntity}
-            onChange={(_, val) => setBirthPlaceEntity(val)}
-            isOptionEqualToValue={(opt, val) => opt.id === val.id}
-            renderInput={params => <TextField {...params} label="Birth Place" />}
+            inputValue={birthPlaceInput}
+            onChange={(_, val) => setBirthPlaceEntity(val as PlaceOrString | null)}
+            onInputChange={(_, val) => setBirthPlaceInput(val)}
+            renderInput={params => <TextField {...params} label="Birth Place" placeholder="Select or type to create…" />}
           />
           <Box display="flex" gap={2}>
             <TextField label="Death Date" type="date" value={deathDate} onChange={e => setDeathDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
             <TextField label="Death Era / Suffix" placeholder="e.g. TA, SA, FA" value={deathDateSuffix} onChange={e => setDeathDateSuffix(e.target.value)} sx={{ maxWidth: 160 }} />
           </Box>
           <Autocomplete
+            freeSolo
             options={placeOptions}
-            getOptionLabel={opt => opt.name}
+            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
             value={deathPlaceEntity}
-            onChange={(_, val) => setDeathPlaceEntity(val)}
-            isOptionEqualToValue={(opt, val) => opt.id === val.id}
-            renderInput={params => <TextField {...params} label="Death Place" />}
+            inputValue={deathPlaceInput}
+            onChange={(_, val) => setDeathPlaceEntity(val as PlaceOrString | null)}
+            onInputChange={(_, val) => setDeathPlaceInput(val)}
+            renderInput={params => <TextField {...params} label="Death Place" placeholder="Select or type to create…" />}
           />
           <Autocomplete
             multiple
+            freeSolo
             options={placeOptions}
-            getOptionLabel={opt => opt.name}
+            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
             value={selectedLocations}
-            onChange={(_, val) => setSelectedLocations(val)}
-            isOptionEqualToValue={(opt, val) => opt.id === val.id}
+            onChange={(_, val) => setSelectedLocations(val as Array<PlaceOrString>)}
             renderTags={(val, getTagProps) =>
-              val.map((opt, i) => <Chip {...getTagProps({ index: i })} key={opt.id} label={opt.name} size="small" />)
+              val.map((opt, i) => (
+                <Chip {...getTagProps({ index: i })} key={typeof opt === 'string' ? opt : opt.id} label={typeof opt === 'string' ? opt : opt.name} size="small" />
+              ))
             }
-            renderInput={params => <TextField {...params} label="Locations" placeholder="Add location…" />}
+            renderInput={params => <TextField {...params} label="Locations" placeholder="Add or type to create…" />}
           />
           <Autocomplete
             multiple
+            freeSolo
             options={groupOptions}
-            getOptionLabel={opt => opt.name}
+            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
             value={selectedAffiliations}
-            onChange={(_, val) => setSelectedAffiliations(val)}
-            isOptionEqualToValue={(opt, val) => opt.id === val.id}
+            onChange={(_, val) => setSelectedAffiliations(val as Array<PlaceOrString>)}
             renderTags={(val, getTagProps) =>
-              val.map((opt, i) => <Chip {...getTagProps({ index: i })} key={opt.id} label={opt.name} size="small" />)
+              val.map((opt, i) => (
+                <Chip {...getTagProps({ index: i })} key={typeof opt === 'string' ? opt : opt.id} label={typeof opt === 'string' ? opt : opt.name} size="small" />
+              ))
             }
-            renderInput={params => <TextField {...params} label="Affiliations" placeholder="Add group…" />}
+            renderInput={params => <TextField {...params} label="Affiliations" placeholder="Add or type to create…" />}
           />
           <Autocomplete
             multiple
