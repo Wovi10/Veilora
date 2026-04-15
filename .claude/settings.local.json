@@ -11,7 +11,9 @@
       "mcp__Neon__list_projects",
       "mcp__Neon__list_organizations",
       "mcp__Neon__get_connection_string",
-      "mcp__Neon__describe_project"
+      "mcp__Neon__describe_project",
+      "Bash(cd:*)",
+      "Bash(node:*)"
     ]
   }
 }
