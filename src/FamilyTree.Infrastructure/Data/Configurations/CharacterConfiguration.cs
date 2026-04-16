@@ -20,9 +20,7 @@ public class CharacterConfiguration : IEntityTypeConfiguration<Character>
         builder.Property(c => c.Species).HasMaxLength(100);
         builder.Property(c => c.Gender).HasConversion<string>().HasMaxLength(20);
         builder.Property(c => c.BirthDate).HasColumnType("date");
-        builder.Property(c => c.BirthDateSuffix).HasMaxLength(50);
         builder.Property(c => c.DeathDate).HasColumnType("date");
-        builder.Property(c => c.DeathDateSuffix).HasMaxLength(50);
         builder.Property(c => c.Residence).HasMaxLength(200);
         builder.Property(c => c.Biography).HasColumnType("text");
         builder.Property(c => c.ProfilePhotoUrl).HasMaxLength(500);
@@ -44,6 +42,16 @@ public class CharacterConfiguration : IEntityTypeConfiguration<Character>
         builder.HasOne(c => c.Parent2)
             .WithMany(c => c.ChildrenAsParent2)
             .HasForeignKey(c => c.Parent2Id)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(c => c.BirthDateSuffix)
+            .WithMany()
+            .HasForeignKey(c => c.BirthDateSuffixId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(c => c.DeathDateSuffix)
+            .WithMany()
+            .HasForeignKey(c => c.DeathDateSuffixId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(c => c.BirthPlaceLocation)

@@ -16,9 +16,9 @@ public class Character : BaseEntity
     public string? Species { get; set; }
     public Gender? Gender { get; set; }
     public DateOnly? BirthDate { get; set; }
-    public string? BirthDateSuffix { get; set; }
+    public Guid? BirthDateSuffixId { get; set; }
     public DateOnly? DeathDate { get; set; }
-    public string? DeathDateSuffix { get; set; }
+    public Guid? DeathDateSuffixId { get; set; }
     public Guid? BirthPlaceLocationId { get; set; }
     public Guid? DeathPlaceLocationId { get; set; }
     public string? Residence { get; set; }
@@ -34,6 +34,8 @@ public class Character : BaseEntity
 
     // Navigation
     public World World { get; set; } = null!;
+    public DateSuffix? BirthDateSuffix { get; set; }
+    public DateSuffix? DeathDateSuffix { get; set; }
     public Location? BirthPlaceLocation { get; set; }
     public Location? DeathPlaceLocation { get; set; }
     public Character? Parent1 { get; set; }

@@ -125,14 +125,14 @@ export default function CharacterPage() {
           <Typography variant="body2" color="text.secondary" mt={1.5}>
             {character.birthDate && (
               <>
-                Born {formatDate(character.birthDate, character.birthDateSuffix)}
+                Born {formatDate(character.birthDate, character.birthDateSuffixAbbreviation)}
                 {character.birthPlaceLocationName && ` in ${character.birthPlaceLocationName}`}
               </>
             )}
             {character.birthDate && character.deathDate && ' · '}
             {character.deathDate && (
               <>
-                Died {formatDate(character.deathDate, character.deathDateSuffix)}
+                Died {formatDate(character.deathDate, character.deathDateSuffixAbbreviation)}
                 {character.deathPlaceLocationName && ` in ${character.deathPlaceLocationName}`}
               </>
             )}

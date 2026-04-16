@@ -11,6 +11,8 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
 {
     public async Task<Character?> GetByIdWithDetailsAsync(Guid id) =>
         await _context.Characters
+            .Include(c => c.BirthDateSuffix)
+            .Include(c => c.DeathDateSuffix)
             .Include(c => c.BirthPlaceLocation)
             .Include(c => c.DeathPlaceLocation)
             .Include(c => c.Locations).ThenInclude(l => l.Location)

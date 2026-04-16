@@ -15,9 +15,11 @@ export interface CharacterDto {
   species?: string;
   gender?: Gender;
   birthDate?: string;
-  birthDateSuffix?: string;
+  birthDateSuffixId?: string;
+  birthDateSuffixAbbreviation?: string;
   deathDate?: string;
-  deathDateSuffix?: string;
+  deathDateSuffixId?: string;
+  deathDateSuffixAbbreviation?: string;
   birthPlaceLocationId?: string;
   birthPlaceLocationName?: string;
   deathPlaceLocationId?: string;
@@ -51,9 +53,9 @@ export interface CreateCharacterDto {
   species?: string;
   gender?: Gender;
   birthDate?: string;
-  birthDateSuffix?: string;
+  birthDateSuffixId?: string;
   deathDate?: string;
-  deathDateSuffix?: string;
+  deathDateSuffixId?: string;
   birthPlaceLocationId?: string;
   birthPlaceName?: string;
   deathPlaceLocationId?: string;
@@ -85,9 +87,9 @@ export interface UpdateCharacterDto {
   species?: string;
   gender?: Gender;
   birthDate?: string;
-  birthDateSuffix?: string;
+  birthDateSuffixId?: string | null;
   deathDate?: string;
-  deathDateSuffix?: string;
+  deathDateSuffixId?: string | null;
   birthPlaceLocationId?: string | null;
   birthPlaceName?: string;
   deathPlaceLocationId?: string | null;

@@ -7,11 +7,13 @@ import {
 import { updateCharacter, deleteCharacter } from '../api/charactersApi';
 import { getLanguagesByWorld, getOrCreateLanguage } from '../api/languagesApi';
 import { getLocationsByWorld } from '../api/locationsApi';
+import { getDateSuffixesByWorld } from '../api/dateSuffixesApi';
 import type { CharacterDto, Gender, UpdateCharacterDto } from '../types/character';
 import type { EntityDto } from '../types/entity';
 import type { EntityRefDto } from '../types/entityRef';
 import type { LanguageDto } from '../types/language';
 import type { LocationDto } from '../types/location';
+import type { DateSuffixDto } from '../types/dateSuffix';
 
 interface Props {
   open: boolean;
@@ -34,9 +36,9 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   const [species, setSpecies] = useState('');
   const [gender, setGender] = useState<Gender>('Unknown');
   const [birthDate, setBirthDate] = useState('');
-  const [birthDateSuffix, setBirthDateSuffix] = useState('');
+  const [birthDateSuffixId, setBirthDateSuffixId] = useState('');
   const [deathDate, setDeathDate] = useState('');
-  const [deathDateSuffix, setDeathDateSuffix] = useState('');
+  const [deathDateSuffixId, setDeathDateSuffixId] = useState('');
   const [description, setDescription] = useState('');
   const [parent1Id, setParent1Id] = useState('');
   const [parent2Id, setParent2Id] = useState('');
@@ -57,6 +59,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   const [selectedLanguages, setSelectedLanguages] = useState<Array<LanguageDto | string>>([]);
   const [availableLanguages, setAvailableLanguages] = useState<LanguageDto[]>([]);
   const [availableLocations, setAvailableLocations] = useState<LocationDto[]>([]);
+  const [availableDateSuffixes, setAvailableDateSuffixes] = useState<DateSuffixDto[]>([]);
 
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -80,9 +83,9 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
     setSpecies(character.species ?? '');
     setGender(character.gender ?? 'Unknown');
     setBirthDate(character.birthDate ?? '');
-    setBirthDateSuffix(character.birthDateSuffix ?? '');
+    setBirthDateSuffixId(character.birthDateSuffixId ?? '');
     setDeathDate(character.deathDate ?? '');
-    setDeathDateSuffix(character.deathDateSuffix ?? '');
+    setDeathDateSuffixId(character.deathDateSuffixId ?? '');
     setDescription(character.description ?? '');
     setParent1Id(character.parent1Id ?? '');
     setParent2Id(character.parent2Id ?? '');
@@ -111,6 +114,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
     if (!open || !worldId) return;
     getLanguagesByWorld(worldId).then(setAvailableLanguages).catch(() => {});
     getLocationsByWorld(worldId).then(setAvailableLocations).catch(() => {});
+    getDateSuffixesByWorld(worldId).then(setAvailableDateSuffixes).catch(() => {});
   }, [open, worldId]);
 
   const handleDelete = async () => {
@@ -152,11 +156,11 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
         species: species.trim() || undefined,
         gender,
         birthDate: birthDate || undefined,
-        birthDateSuffix: birthDateSuffix.trim() || undefined,
+        birthDateSuffixId: birthDateSuffixId || null,
         birthPlaceLocationId: typeof birthPlaceLocation !== 'string' ? (birthPlaceLocation?.id ?? null) : null,
         birthPlaceName: typeof birthPlaceLocation === 'string' ? birthPlaceLocation.trim() : (birthPlaceInput.trim() && !birthPlaceLocation ? birthPlaceInput.trim() : undefined),
         deathDate: deathDate || undefined,
-        deathDateSuffix: deathDateSuffix.trim() || undefined,
+        deathDateSuffixId: deathDateSuffixId || null,
         deathPlaceLocationId: typeof deathPlaceLocation !== 'string' ? (deathPlaceLocation?.id ?? null) : null,
         deathPlaceName: typeof deathPlaceLocation === 'string' ? deathPlaceLocation.trim() : (deathPlaceInput.trim() && !deathPlaceLocation ? deathPlaceInput.trim() : undefined),
         otherNames: otherNames.trim() || undefined,
@@ -210,7 +214,15 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
           </Box>
           <Box display="flex" gap={2}>
             <TextField label="Birth Date" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
-            <TextField label="Birth Era / Suffix" placeholder="e.g. TA, SA, FA" value={birthDateSuffix} onChange={e => setBirthDateSuffix(e.target.value)} sx={{ maxWidth: 160 }} />
+            {availableDateSuffixes.length > 0 && (
+              <FormControl sx={{ minWidth: 140 }}>
+                <InputLabel>Birth Era</InputLabel>
+                <Select value={birthDateSuffixId} label="Birth Era" onChange={e => setBirthDateSuffixId(e.target.value)}>
+                  <MenuItem value="">None</MenuItem>
+                  {availableDateSuffixes.map(s => <MenuItem key={s.id} value={s.id}>{s.abbreviation} — {s.name}</MenuItem>)}
+                </Select>
+              </FormControl>
+            )}
           </Box>
           <Autocomplete
             freeSolo
@@ -224,7 +236,15 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
           />
           <Box display="flex" gap={2}>
             <TextField label="Death Date" type="date" value={deathDate} onChange={e => setDeathDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
-            <TextField label="Death Era / Suffix" placeholder="e.g. TA, SA, FA" value={deathDateSuffix} onChange={e => setDeathDateSuffix(e.target.value)} sx={{ maxWidth: 160 }} />
+            {availableDateSuffixes.length > 0 && (
+              <FormControl sx={{ minWidth: 140 }}>
+                <InputLabel>Death Era</InputLabel>
+                <Select value={deathDateSuffixId} label="Death Era" onChange={e => setDeathDateSuffixId(e.target.value)}>
+                  <MenuItem value="">None</MenuItem>
+                  {availableDateSuffixes.map(s => <MenuItem key={s.id} value={s.id}>{s.abbreviation} — {s.name}</MenuItem>)}
+                </Select>
+              </FormControl>
+            )}
           </Box>
           <Autocomplete
             freeSolo

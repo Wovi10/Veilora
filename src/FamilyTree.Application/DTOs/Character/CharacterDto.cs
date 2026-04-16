@@ -16,9 +16,11 @@ public record CharacterDto
     public string? MaidenName { get; init; }
     public string? Species { get; init; }
     public DateOnly? BirthDate { get; init; }
-    public string? BirthDateSuffix { get; init; }
+    public Guid? BirthDateSuffixId { get; init; }
+    public string? BirthDateSuffixAbbreviation { get; init; }
     public DateOnly? DeathDate { get; init; }
-    public string? DeathDateSuffix { get; init; }
+    public Guid? DeathDateSuffixId { get; init; }
+    public string? DeathDateSuffixAbbreviation { get; init; }
     public Guid? BirthPlaceLocationId { get; init; }
     public string? BirthPlaceLocationName { get; init; }
     public Guid? DeathPlaceLocationId { get; init; }

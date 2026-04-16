@@ -94,10 +94,10 @@ function CharacterNode({ data }: NodeProps<{ character: CharacterDto; onEdit: (c
         {(character.birthDate || character.deathDate) && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.3 }}>
             {character.birthDate && (
-              <Typography variant="caption" color="text.secondary">° {fmt(character.birthDate)} {character.birthDateSuffix ? ` ${character.birthDateSuffix}` : ''}</Typography>
+              <Typography variant="caption" color="text.secondary">° {fmt(character.birthDate)}{character.birthDateSuffixAbbreviation ? ` ${character.birthDateSuffixAbbreviation}` : ''}</Typography>
             )}
             {character.deathDate && (
-              <Typography variant="caption" color="text.secondary">† {fmt(character.deathDate)} {character.deathDateSuffix ? ` ${character.deathDateSuffix}` : ''}</Typography>
+              <Typography variant="caption" color="text.secondary">† {fmt(character.deathDate)}{character.deathDateSuffixAbbreviation ? ` ${character.deathDateSuffixAbbreviation}` : ''}</Typography>
             )}
           </Box>
         )}
