@@ -10,3 +10,5 @@ src/FamilyTree.Api/ClientApp/dist/
 
 # Generated SQL scripts
 setup.sql
+# Local environment overrides
+src/FamilyTree.Api/appsettings.Neon.json
