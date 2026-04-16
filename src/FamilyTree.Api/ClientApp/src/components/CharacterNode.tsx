@@ -39,10 +39,30 @@ function CharacterNode({ data }: NodeProps<{ character: CharacterDto; onEdit: (c
 
   return (
     <>
-      <Handle type="source" position={Position.Top}    id="top"    />
-      <Handle type="source" position={Position.Bottom} id="bottom" />
-      <Handle type="source" position={Position.Left}   id="left"   />
-      <Handle type="source" position={Position.Right}  id="right"  />
+      {isEditMode &&
+          <>
+            <Handle
+              type="target"
+              position={Position.Top}
+              style={{
+                width: '100%',
+                height: '100%',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: 0,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                transform: 'none',
+                zIndex: 0,
+              }}
+            />
+            <Handle type="source" position={Position.Top}    id="top"    style={{ zIndex: 1 }} />
+            <Handle type="source" position={Position.Bottom} id="bottom" style={{ zIndex: 1 }} />
+            <Handle type="source" position={Position.Left}   id="left"   style={{ zIndex: 1 }} />
+            <Handle type="source" position={Position.Right}  id="right"  style={{ zIndex: 1 }} />
+          </>
+      }
       <Paper
         variant="outlined"
         onMouseEnter={() => setHovered(true)}
