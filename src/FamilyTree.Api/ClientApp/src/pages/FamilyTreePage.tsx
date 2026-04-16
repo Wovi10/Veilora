@@ -253,6 +253,7 @@ export default function FamilyTreePage() {
     if (!editingCharacter) return;
     const id = editingCharacter.id;
     setTree(prev => prev ? { ...prev, characters: prev.characters.filter(e => e.character.id !== id) } : prev);
+    setWorldCharacters(prev => prev.filter(c => c.id !== id));
     setNodes(prev => prev.filter(n => n.id !== id));
     setEdges(prev => prev.filter(e => e.source !== id && e.target !== id));
     setEditingCharacter(null);
