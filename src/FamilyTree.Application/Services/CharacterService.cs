@@ -242,7 +242,11 @@ public class CharacterService(
         if (existingId is not null) return existingId;
         if (string.IsNullOrWhiteSpace(name)) return null;
 
-        var location = new Location { Name = name.Trim(), WorldId = worldId };
+        var trimmed = name.Trim();
+        var existing = await locationRepository.FindByNameAsync(trimmed, worldId);
+        if (existing is not null) return existing.Id;
+
+        var location = new Location { Name = trimmed, WorldId = worldId };
         await locationRepository.AddAsync(location);
         await locationRepository.SaveChangesAsync();
         return location.Id;
@@ -254,7 +258,15 @@ public class CharacterService(
         var result = new List<Guid>(existingIds);
         foreach (var name in names.Where(n => !string.IsNullOrWhiteSpace(n)))
         {
-            var location = new Location { Name = name.Trim(), WorldId = worldId };
+            var trimmed = name.Trim();
+            var existing = await locationRepository.FindByNameAsync(trimmed, worldId);
+            if (existing is not null)
+            {
+                result.Add(existing.Id);
+                continue;
+            }
+
+            var location = new Location { Name = trimmed, WorldId = worldId };
             await locationRepository.AddAsync(location);
             await locationRepository.SaveChangesAsync();
             result.Add(location.Id);

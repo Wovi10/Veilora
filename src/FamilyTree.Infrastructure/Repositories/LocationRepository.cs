@@ -13,4 +13,9 @@ public class LocationRepository(ApplicationDbContext context) : Repository<Locat
             .Where(l => l.WorldId == worldId)
             .OrderBy(l => l.Name)
             .ToListAsync();
+
+    public async Task<Location?> FindByNameAsync(string name, Guid worldId) =>
+        await _context.Locations
+            .Where(l => l.WorldId == worldId && l.Name.ToLower() == name.ToLower())
+            .FirstOrDefaultAsync();
 }
