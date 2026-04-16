@@ -151,6 +151,19 @@ export default function WorldSettingsPage() {
 
       <Divider sx={{ my: 5 }} />
 
+      {/* Date suffixes */}
+      <Typography variant="h6" fontWeight={600} mb={1}>Date eras / suffixes</Typography>
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        Define the eras or ages used in this world (e.g. First Age, Third Age). Characters can then reference these when recording birth and death dates. The order determines how eras are compared chronologically.
+      </Typography>
+      <Paper variant="outlined" sx={{ px: 3, py: 4, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary" fontStyle="italic">
+          Era management coming soon.
+        </Typography>
+      </Paper>
+
+      <Divider sx={{ my: 5 }} />
+
       {/* Permissions */}
       <Typography variant="h6" fontWeight={600} mb={2}>Shared with</Typography>
 
