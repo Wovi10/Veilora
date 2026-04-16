@@ -1,3 +1,4 @@
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.DTOs.Location;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Services.Interfaces;
@@ -12,8 +13,16 @@ namespace FamilyTree.Api.Controllers;
 public class LocationsController(ILocationService locationService) : ControllerBase
 {
     [HttpGet("world/{worldId:guid}")]
-    public async Task<IActionResult> GetByWorld(Guid worldId) =>
-        Ok(await locationService.GetByWorldIdAsync(worldId));
+    public async Task<IActionResult> GetByWorld(
+        Guid worldId,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize)
+    {
+        if (page.HasValue || pageSize.HasValue)
+            return Ok(await locationService.GetPagedAsync(
+                new LocationCriteria(worldId, page ?? 1, pageSize ?? 20)));
+        return Ok(await locationService.GetByWorldIdAsync(worldId));
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)

@@ -1,3 +1,4 @@
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.DTOs.FamilyTree;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Services.Interfaces;
@@ -12,8 +13,18 @@ namespace FamilyTree.Api.Controllers;
 public class FamilyTreesController(IFamilyTreeService familyTreeService, ICharacterService characterService, IRelationshipService relationshipService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll() =>
-        Ok(await familyTreeService.GetAllAsync());
+    public async Task<IActionResult> GetAll(
+        [FromQuery] Guid? worldId,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize)
+    {
+        if (worldId.HasValue && (page.HasValue || pageSize.HasValue))
+            return Ok(await familyTreeService.GetPagedAsync(
+                new FamilyTreeCriteria(worldId.Value, page ?? 1, pageSize ?? 20)));
+        if (worldId.HasValue)
+            return Ok(await familyTreeService.GetByWorldIdAsync(worldId.Value));
+        return Ok(await familyTreeService.GetAllAsync());
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)

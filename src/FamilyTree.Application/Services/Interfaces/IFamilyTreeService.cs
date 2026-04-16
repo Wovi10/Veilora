@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.DTOs.FamilyTree;
 
 namespace FamilyTree.Application.Services.Interfaces;
@@ -6,6 +8,7 @@ public interface IFamilyTreeService
 {
     Task<IEnumerable<FamilyTreeDto>> GetAllAsync();
     Task<IEnumerable<FamilyTreeDto>> GetByWorldIdAsync(Guid worldId);
+    Task<PagedResult<FamilyTreeDto>> GetPagedAsync(FamilyTreeCriteria criteria);
     Task<FamilyTreeDto?> GetByIdAsync(Guid id);
     Task<FamilyTreeWithEntitiesDto?> GetFamilyTreeWithEntitiesAsync(Guid id);
     Task<FamilyTreeDto> CreateAsync(CreateFamilyTreeDto dto);

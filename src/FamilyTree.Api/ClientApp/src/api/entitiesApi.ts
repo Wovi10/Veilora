@@ -1,8 +1,14 @@
 import { apiFetch } from './apiFetch';
 import type { EntityDto, CreateEntityDto, UpdateEntityDto } from '../types/entity';
+import type { PagedResult } from '../types/paged';
 
 export async function getEntities(): Promise<EntityDto[]> {
   const res = await apiFetch('/api/entities');
+  return res.json();
+}
+
+export async function getEntitiesByTypePaged(worldId: string, type: string, page: number, pageSize: number): Promise<PagedResult<EntityDto>> {
+  const res = await apiFetch(`/api/entities?worldId=${worldId}&type=${type}&page=${page}&pageSize=${pageSize}`);
   return res.json();
 }
 

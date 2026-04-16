@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Domain.Entities;
 using FamilyTree.Infrastructure.Data;
@@ -21,6 +23,20 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
             .AsNoTracking()
             .Where(c => c.WorldId == worldId)
             .ToListAsync();
+
+    public async Task<PagedResult<Character>> GetPagedAsync(CharacterCriteria criteria)
+    {
+        var query = _context.Characters
+            .AsNoTracking()
+            .Where(c => c.WorldId == criteria.WorldId)
+            .OrderBy(c => c.Name);
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((criteria.Page - 1) * criteria.PageSize)
+            .Take(criteria.PageSize)
+            .ToListAsync();
+        return new PagedResult<Character>(items, totalCount, criteria.Page, criteria.PageSize);
+    }
 
     public async Task<IEnumerable<Character>> SearchAsync(string searchTerm)
     {
