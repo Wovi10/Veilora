@@ -57,7 +57,7 @@ export default function EntityListPage() {
       Promise.all([getWorld(worldId), getCharactersByWorld(worldId), getEntities()])
         .then(([w, chars, allEntities]) => {
           setWorld(w);
-          setCharacters(chars.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
+          setCharacters(chars);
           setEntities(allEntities.filter(e => e.worldId === worldId));
         })
         .catch(() => setError('Failed to load'))
@@ -163,9 +163,15 @@ export default function EntityListPage() {
           onClose={() => setAddOpen(false)}
           onCreated={character => {
             setCharacters(prev =>
-              [character, ...prev].sort(
-                (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-              )
+              [...prev, character].sort((a, b) => {
+                const lastA = a.lastName ?? '\uffff';
+                const lastB = b.lastName ?? '\uffff';
+                if (lastA !== lastB) return lastA.localeCompare(lastB);
+                if (!a.birthDate && !b.birthDate) return 0;
+                if (!a.birthDate) return 1;
+                if (!b.birthDate) return -1;
+                return a.birthDate < b.birthDate ? -1 : a.birthDate > b.birthDate ? 1 : 0;
+              })
             );
             setAddOpen(false);
           }}

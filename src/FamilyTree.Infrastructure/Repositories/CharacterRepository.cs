@@ -22,6 +22,10 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
         await _context.Characters
             .AsNoTracking()
             .Where(c => c.WorldId == worldId)
+            .OrderBy(c => c.LastName == null)
+            .ThenBy(c => c.LastName)
+            .ThenBy(c => c.BirthDate == null)
+            .ThenBy(c => c.BirthDate)
             .ToListAsync();
 
     public async Task<PagedResult<Character>> GetPagedAsync(CharacterCriteria criteria)
@@ -29,7 +33,10 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
         var query = _context.Characters
             .AsNoTracking()
             .Where(c => c.WorldId == criteria.WorldId)
-            .OrderBy(c => c.Name);
+            .OrderBy(c => c.LastName == null)
+            .ThenBy(c => c.LastName)
+            .ThenBy(c => c.BirthDate == null)
+            .ThenBy(c => c.BirthDate);
         var totalCount = await query.CountAsync();
         var items = await query
             .Skip((criteria.Page - 1) * criteria.PageSize)
