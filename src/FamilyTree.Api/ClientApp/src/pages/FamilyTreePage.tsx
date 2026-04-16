@@ -246,6 +246,7 @@ export default function FamilyTreePage() {
         data: { character, onEdit: handleEdit, isNew: true },
       }];
     });
+    setWorldCharacters(prev => [...prev, character]);
   }, [handleEdit]);
 
   const handleCharacterDeleted = useCallback(() => {
