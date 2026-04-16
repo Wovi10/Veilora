@@ -329,8 +329,8 @@ function CharacterCard({ character, onClick }: { character: CharacterDto; onClic
           )}
           {character.birthDate && (
             <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-              °&nbsp;{new Date(character.birthDate).toLocaleDateString('en-GB')}{character.birthDateSuffix && ` ${character.birthDateSuffix}`}
-              {character.deathDate && ` — †\u00a0${new Date(character.deathDate).toLocaleDateString('en-GB')}${character.deathDateSuffix ? ` ${character.deathDateSuffix}` : ''}`}
+              °&nbsp;{new Date(character.birthDate).toLocaleDateString('en-GB')}{character.birthDateSuffixAbbreviation && ` ${character.birthDateSuffixAbbreviation}`}
+              {character.deathDate && ` — †\u00a0${new Date(character.deathDate).toLocaleDateString('en-GB')}${character.deathDateSuffixAbbreviation ? ` ${character.deathDateSuffixAbbreviation}` : ''}`}
             </Typography>
           )}
           {character.description && !character.birthDate && (

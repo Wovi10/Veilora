@@ -21,9 +21,11 @@ public static class CharacterMapper
         Species = character.Species,
         Gender = character.Gender?.ToString(),
         BirthDate = character.BirthDate,
-        BirthDateSuffix = character.BirthDateSuffix,
+        BirthDateSuffixId = character.BirthDateSuffixId,
+        BirthDateSuffixAbbreviation = character.BirthDateSuffix?.Abbreviation,
         DeathDate = character.DeathDate,
-        DeathDateSuffix = character.DeathDateSuffix,
+        DeathDateSuffixId = character.DeathDateSuffixId,
+        DeathDateSuffixAbbreviation = character.DeathDateSuffix?.Abbreviation,
         BirthPlaceLocationId = character.BirthPlaceLocationId,
         BirthPlaceLocationName = character.BirthPlaceLocation?.Name,
         DeathPlaceLocationId = character.DeathPlaceLocationId,
@@ -60,9 +62,9 @@ public static class CharacterMapper
         Species = dto.Species,
         Gender = dto.Gender is null ? null : Enum.Parse<Gender>(dto.Gender),
         BirthDate = dto.BirthDate,
-        BirthDateSuffix = dto.BirthDateSuffix,
+        BirthDateSuffixId = dto.BirthDateSuffixId,
         DeathDate = dto.DeathDate,
-        DeathDateSuffix = dto.DeathDateSuffix,
+        DeathDateSuffixId = dto.DeathDateSuffixId,
         BirthPlaceLocationId = dto.BirthPlaceLocationId,
         DeathPlaceLocationId = dto.DeathPlaceLocationId,
         Residence = dto.Residence,
@@ -87,9 +89,9 @@ public static class CharacterMapper
         character.Species = dto.Species;
         character.Gender = dto.Gender is null ? null : Enum.Parse<Gender>(dto.Gender);
         character.BirthDate = dto.BirthDate;
-        character.BirthDateSuffix = dto.BirthDateSuffix;
+        character.BirthDateSuffixId = dto.BirthDateSuffixId;
         character.DeathDate = dto.DeathDate;
-        character.DeathDateSuffix = dto.DeathDateSuffix;
+        character.DeathDateSuffixId = dto.DeathDateSuffixId;
         // BirthPlaceLocationId and DeathPlaceLocationId are resolved and set by the service
         character.Residence = dto.Residence;
         character.Biography = dto.Biography;

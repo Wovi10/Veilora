@@ -12,9 +12,9 @@ public record CreateCharacterDto
     public string? MaidenName { get; init; }
     public string? Species { get; init; }
     public DateOnly? BirthDate { get; init; }
-    public string? BirthDateSuffix { get; init; }
+    public Guid? BirthDateSuffixId { get; init; }
     public DateOnly? DeathDate { get; init; }
-    public string? DeathDateSuffix { get; init; }
+    public Guid? DeathDateSuffixId { get; init; }
     public Guid? BirthPlaceLocationId { get; init; }
     public string? BirthPlaceName { get; init; }
     public Guid? DeathPlaceLocationId { get; init; }

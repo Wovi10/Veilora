@@ -7,12 +7,14 @@ import {
 import { createCharacter } from '../api/charactersApi';
 import { getLanguagesByWorld, getOrCreateLanguage } from '../api/languagesApi';
 import { getLocationsByWorld } from '../api/locationsApi';
+import { getDateSuffixesByWorld } from '../api/dateSuffixesApi';
 import type { CharacterDto } from '../types/character';
 import type { Gender } from '../types/character';
 import type { EntityDto } from '../types/entity';
 import type { EntityRefDto } from '../types/entityRef';
 import type { LanguageDto } from '../types/language';
 import type { LocationDto } from '../types/location';
+import type { DateSuffixDto } from '../types/dateSuffix';
 
 interface Props {
   open: boolean;
@@ -35,11 +37,11 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
   const [height, setHeight] = useState('');
   const [hairColour, setHairColour] = useState('');
   const [birthDate, setBirthDate] = useState('');
-  const [birthDateSuffix, setBirthDateSuffix] = useState('');
+  const [birthDateSuffixId, setBirthDateSuffixId] = useState('');
   const [birthPlaceLocation, setBirthPlaceLocation] = useState<EntityRefDto | string | null>(null);
   const [birthPlaceInput, setBirthPlaceInput] = useState('');
   const [deathDate, setDeathDate] = useState('');
-  const [deathDateSuffix, setDeathDateSuffix] = useState('');
+  const [deathDateSuffixId, setDeathDateSuffixId] = useState('');
   const [deathPlaceLocation, setDeathPlaceLocation] = useState<EntityRefDto | string | null>(null);
   const [deathPlaceInput, setDeathPlaceInput] = useState('');
   const [selectedLocations, setSelectedLocations] = useState<Array<EntityRefDto | string>>([]);
@@ -47,6 +49,7 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
   const [selectedLanguages, setSelectedLanguages] = useState<Array<LanguageDto | string>>([]);
   const [availableLanguages, setAvailableLanguages] = useState<LanguageDto[]>([]);
   const [availableLocations, setAvailableLocations] = useState<LocationDto[]>([]);
+  const [availableDateSuffixes, setAvailableDateSuffixes] = useState<DateSuffixDto[]>([]);
   const [selectedSpouses, setSelectedSpouses] = useState<EntityRefDto[]>([]);
   const [selectedChildren, setSelectedChildren] = useState<EntityRefDto[]>([]);
   const [parent1Id, setParent1Id] = useState('');
@@ -59,13 +62,18 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
     if (!open || !worldId) return;
     getLanguagesByWorld(worldId).then(setAvailableLanguages).catch(() => {});
     getLocationsByWorld(worldId).then(setAvailableLocations).catch(() => {});
+    getDateSuffixesByWorld(worldId).then(suffixes => {
+      setAvailableDateSuffixes(suffixes);
+      const def = suffixes.find(s => s.isDefault);
+      if (def) { setBirthDateSuffixId(def.id); setDeathDateSuffixId(def.id); }
+    }).catch(() => {});
   }, [open, worldId]);
 
   const resetForm = () => {
     setFirstName(''); setLastName(''); setOtherNames(''); setPosition('');
     setSpecies(''); setGender('Unknown'); setHeight(''); setHairColour('');
-    setBirthDate(''); setBirthDateSuffix(''); setBirthPlaceLocation(null); setBirthPlaceInput('');
-    setDeathDate(''); setDeathDateSuffix(''); setDeathPlaceLocation(null); setDeathPlaceInput('');
+    setBirthDate(''); setBirthDateSuffixId(''); setBirthPlaceLocation(null); setBirthPlaceInput('');
+    setDeathDate(''); setDeathDateSuffixId(''); setDeathPlaceLocation(null); setDeathPlaceInput('');
     setSelectedLocations([]); setSelectedAffiliations([]); setSelectedLanguages([]);
     setSelectedSpouses([]); setSelectedChildren([]);
     setParent1Id(''); setParent2Id('');
@@ -102,11 +110,11 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
         height: height.trim() || undefined,
         hairColour: hairColour.trim() || undefined,
         birthDate: birthDate || undefined,
-        birthDateSuffix: birthDateSuffix.trim() || undefined,
+        birthDateSuffixId: birthDateSuffixId || undefined,
         birthPlaceLocationId: typeof birthPlaceLocation !== 'string' ? birthPlaceLocation?.id : undefined,
         birthPlaceName: typeof birthPlaceLocation === 'string' ? birthPlaceLocation.trim() : (birthPlaceInput.trim() && !birthPlaceLocation ? birthPlaceInput.trim() : undefined),
         deathDate: deathDate || undefined,
-        deathDateSuffix: deathDateSuffix.trim() || undefined,
+        deathDateSuffixId: deathDateSuffixId || undefined,
         deathPlaceLocationId: typeof deathPlaceLocation !== 'string' ? deathPlaceLocation?.id : undefined,
         deathPlaceName: typeof deathPlaceLocation === 'string' ? deathPlaceLocation.trim() : (deathPlaceInput.trim() && !deathPlaceLocation ? deathPlaceInput.trim() : undefined),
         parent1Id: parent1Id || undefined,
@@ -161,7 +169,15 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
           </Box>
           <Box display="flex" gap={2}>
             <TextField label="Birth Date" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
-            <TextField label="Birth Era / Suffix" placeholder="e.g. TA, SA, FA" value={birthDateSuffix} onChange={e => setBirthDateSuffix(e.target.value)} sx={{ maxWidth: 160 }} />
+            {availableDateSuffixes.length > 0 && (
+              <FormControl sx={{ minWidth: 140 }}>
+                <InputLabel>Birth Era</InputLabel>
+                <Select value={birthDateSuffixId} label="Birth Era" onChange={e => setBirthDateSuffixId(e.target.value)}>
+                  <MenuItem value="">None</MenuItem>
+                  {availableDateSuffixes.map(s => <MenuItem key={s.id} value={s.id}>{s.abbreviation} — {s.name}</MenuItem>)}
+                </Select>
+              </FormControl>
+            )}
           </Box>
           <Autocomplete
             freeSolo
@@ -175,7 +191,15 @@ export default function AddCharacterDialog({ open, worldId, worldCharacters, wor
           />
           <Box display="flex" gap={2}>
             <TextField label="Death Date" type="date" value={deathDate} onChange={e => setDeathDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
-            <TextField label="Death Era / Suffix" placeholder="e.g. TA, SA, FA" value={deathDateSuffix} onChange={e => setDeathDateSuffix(e.target.value)} sx={{ maxWidth: 160 }} />
+            {availableDateSuffixes.length > 0 && (
+              <FormControl sx={{ minWidth: 140 }}>
+                <InputLabel>Death Era</InputLabel>
+                <Select value={deathDateSuffixId} label="Death Era" onChange={e => setDeathDateSuffixId(e.target.value)}>
+                  <MenuItem value="">None</MenuItem>
+                  {availableDateSuffixes.map(s => <MenuItem key={s.id} value={s.id}>{s.abbreviation} — {s.name}</MenuItem>)}
+                </Select>
+              </FormControl>
+            )}
           </Box>
           <Autocomplete
             freeSolo
