@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Domain.Entities;
 using FamilyTree.Infrastructure.Data;
@@ -18,4 +20,18 @@ public class LocationRepository(ApplicationDbContext context) : Repository<Locat
         await _context.Locations
             .Where(l => l.WorldId == worldId && l.Name.ToLower() == name.ToLower())
             .FirstOrDefaultAsync();
+
+    public async Task<PagedResult<Location>> GetPagedAsync(LocationCriteria criteria)
+    {
+        var query = _context.Locations
+            .AsNoTracking()
+            .Where(l => l.WorldId == criteria.WorldId)
+            .OrderBy(l => l.Name);
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((criteria.Page - 1) * criteria.PageSize)
+            .Take(criteria.PageSize)
+            .ToListAsync();
+        return new PagedResult<Location>(items, totalCount, criteria.Page, criteria.PageSize);
+    }
 }

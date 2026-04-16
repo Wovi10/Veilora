@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.DTOs.Entity;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Mappers;
@@ -68,5 +70,13 @@ public class EntityService(
     {
         var entities = await entityRepository.SearchAsync(searchTerm);
         return entities.Select(EntityMapper.ToDto);
+    }
+
+    public async Task<PagedResult<EntityDto>> GetPagedAsync(EntityCriteria criteria)
+    {
+        var paged = await entityRepository.GetPagedAsync(criteria);
+        return new PagedResult<EntityDto>(
+            paged.Items.Select(EntityMapper.ToDto).ToList(),
+            paged.TotalCount, paged.Page, paged.PageSize);
     }
 }

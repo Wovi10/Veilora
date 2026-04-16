@@ -10,10 +10,10 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { getWorld } from '../api/worldsApi';
-import { getEntities } from '../api/entitiesApi';
-import { getCharactersByWorld } from '../api/charactersApi';
-import { getFamilyTrees } from '../api/familyTreesApi';
-import { getLocationsByWorld } from '../api/locationsApi';
+import { getEntitiesByTypePaged } from '../api/entitiesApi';
+import { getCharactersByWorldPaged } from '../api/charactersApi';
+import { getFamilyTreesByWorldPaged } from '../api/familyTreesApi';
+import { getLocationsByWorldPaged } from '../api/locationsApi';
 import type { WorldDto } from '../types/world';
 import type { EntityDto, EntityType } from '../types/entity';
 import type { CharacterDto } from '../types/character';
@@ -40,7 +40,7 @@ export default function WorldPage() {
 
   const [world, setWorld] = useState<WorldDto | null>(null);
   const [characters, setCharacters] = useState<CharacterDto[]>([]);
-  const [entities, setEntities] = useState<EntityDto[]>([]);
+  const [entitiesByType, setEntitiesByType] = useState<Record<EntityType, EntityDto[]>>({} as Record<EntityType, EntityDto[]>);
   const [locations, setLocations] = useState<LocationDto[]>([]);
   const [familyTrees, setFamilyTrees] = useState<FamilyTreeDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,21 +54,25 @@ export default function WorldPage() {
 
   useEffect(() => {
     if (!worldId) return;
-    Promise.all([getWorld(worldId), getCharactersByWorld(worldId), getEntities(), getFamilyTrees(), getLocationsByWorld(worldId)])
-      .then(([w, chars, allEntities, allTrees, locs]) => {
+    Promise.all([
+      getWorld(worldId),
+      getCharactersByWorldPaged(worldId, 1, 4),
+      getLocationsByWorldPaged(worldId, 1, 4),
+      getEntitiesByTypePaged(worldId, 'Group', 1, 4),
+      getEntitiesByTypePaged(worldId, 'Event', 1, 4),
+      getEntitiesByTypePaged(worldId, 'Concept', 1, 4),
+      getFamilyTreesByWorldPaged(worldId, 1, 4),
+    ])
+      .then(([w, chars, locs, groups, events, concepts, trees]) => {
         setWorld(w);
-        setCharacters(
-          chars.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        );
-        setEntities(
-          allEntities
-            .filter(e => e.worldId === worldId)
-            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        );
-        setLocations(
-          locs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        );
-        setFamilyTrees(allTrees.filter(t => t.worldId === worldId));
+        setCharacters(chars.items);
+        setLocations(locs.items);
+        setEntitiesByType({
+          Group: groups.items,
+          Event: events.items,
+          Concept: concepts.items,
+        } as Record<EntityType, EntityDto[]>);
+        setFamilyTrees(trees.items);
       })
       .catch(() => setError('Failed to load world'))
       .finally(() => setLoading(false));
@@ -190,7 +194,7 @@ export default function WorldPage() {
 
       {/* Group / Event / Concept sections */}
       {ENTITY_SECTIONS.map(({ type, plural }) => {
-        const sectionEntities = entities.filter(e => e.type === type);
+        const sectionEntities = entitiesByType[type] ?? [];
         return (
           <Box key={type} mb={5}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
@@ -271,7 +275,7 @@ export default function WorldPage() {
           open={addCharacterOpen}
           worldId={worldId}
           worldCharacters={characters}
-          worldEntities={entities}
+          worldEntities={entitiesByType['Group'] ?? []}
           onClose={() => setAddCharacterOpen(false)}
           onCreated={character => { setCharacters(prev => [character, ...prev]); setAddCharacterOpen(false); }}
         />
@@ -292,7 +296,13 @@ export default function WorldPage() {
           defaultType={addEntityType}
           worldId={worldId}
           onClose={() => setAddEntityOpen(false)}
-          onCreated={entity => { setEntities(prev => [entity, ...prev]); setAddEntityOpen(false); }}
+          onCreated={entity => {
+            setEntitiesByType(prev => ({
+              ...prev,
+              [entity.type]: [entity, ...(prev[entity.type as EntityType] ?? [])],
+            }));
+            setAddEntityOpen(false);
+          }}
         />
       )}
 

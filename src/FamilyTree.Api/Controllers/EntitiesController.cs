@@ -1,3 +1,4 @@
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.DTOs.Entity;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Services.Interfaces;
@@ -12,8 +13,21 @@ namespace FamilyTree.Api.Controllers;
 public class EntitiesController(IEntityService entityService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll() =>
-        Ok(await entityService.GetAllAsync());
+    public async Task<IActionResult> GetAll(
+        [FromQuery] Guid? worldId,
+        [FromQuery] string? type,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize)
+    {
+        if (worldId.HasValue && (page.HasValue || pageSize.HasValue))
+            return Ok(await entityService.GetPagedAsync(
+                new EntityCriteria(worldId.Value, type, page ?? 1, pageSize ?? 20)));
+        if (worldId.HasValue && type is not null)
+            return Ok(await entityService.GetByWorldIdAndTypeAsync(worldId.Value, type));
+        if (worldId.HasValue)
+            return Ok(await entityService.GetByWorldIdAsync(worldId.Value));
+        return Ok(await entityService.GetAllAsync());
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)

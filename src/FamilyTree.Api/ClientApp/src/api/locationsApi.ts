@@ -1,8 +1,14 @@
 import { apiFetch } from './apiFetch';
 import type { LocationDto, CreateLocationDto, UpdateLocationDto } from '../types/location';
+import type { PagedResult } from '../types/paged';
 
 export async function getLocationsByWorld(worldId: string): Promise<LocationDto[]> {
   const res = await apiFetch(`/api/locations/world/${worldId}`);
+  return res.json();
+}
+
+export async function getLocationsByWorldPaged(worldId: string, page: number, pageSize: number): Promise<PagedResult<LocationDto>> {
+  const res = await apiFetch(`/api/locations/world/${worldId}?page=${page}&pageSize=${pageSize}`);
   return res.json();
 }
 

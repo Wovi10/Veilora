@@ -1,9 +1,15 @@
 import { apiFetch } from './apiFetch';
 import type { FamilyTreeDto, FamilyTreeWithEntitiesDto, CreateFamilyTreeDto, UpdateEntityPositionDto } from '../types/familyTree';
 import type { RelationshipDto } from '../types/relationship';
+import type { PagedResult } from '../types/paged';
 
 export async function getFamilyTrees(): Promise<FamilyTreeDto[]> {
   const res = await apiFetch('/api/family-trees');
+  return res.json();
+}
+
+export async function getFamilyTreesByWorldPaged(worldId: string, page: number, pageSize: number): Promise<PagedResult<FamilyTreeDto>> {
+  const res = await apiFetch(`/api/family-trees?worldId=${worldId}&page=${page}&pageSize=${pageSize}`);
   return res.json();
 }
 

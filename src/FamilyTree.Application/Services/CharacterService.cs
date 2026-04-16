@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.DTOs.Character;
 using FamilyTree.Application.DTOs.Entity;
 using FamilyTree.Application.Exceptions;
@@ -28,6 +30,14 @@ public class CharacterService(
     {
         var characters = await characterRepository.GetByWorldIdAsync(worldId);
         return characters.Select(CharacterMapper.ToDto);
+    }
+
+    public async Task<PagedResult<CharacterDto>> GetPagedAsync(CharacterCriteria criteria)
+    {
+        var paged = await characterRepository.GetPagedAsync(criteria);
+        return new PagedResult<CharacterDto>(
+            paged.Items.Select(CharacterMapper.ToDto).ToList(),
+            paged.TotalCount, paged.Page, paged.PageSize);
     }
 
     public async Task<IEnumerable<CharacterDto>> SearchAsync(string searchTerm)

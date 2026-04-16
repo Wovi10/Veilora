@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Domain.Entities;
 using FamilyTree.Domain.Enums;
@@ -30,5 +32,24 @@ public class EntityRepository(ApplicationDbContext context) : Repository<Entity>
             .AsNoTracking()
             .Where(e => e.WorldId == worldId && e.Type == entityType)
             .ToListAsync();
+    }
+
+    public async Task<PagedResult<Entity>> GetPagedAsync(EntityCriteria criteria)
+    {
+        var query = _context.Entities
+            .AsNoTracking()
+            .Where(e => e.WorldId == criteria.WorldId);
+        if (criteria.Type is not null)
+        {
+            var entityType = Enum.Parse<EntityType>(criteria.Type);
+            query = query.Where(e => e.Type == entityType);
+        }
+        query = query.OrderBy(e => e.Name);
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((criteria.Page - 1) * criteria.PageSize)
+            .Take(criteria.PageSize)
+            .ToListAsync();
+        return new PagedResult<Entity>(items, totalCount, criteria.Page, criteria.PageSize);
     }
 }

@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.Repositories.Interfaces;
 using FamilyTree.Domain.Entities;
 using FamilyTree.Infrastructure.Data;
@@ -33,6 +35,20 @@ public class FamilyTreeRepository(ApplicationDbContext context) : Repository<Fam
             .AsNoTracking()
             .Where(ft => ft.WorldId == worldId)
             .ToListAsync();
+
+    public async Task<PagedResult<FamilyTreeEntity>> GetPagedAsync(FamilyTreeCriteria criteria)
+    {
+        var query = _context.FamilyTrees
+            .AsNoTracking()
+            .Where(ft => ft.WorldId == criteria.WorldId)
+            .OrderBy(ft => ft.Name);
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((criteria.Page - 1) * criteria.PageSize)
+            .Take(criteria.PageSize)
+            .ToListAsync();
+        return new PagedResult<FamilyTreeEntity>(items, totalCount, criteria.Page, criteria.PageSize);
+    }
 
     public async Task AddCharacterToFamilyTreeAsync(Guid familyTreeId, Guid characterId)
     {

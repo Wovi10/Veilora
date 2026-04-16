@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.DTOs.Location;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Mappers;
@@ -51,5 +53,13 @@ public class LocationService(
             ?? throw new NotFoundException(nameof(Location), id);
         await locationRepository.DeleteAsync(location);
         await locationRepository.SaveChangesAsync();
+    }
+
+    public async Task<PagedResult<LocationDto>> GetPagedAsync(LocationCriteria criteria)
+    {
+        var paged = await locationRepository.GetPagedAsync(criteria);
+        return new PagedResult<LocationDto>(
+            paged.Items.Select(LocationMapper.ToDto).ToList(),
+            paged.TotalCount, paged.Page, paged.PageSize);
     }
 }

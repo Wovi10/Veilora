@@ -1,3 +1,5 @@
+using FamilyTree.Application.Common;
+using FamilyTree.Application.Criteria;
 using FamilyTree.Application.DTOs.FamilyTree;
 using FamilyTree.Application.Exceptions;
 using FamilyTree.Application.Mappers;
@@ -22,6 +24,14 @@ public class FamilyTreeService(
     {
         var trees = await familyTreeRepository.GetByWorldIdAsync(worldId);
         return trees.Select(FamilyTreeMapper.ToDto);
+    }
+
+    public async Task<PagedResult<FamilyTreeDto>> GetPagedAsync(FamilyTreeCriteria criteria)
+    {
+        var paged = await familyTreeRepository.GetPagedAsync(criteria);
+        return new PagedResult<FamilyTreeDto>(
+            paged.Items.Select(FamilyTreeMapper.ToDto).ToList(),
+            paged.TotalCount, paged.Page, paged.PageSize);
     }
 
     public async Task<FamilyTreeDto?> GetByIdAsync(Guid id)

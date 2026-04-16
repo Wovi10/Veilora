@@ -1,8 +1,14 @@
 import { apiFetch } from './apiFetch';
 import type { CharacterDto, CreateCharacterDto, UpdateCharacterDto } from '../types/character';
+import type { PagedResult } from '../types/paged';
 
 export async function getCharactersByWorld(worldId: string): Promise<CharacterDto[]> {
   const res = await apiFetch(`/api/characters?worldId=${worldId}`);
+  return res.json();
+}
+
+export async function getCharactersByWorldPaged(worldId: string, page: number, pageSize: number): Promise<PagedResult<CharacterDto>> {
+  const res = await apiFetch(`/api/characters?worldId=${worldId}&page=${page}&pageSize=${pageSize}`);
   return res.json();
 }
 
