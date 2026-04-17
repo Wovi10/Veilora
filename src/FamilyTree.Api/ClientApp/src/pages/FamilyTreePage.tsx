@@ -165,6 +165,7 @@ export default function FamilyTreePage() {
   const [tree, setTree] = useState<FamilyTreeWithEntitiesDto | null>(null);
   const [worldCharacters, setWorldCharacters] = useState<CharacterDto[]>([]);
   const [worldEntities, setWorldEntities] = useState<EntityDto[]>([]);
+  const [relationships, setRelationships] = useState<RelationshipDto[]>([]);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,6 +204,7 @@ export default function FamilyTreePage() {
           getFamilyTreeRelationships(familyTreeId).catch(() => [] as RelationshipDto[]),
         ]);
         setTree(treeData);
+        setRelationships(rels);
 
         const [worldChars, allEntities] = await Promise.all([
           getCharactersByWorld(treeData.worldId).catch(() => [] as CharacterDto[]),
@@ -280,16 +282,18 @@ export default function FamilyTreePage() {
   const handleRedrawLines = useCallback(() => {
     if (!tree) return;
     const chars = tree.characters.map(e => e.character);
-    setEdges(prev => {
-      const nonParentEdges = prev.filter(e => !e.id.startsWith('parent-'));
-      return [...nonParentEdges, ...buildParentEdges(chars, handleParentBendsChange)];
-    });
-  }, [tree, handleParentBendsChange]);
+    const posMap = new Map(nodes.map(n => [n.id, n.position]));
+    setEdges([
+      ...buildParentEdges(chars, handleParentBendsChange),
+      ...buildRelationshipEdges(relationships, posMap, handleEdgeBendChange),
+    ]);
+  }, [tree, nodes, relationships, handleParentBendsChange, handleEdgeBendChange]);
 
   const handleRelationshipCreated = useCallback((rel: RelationshipDto) => {
     const n1 = nodes.find(n => n.id === rel.character1Id);
     const n2 = nodes.find(n => n.id === rel.character2Id);
     const handles = n1 && n2 ? pickHandles(n1.position, n2.position) : { sourceHandle: 'bottom', targetHandle: 'top' };
+    setRelationships(prev => [...prev, rel]);
     setEdges(prev => [...prev, {
       id: rel.id,
       source: rel.character1Id,
