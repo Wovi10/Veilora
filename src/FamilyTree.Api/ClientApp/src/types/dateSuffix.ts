@@ -2,7 +2,9 @@ export interface DateSuffixDto {
   id: string;
   name: string;
   abbreviation: string;
-  order: number;
+  anchorYear: number;
+  scale: number;
+  isReversed: boolean;
   isDefault: boolean;
   worldId: string;
 }
@@ -10,7 +12,9 @@ export interface DateSuffixDto {
 export interface CreateDateSuffixDto {
   name: string;
   abbreviation: string;
-  order: number;
+  anchorYear: number;
+  scale: number;
+  isReversed: boolean;
   isDefault: boolean;
   worldId: string;
 }
@@ -18,6 +22,8 @@ export interface CreateDateSuffixDto {
 export interface UpdateDateSuffixDto {
   name: string;
   abbreviation: string;
-  order: number;
+  anchorYear: number;
+  scale: number;
+  isReversed: boolean;
   isDefault: boolean;
 }

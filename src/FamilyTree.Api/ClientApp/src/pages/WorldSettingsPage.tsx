@@ -4,10 +4,14 @@ import {
   Box, Typography, CircularProgress, Alert, Button, Paper,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Switch, IconButton, TextField, Divider, Dialog, DialogTitle,
-  DialogContent, DialogContentText, DialogActions,
+  DialogContent, DialogContentText, DialogActions, Checkbox,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
 import { getWorld, updateWorld, deleteWorld, transferOwnership } from '../api/worldsApi';
 import {
   addPermissionByEmail,
@@ -16,8 +20,21 @@ import {
   NotFoundError,
   getPermissions
 } from '../api/worldPermissionsApi';
+import { getDateSuffixesByWorld, createDateSuffix, updateDateSuffix, deleteDateSuffix } from '../api/dateSuffixesApi';
 import type { WorldPermissionDto } from '../types/worldPermission';
+import type { DateSuffixDto } from '../types/dateSuffix';
 import { useAuth } from '../context/AuthContext';
+
+interface EraDraft {
+  abbreviation: string;
+  name: string;
+  anchorYear: string;
+  scale: string;
+  isReversed: boolean;
+  isDefault: boolean;
+}
+
+const emptyDraft: EraDraft = { abbreviation: '', name: '', anchorYear: '0', scale: '1', isReversed: false, isDefault: false };
 
 export default function WorldSettingsPage() {
   const { worldId } = useParams<{ worldId: string }>();
@@ -34,6 +51,13 @@ export default function WorldSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState('');
+
+  // Date eras
+  const [eras, setEras] = useState<DateSuffixDto[]>([]);
+  const [editingEraId, setEditingEraId] = useState<string | 'new' | null>(null);
+  const [eraDraft, setEraDraft] = useState<EraDraft>(emptyDraft);
+  const [eraSaving, setEraSaving] = useState(false);
+  const [eraError, setEraError] = useState('');
 
   // Permissions
   const [permissions, setPermissions] = useState<WorldPermissionDto[]>([]);
@@ -54,8 +78,8 @@ export default function WorldSettingsPage() {
 
   useEffect(() => {
     if (!worldId) return;
-    Promise.all([getWorld(worldId), getPermissions(worldId)])
-      .then(([world, perms]) => {
+    Promise.all([getWorld(worldId), getPermissions(worldId), getDateSuffixesByWorld(worldId)])
+      .then(([world, perms, suffixes]) => {
         if (world.createdById !== userId) {
           navigate(`/worlds/${worldId}`, { replace: true });
           return;
@@ -64,6 +88,7 @@ export default function WorldSettingsPage() {
         setAuthor(world.author ?? '');
         setDescription(world.description ?? '');
         setPermissions(perms);
+        setEras(suffixes);
       })
       .catch(() => setError('Failed to load settings.'))
       .finally(() => setLoading(false));
@@ -83,6 +108,72 @@ export default function WorldSettingsPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function startEditEra(era: DateSuffixDto) {
+    setEditingEraId(era.id);
+    setEraDraft({
+      abbreviation: era.abbreviation,
+      name: era.name,
+      anchorYear: String(era.anchorYear),
+      scale: String(era.scale),
+      isReversed: era.isReversed,
+      isDefault: era.isDefault,
+    });
+    setEraError('');
+  }
+
+  function startAddEra() {
+    setEditingEraId('new');
+    setEraDraft(emptyDraft);
+    setEraError('');
+  }
+
+  async function saveEra() {
+    if (!worldId) return;
+    const anchorYear = parseInt(eraDraft.anchorYear, 10);
+    const scale = parseFloat(eraDraft.scale);
+    if (!eraDraft.abbreviation.trim() || !eraDraft.name.trim()) {
+      setEraError('Suffix and name are required.');
+      return;
+    }
+    if (isNaN(anchorYear)) { setEraError('Anchor year must be an integer.'); return; }
+    if (isNaN(scale) || scale <= 0) { setEraError('Scale must be a positive number.'); return; }
+
+    setEraSaving(true);
+    setEraError('');
+    try {
+      if (editingEraId === 'new') {
+        const created = await createDateSuffix({
+          worldId, abbreviation: eraDraft.abbreviation.trim(), name: eraDraft.name.trim(),
+          anchorYear, scale, isReversed: eraDraft.isReversed, isDefault: eraDraft.isDefault,
+        });
+        setEras(prev => {
+          const cleared = eraDraft.isDefault ? prev.map(e => ({ ...e, isDefault: false })) : prev;
+          return [...cleared, created].sort((a, b) => a.anchorYear - b.anchorYear);
+        });
+      } else {
+        const updated = await updateDateSuffix(editingEraId!, {
+          abbreviation: eraDraft.abbreviation.trim(), name: eraDraft.name.trim(),
+          anchorYear, scale, isReversed: eraDraft.isReversed, isDefault: eraDraft.isDefault,
+        });
+        setEras(prev =>
+          prev.map(e => e.id === editingEraId ? updated : (eraDraft.isDefault ? { ...e, isDefault: false } : e))
+            .sort((a, b) => a.anchorYear - b.anchorYear)
+        );
+      }
+      setEditingEraId(null);
+    } catch {
+      setEraError('Failed to save era.');
+    } finally {
+      setEraSaving(false);
+    }
+  }
+
+  async function handleDeleteEra(era: DateSuffixDto) {
+    if (!worldId) return;
+    await deleteDateSuffix(era.id);
+    setEras(prev => prev.filter(e => e.id !== era.id));
   }
 
   async function handleToggleCanEdit(perm: WorldPermissionDto) {
@@ -120,6 +211,43 @@ export default function WorldSettingsPage() {
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}><CircularProgress /></Box>;
   if (error) return <Box sx={{ maxWidth: 800, mx: 'auto', px: 3, py: 4 }}><Alert severity="error">{error}</Alert></Box>;
 
+  const patchDraft = (patch: Partial<EraDraft>) => setEraDraft(d => ({ ...d, ...patch }));
+
+  function EraEditCells() {
+    return (
+      <>
+        <TableCell sx={{ py: 0.5 }}>
+          <TextField size="small" value={eraDraft.abbreviation} onChange={e => patchDraft({ abbreviation: e.target.value })}
+            placeholder="e.g. TA" sx={{ width: 80 }} inputProps={{ maxLength: 20 }} />
+        </TableCell>
+        <TableCell sx={{ py: 0.5 }}>
+          <TextField size="small" value={eraDraft.name} onChange={e => patchDraft({ name: e.target.value })}
+            placeholder="e.g. Third Age" fullWidth inputProps={{ maxLength: 100 }} />
+        </TableCell>
+        <TableCell align="right" sx={{ py: 0.5 }}>
+          <TextField size="small" type="number" value={eraDraft.anchorYear}
+            onChange={e => patchDraft({ anchorYear: e.target.value })}
+            sx={{ width: 110 }} inputProps={{ style: { textAlign: 'right' } }} />
+        </TableCell>
+        <TableCell align="right" sx={{ py: 0.5 }}>
+          <TextField size="small" type="number" value={eraDraft.scale}
+            onChange={e => patchDraft({ scale: e.target.value })}
+            sx={{ width: 90 }} inputProps={{ step: '0.001', min: '0', style: { textAlign: 'right' } }} />
+        </TableCell>
+        <TableCell align="center" sx={{ py: 0.5 }}>
+          <Checkbox size="small" checked={eraDraft.isReversed} onChange={e => patchDraft({ isReversed: e.target.checked })} />
+        </TableCell>
+        <TableCell align="center" sx={{ py: 0.5 }}>
+          <Checkbox size="small" checked={eraDraft.isDefault} onChange={e => patchDraft({ isDefault: e.target.checked })} />
+        </TableCell>
+        <TableCell align="right" sx={{ py: 0.5 }}>
+          <IconButton size="small" onClick={saveEra} disabled={eraSaving}><CheckIcon fontSize="small" /></IconButton>
+          <IconButton size="small" onClick={() => { setEditingEraId(null); setEraError(''); }}><CloseIcon fontSize="small" /></IconButton>
+        </TableCell>
+      </>
+    );
+  }
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', px: 3, py: 4 }}>
       <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}`)} sx={{ mb: 3 }}>
@@ -151,16 +279,75 @@ export default function WorldSettingsPage() {
 
       <Divider sx={{ my: 5 }} />
 
-      {/* Date suffixes */}
-      <Typography variant="h6" fontWeight={600} mb={1}>Date eras / suffixes</Typography>
+      {/* Date eras */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+        <Typography variant="h6" fontWeight={600}>Date eras / suffixes</Typography>
+        {editingEraId === null && (
+          <Button size="small" startIcon={<AddIcon />} onClick={startAddEra}>Add era</Button>
+        )}
+      </Box>
       <Typography variant="body2" color="text.secondary" mb={2}>
-        Define the eras or ages used in this world (e.g. First Age, Third Age). Characters can then reference these when recording birth and death dates. The order determines how eras are compared chronologically.
+        Define the eras used in this world. The anchor year is the absolute year at which the era begins; scale converts era-years to absolute years (e.g. 0.5 means 1 era-year = 0.5 absolute years). Reversed means year numbers count down (like BCE).
       </Typography>
-      <Paper variant="outlined" sx={{ px: 3, py: 4, textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary" fontStyle="italic">
-          Era management coming soon.
-        </Typography>
-      </Paper>
+
+      {(eras.length > 0 || editingEraId !== null) && (
+        <TableContainer component={Paper} variant="outlined" sx={{ mb: eraError ? 1 : 3 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Suffix</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell align="right">Anchor year</TableCell>
+                <TableCell align="right">Scale</TableCell>
+                <TableCell align="center">Reversed</TableCell>
+                <TableCell align="center">Default</TableCell>
+                <TableCell align="right" />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {eras.map(era => (
+                <TableRow key={era.id}>
+                  {editingEraId === era.id ? (
+                    <EraEditCells />
+                  ) : (
+                    <>
+                      <TableCell sx={{ fontFamily: 'monospace', fontWeight: 600 }}>{era.abbreviation}</TableCell>
+                      <TableCell>{era.name}</TableCell>
+                      <TableCell align="right">{era.anchorYear}</TableCell>
+                      <TableCell align="right">{era.scale}</TableCell>
+                      <TableCell align="center">
+                        {era.isReversed && <CheckIcon sx={{ fontSize: 16, color: 'text.secondary' }} />}
+                      </TableCell>
+                      <TableCell align="center">
+                        {era.isDefault && <CheckIcon sx={{ fontSize: 16, color: 'primary.main' }} />}
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton size="small" onClick={() => startEditEra(era)} disabled={editingEraId !== null}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" onClick={() => handleDeleteEra(era)} disabled={editingEraId !== null}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </>
+                  )}
+                </TableRow>
+              ))}
+              {editingEraId === 'new' && (
+                <TableRow>
+                  <EraEditCells />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {eraError && <Alert severity="error" sx={{ mb: 3 }}>{eraError}</Alert>}
+
+      {eras.length === 0 && editingEraId === null && (
+        <Typography color="text.secondary" variant="body2" mb={3}>No eras defined yet.</Typography>
+      )}
 
       <Divider sx={{ my: 5 }} />
 

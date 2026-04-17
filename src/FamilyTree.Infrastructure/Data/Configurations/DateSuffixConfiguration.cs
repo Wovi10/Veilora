@@ -12,7 +12,9 @@ public class DateSuffixConfiguration : IEntityTypeConfiguration<DateSuffix>
         builder.HasKey(d => d.Id);
         builder.Property(d => d.Name).IsRequired().HasMaxLength(100);
         builder.Property(d => d.Abbreviation).IsRequired().HasMaxLength(20);
-        builder.Property(d => d.Order).IsRequired();
+        builder.Property(d => d.AnchorYear).IsRequired();
+        builder.Property(d => d.Scale).HasPrecision(18, 6).IsRequired();
+        builder.Property(d => d.IsReversed).IsRequired();
         builder.Property(d => d.IsDefault).IsRequired();
 
         builder.HasOne(d => d.World)
