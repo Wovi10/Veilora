@@ -341,7 +341,7 @@ src/
 │   ├── personService.ts
 │   └── relationshipService.ts
 ├── hooks/
-│   ├── useFamilyTree.ts
+│   ├── useVeilora.ts
 │   ├── usePersons.ts
 │   ├── useTreeNavigation.ts          - Custom hook for navigation controls
 │   └── useKeyboardShortcuts.ts       - Keyboard navigation

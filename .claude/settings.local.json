@@ -13,7 +13,11 @@
       "mcp__Neon__get_connection_string",
       "mcp__Neon__describe_project",
       "Bash(cd:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git commit -m ' *)",
+      "Bash(ls D:/GitHub/FamilyTree/*.user)",
+      "Bash(ls D:/GitHub/FamilyTree/*.DotSettings*)",
+      "Bash(powershell -Command \"Move-Item -Path src/FamilyTree.Api -Destination src/Veilora.Api\")"
     ]
   }
 }

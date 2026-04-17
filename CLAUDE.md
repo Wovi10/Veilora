@@ -13,30 +13,30 @@ Early development — Phase 1 (MVP). Backend has full CRUD controllers for Perso
 dotnet build
 
 # Run API (Swagger at https://localhost:7xxx/swagger)
-dotnet run --project src/FamilyTree.Api
+dotnet run --project src/Veilora.Api
 
 # Run all tests
 dotnet test
 
 # Run a single test project
-dotnet test src/tests/FamilyTree.UnitTests
-dotnet test src/tests/FamilyTree.IntegrationTests
+dotnet test src/tests/Veilora.UnitTests
+dotnet test src/tests/Veilora.IntegrationTests
 
 # EF Core migrations
-dotnet ef migrations add <Name> --project src/FamilyTree.Infrastructure --startup-project src/FamilyTree.Api
-dotnet ef database update --project src/FamilyTree.Infrastructure --startup-project src/FamilyTree.Api
+dotnet ef migrations add <Name> --project src/Veilora.Infrastructure --startup-project src/Veilora.Api
+dotnet ef database update --project src/Veilora.Infrastructure --startup-project src/Veilora.Api
 ```
 
 ## Architecture
 
 Clean Architecture with 4 layers:
 
-- **`FamilyTree.Domain`** — Entities, enums, `BaseEntity`. No external dependencies.
-- **`FamilyTree.Application`** — Services, DTOs, validators (FluentValidation), mappers. Depends on Domain.
-- **`FamilyTree.Infrastructure`** — EF Core `ApplicationDbContext`, repository implementations, entity configurations (Fluent API), migrations. Depends on Domain + Application.
-- **`FamilyTree.Api`** — Controllers, `Program.cs`, middleware. Depends on Application + Infrastructure.
+- **`Veilora.Domain`** — Entities, enums, `BaseEntity`. No external dependencies.
+- **`Veilora.Application`** — Services, DTOs, validators (FluentValidation), mappers. Depends on Domain.
+- **`Veilora.Infrastructure`** — EF Core `ApplicationDbContext`, repository implementations, entity configurations (Fluent API), migrations. Depends on Domain + Application.
+- **`Veilora.Api`** — Controllers, `Program.cs`, middleware. Depends on Application + Infrastructure.
 
-Repository interfaces live in **both** `FamilyTree.Application/Repositories/Interfaces/` (consumed by services) and `FamilyTree.Infrastructure/Repositories/Interfaces/` (implementations registered there). The Application layer owns the contracts.
+Repository interfaces live in **both** `Veilora.Application/Repositories/Interfaces/` (consumed by services) and `Veilora.Infrastructure/Repositories/Interfaces/` (implementations registered there). The Application layer owns the contracts.
 
 `SaveChangesAsync` in `ApplicationDbContext` auto-sets `CreatedAt`/`UpdatedAt` on all `BaseEntity` subclasses.
 
@@ -69,7 +69,7 @@ JWT Bearer auth is implemented. `POST /api/auth/register` and `POST /api/auth/lo
 
 Set the JWT secret via user secrets (never commit it):
 ```bash
-dotnet user-secrets set "Jwt:Key" "your-secret-key-at-least-32-chars" --project src/FamilyTree.Api
+dotnet user-secrets set "Jwt:Key" "your-secret-key-at-least-32-chars" --project src/Veilora.Api
 ```
 
 ## What NOT to Implement Yet
