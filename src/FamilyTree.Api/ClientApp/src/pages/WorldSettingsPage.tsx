@@ -239,6 +239,9 @@ export default function WorldSettingsPage() {
       <TableCell align="center" sx={{ py: 0.5 }}>
         <Checkbox size="small" checked={eraDraft.isDefault} onChange={e => patchDraft({ isDefault: e.target.checked })} />
       </TableCell>
+      <TableCell align="right" sx={{ py: 0.5, fontFamily: 'monospace', fontSize: '0.75rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+        {(() => { const v = parseFloat(eraDraft.anchorYear) * parseFloat(eraDraft.scale); return isNaN(v) ? '—' : v.toLocaleString(undefined, { maximumFractionDigits: 3 }); })()}
+      </TableCell>
       <TableCell align="right" sx={{ py: 0.5 }}>
         <IconButton size="small" onClick={saveEra} disabled={eraSaving}><CheckIcon fontSize="small" /></IconButton>
         <IconButton size="small" onClick={() => { setEditingEraId(null); setEraError(''); }}><CloseIcon fontSize="small" /></IconButton>
@@ -299,6 +302,7 @@ export default function WorldSettingsPage() {
                 <TableCell align="right"><Tooltip title="Converts era-years to absolute years. 1 means 1:1; 0.5 means 1 era-year = 0.5 absolute years" placement="top"><span>Scale</span></Tooltip></TableCell>
                 <TableCell align="center"><Tooltip title="Year numbers count down instead of up (like BCE). Year 100 is older than year 50." placement="top"><span>Reversed</span></Tooltip></TableCell>
                 <TableCell align="center"><Tooltip title="Pre-selected in character forms when no era has been chosen yet" placement="top"><span>Default</span></Tooltip></TableCell>
+                <TableCell align="right"><Tooltip title="Equivalent year in AY (anchorYear × scale)" placement="top"><span>AY year</span></Tooltip></TableCell>
                 <TableCell align="right" />
               </TableRow>
             </TableHead>
@@ -318,6 +322,9 @@ export default function WorldSettingsPage() {
                       </TableCell>
                       <TableCell align="center">
                         {era.isDefault && <CheckIcon sx={{ fontSize: 16, color: 'primary.main' }} />}
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                        {(era.anchorYear * era.scale).toLocaleString(undefined, { maximumFractionDigits: 3 })}
                       </TableCell>
                       <TableCell align="right">
                         <IconButton size="small" onClick={() => startEditEra(era)} disabled={editingEraId !== null}>
