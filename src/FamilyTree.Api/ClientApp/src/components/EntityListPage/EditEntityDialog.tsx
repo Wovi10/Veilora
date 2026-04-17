@@ -3,8 +3,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
   TextField, Box, Typography,
 } from '@mui/material';
-import { updateEntity, deleteEntity } from '../api/entitiesApi';
-import type { EntityDto } from '../types/entity';
+import { updateEntity, deleteEntity } from '../../api/entitiesApi';
+import type { EntityDto } from '../../types/entity';
 
 interface Props {
   open: boolean;
