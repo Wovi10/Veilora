@@ -1,4 +1,4 @@
-# Family Tree
+# Veilora
 
 A personal web-based family tree application for creating and visualizing family relationships.
 
