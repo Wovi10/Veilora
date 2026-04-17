@@ -47,7 +47,7 @@ export default function App() {
           </IconButton>
           <Typography onClick={() => { navigate('/'); setDrawerOpen(false); }}
                       variant="h6" component="div" sx={{ flexGrow: 1, cursor: "pointer" }}>
-            Lorekeeper
+            Veilora
           </Typography>
           <Button
             color="inherit"
@@ -76,7 +76,7 @@ export default function App() {
 
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <Toolbar>
-          <Typography variant="h6">Lorekeeper</Typography>
+          <Typography variant="h6">Veilora</Typography>
         </Toolbar>
         <Divider />
         <List sx={{ width: 220 }}>
