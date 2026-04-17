@@ -32,6 +32,7 @@ const routes: RouteObject[] = [
     ),
     children: [
       { index: true, element: <HomePage /> },
+      { path: 'worlds', element: <HomePage /> },
       { path: 'worlds/:worldId', element: <WorldPage /> },
       { path: 'worlds/:worldId/settings', element: <WorldSettingsPage /> },
       { path: 'worlds/:worldId/characters', element: <Characters /> },
