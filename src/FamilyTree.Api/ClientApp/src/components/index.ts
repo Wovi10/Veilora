@@ -4,6 +4,7 @@ export { default as AddEntityDialog } from './shared/AddEntityDialog';
 export { default as AddLocationDialog } from './shared/AddLocationDialog';
 export { default as CharacterCard } from './shared/CharacterCard';
 export { default as EditCharacterDialog } from './shared/EditCharacterDialog';
+export { default as FamilyTreeCard } from './shared/FamilyTreeCard';
 export { default as LocationCard } from './shared/LocationCard';
 
 // FamilyTreePage

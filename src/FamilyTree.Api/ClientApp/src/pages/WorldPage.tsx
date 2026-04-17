@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, CircularProgress, Alert, Button,
-  Card, CardContent, CardActionArea, Divider, Grid2,
+  Card, CardContent, Divider, Grid2,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { getWorld } from '../api/worldsApi';
 import { getEntitiesByTypePaged } from '../api/entitiesApi';
@@ -23,7 +22,7 @@ import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
 import {
   AddCharacterDialog, AddEntityDialog, AddLocationDialog,
-  NewFamilyTreeDialog, CharacterCard, LocationCard,
+  NewFamilyTreeDialog, CharacterCard, FamilyTreeCard, LocationCard,
 } from '../components';
 
 const ENTITY_SECTIONS: { type: EntityType; plural: string }[] = [
@@ -236,7 +235,17 @@ export default function WorldPage() {
       {/* Family Trees section */}
       <Box mb={5}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-          <Typography variant="h5" fontWeight={600}>Family Trees</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h5" fontWeight={600}>Family Trees</Typography>
+            <Button
+              size="small"
+              startIcon={<OpenInFullIcon fontSize="small" />}
+              onClick={() => navigate(`/worlds/${worldId}/family-trees`)}
+              sx={{ textTransform: 'none', minWidth: 0 }}
+            >
+              View all
+            </Button>
+          </Box>
           {canEdit && (
             <Button size="small" startIcon={<AddIcon />} onClick={() => setNewFamilyTreeOpen(true)}>
               New Family Tree
@@ -251,19 +260,10 @@ export default function WorldPage() {
           <Grid2 container spacing={2}>
             {familyTrees.map(tree => (
               <Grid2 key={tree.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card sx={{ borderRadius: 2, transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 4 } }}>
-                  <CardActionArea onClick={() => navigate(`/family-trees/${tree.id}`)} sx={{ p: 2 }}>
-                    <Box display="flex" alignItems="center" gap={1.5}>
-                      <AccountTreeIcon color="primary" />
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600}>{tree.name}</Typography>
-                        {tree.description && (
-                          <Typography variant="body2" color="text.secondary">{tree.description}</Typography>
-                        )}
-                      </Box>
-                    </Box>
-                  </CardActionArea>
-                </Card>
+                <FamilyTreeCard
+                  tree={tree}
+                  onClick={() => navigate(`/worlds/${worldId}/family-trees/${tree.id}`)}
+                />
               </Grid2>
             ))}
           </Grid2>
