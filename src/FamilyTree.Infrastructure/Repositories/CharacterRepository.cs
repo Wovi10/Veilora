@@ -23,6 +23,8 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
     public async Task<IEnumerable<Character>> GetByWorldIdAsync(Guid worldId) =>
         await _context.Characters
             .AsNoTracking()
+            .Include(c => c.BirthDateSuffix)
+            .Include(c => c.DeathDateSuffix)
             .Where(c => c.WorldId == worldId)
             .OrderBy(c => c.LastName == null)
             .ThenBy(c => c.LastName)
@@ -34,6 +36,8 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
     {
         var query = _context.Characters
             .AsNoTracking()
+            .Include(c => c.BirthDateSuffix)
+            .Include(c => c.DeathDateSuffix)
             .Where(c => c.WorldId == criteria.WorldId)
             .OrderBy(c => c.LastName == null)
             .ThenBy(c => c.LastName)
