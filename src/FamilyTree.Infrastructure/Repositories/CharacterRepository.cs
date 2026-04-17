@@ -25,6 +25,7 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
             .AsNoTracking()
             .Include(c => c.BirthDateSuffix)
             .Include(c => c.DeathDateSuffix)
+            .Include(c => c.Languages).ThenInclude(l => l.Language)
             .Where(c => c.WorldId == worldId)
             .OrderBy(c => c.LastName == null)
             .ThenBy(c => c.LastName)
