@@ -5,16 +5,16 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
-import { getCharacter, getCharactersByWorld } from '../api/charactersApi';
-import { getEntities } from '../api/entitiesApi';
-import { getWorld } from '../api/worldsApi';
-import type { CharacterDto } from '../types/character';
-import type { EntityDto } from '../types/entity';
-import type { EntityRefDto } from '../types/entityRef';
-import type { WorldDto } from '../types/world';
-import { useEditMode } from '../context/EditModeContext';
-import { useAuth } from '../context/AuthContext';
-import EditCharacterDialog from '../components/EditCharacterDialog';
+import { getCharacter, getCharactersByWorld } from '../../api/charactersApi';
+import { getEntities } from '../../api/entitiesApi';
+import { getWorld } from '../../api/worldsApi';
+import type { CharacterDto } from '../../types/character';
+import type { EntityDto } from '../../types/entity';
+import type { EntityRefDto } from '../../types/entityRef';
+import type { WorldDto } from '../../types/world';
+import { useEditMode } from '../../context/EditModeContext';
+import { useAuth } from '../../context/AuthContext';
+import { EditCharacterDialog } from '../../components';
 
 function formatDate(date: string, suffix?: string) {
   const formatted = new Date(date).toLocaleDateString('en-GB');

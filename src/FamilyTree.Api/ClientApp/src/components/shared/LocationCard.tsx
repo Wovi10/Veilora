@@ -2,7 +2,7 @@ import { Box, Card, CardContent, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import type { LocationDto } from '../types/location';
 
-export default function LocationCard({ location, canEdit, onEdit }: { location: LocationDto; canEdit: boolean; onEdit: () => void }) {
+export default function LocationCard({ location, canEdit = false, onEdit }: { location: LocationDto; canEdit?: boolean; onEdit?: () => void }) {
   return (
     <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
       <CardContent sx={{ pb: '12px !important' }}>

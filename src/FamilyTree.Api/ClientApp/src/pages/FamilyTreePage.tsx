@@ -14,12 +14,10 @@ import type { FamilyTreeWithEntitiesDto } from '../types/familyTree';
 import type { RelationshipDto } from '../types/relationship';
 import type { CharacterDto } from '../types/character';
 import type { EntityDto } from '../types/entity';
-import CharacterNode from '../components/CharacterNode';
-import ParentEdge from '../components/ParentEdge';
-import RelationshipEdge from '../components/RelationshipEdge';
-import AddEntityToTreeDialog from '../components/AddEntityToTreeDialog';
-import EditCharacterDialog from '../components/EditCharacterDialog';
-import AddRelationshipDialog from '../components/AddRelationshipDialog';
+import {
+  CharacterNode, ParentEdge, RelationshipEdge,
+  AddEntityToTreeDialog, EditCharacterDialog, AddRelationshipDialog,
+} from '../components';
 
 const COLS = 4;
 const NODE_W = 180;
