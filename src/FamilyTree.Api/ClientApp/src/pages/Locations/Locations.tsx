@@ -6,48 +6,36 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import { getWorld } from '../../api/worldsApi';
-import { getEntities } from '../../api/entitiesApi';
+import { getLocationsByWorld } from '../../api/locationsApi';
 import type { WorldDto } from '../../types/world';
-import type { EntityDto, EntityType } from '../../types/entity';
+import type { LocationDto } from '../../types/location';
 import { useEditMode } from '../../context/EditModeContext';
 import { useAuth } from '../../context/AuthContext';
-import { AddEntityDialog, EditEntityDialog, EntityCard } from '../../components';
+import { AddLocationDialog, EditLocationDialog, LocationCard } from '../../components';
 
-const PLURAL: Record<string, string> = {
-  Group: 'Groups',
-  Event: 'Events',
-  Concept: 'Concepts',
-};
-
-export default function EntityListPage() {
-  const { worldId, entityType } = useParams<{ worldId: string; entityType: string }>();
+export default function Locations() {
+  const { worldId } = useParams<{ worldId: string }>();
   const navigate = useNavigate();
   const { isEditMode } = useEditMode();
   const { userId } = useAuth();
 
-  const plural = PLURAL[entityType ?? ''] ?? entityType ?? '';
-
   const [world, setWorld] = useState<WorldDto | null>(null);
-  const [entities, setEntities] = useState<EntityDto[]>([]);
+  const [locations, setLocations] = useState<LocationDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [addOpen, setAddOpen] = useState(false);
-  const [editingEntity, setEditingEntity] = useState<EntityDto | null>(null);
+  const [editingLocation, setEditingLocation] = useState<LocationDto | null>(null);
 
   useEffect(() => {
-    if (!worldId || !entityType) return;
-    Promise.all([getWorld(worldId), getEntities()])
-      .then(([w, allEntities]) => {
+    if (!worldId) return;
+    Promise.all([getWorld(worldId), getLocationsByWorld(worldId)])
+      .then(([w, locs]) => {
         setWorld(w);
-        setEntities(
-          allEntities
-            .filter(e => e.worldId === worldId && e.type === entityType)
-            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        );
+        setLocations(locs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()));
       })
       .catch(() => setError('Failed to load'))
       .finally(() => setLoading(false));
-  }, [worldId, entityType]);
+  }, [worldId]);
 
   if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
   if (error)   return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
@@ -64,30 +52,30 @@ export default function EntityListPage() {
         </Button>
         {canEdit && (
           <Button size="small" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
-            Add {entityType}
+            Add Location
           </Button>
         )}
       </Box>
 
       <Typography variant="h4" fontWeight={700} mb={3}>
-        {plural}
+        Locations
         <Typography component="span" variant="h6" color="text.secondary" fontWeight={400} ml={1.5}>
-          {entities.length}
+          {locations.length}
         </Typography>
       </Typography>
 
-      {entities.length === 0 ? (
+      {locations.length === 0 ? (
         <Typography variant="body2" color="text.secondary" fontStyle="italic">
-          No {plural.toLowerCase()} yet.
+          No locations yet.
         </Typography>
       ) : (
         <Grid2 container spacing={2}>
-          {entities.map(entity => (
-            <Grid2 key={entity.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-              <EntityCard
-                entity={entity}
+          {locations.map(location => (
+            <Grid2 key={location.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              <LocationCard
+                location={location}
                 canEdit={canEdit}
-                onEdit={() => setEditingEntity(entity)}
+                onEdit={() => setEditingLocation(location)}
               />
             </Grid2>
           ))}
@@ -95,14 +83,13 @@ export default function EntityListPage() {
       )}
 
       {worldId && (
-        <AddEntityDialog
+        <AddLocationDialog
           open={addOpen}
-          defaultType={entityType as EntityType}
           worldId={worldId}
           onClose={() => setAddOpen(false)}
-          onCreated={entity => {
-            setEntities(prev =>
-              [entity, ...prev].sort(
+          onCreated={location => {
+            setLocations(prev =>
+              [location, ...prev].sort(
                 (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
               )
             );
@@ -111,18 +98,18 @@ export default function EntityListPage() {
         />
       )}
 
-      {editingEntity && (
-        <EditEntityDialog
+      {editingLocation && (
+        <EditLocationDialog
           open
-          entity={editingEntity}
-          onClose={() => setEditingEntity(null)}
+          location={editingLocation}
+          onClose={() => setEditingLocation(null)}
           onSaved={updated => {
-            setEntities(prev => prev.map(e => e.id === updated.id ? updated : e));
-            setEditingEntity(null);
+            setLocations(prev => prev.map(l => l.id === updated.id ? updated : l));
+            setEditingLocation(null);
           }}
           onDeleted={() => {
-            setEntities(prev => prev.filter(e => e.id !== editingEntity.id));
-            setEditingEntity(null);
+            setLocations(prev => prev.filter(l => l.id !== editingLocation.id));
+            setEditingLocation(null);
           }}
         />
       )}
