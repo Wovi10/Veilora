@@ -1,6 +1,6 @@
 import { Box, Card, CardActionArea, CardContent, IconButton, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import type { LocationDto } from '../types/location';
+import type { LocationDto } from '../../types/location';
 
 export default function LocationCard({ location, canEdit = false, onEdit, onClick }: { location: LocationDto; canEdit?: boolean; onEdit?: () => void; onClick?: () => void }) {
   return (

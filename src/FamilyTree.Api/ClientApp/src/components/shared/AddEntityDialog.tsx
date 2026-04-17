@@ -3,8 +3,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
   TextField, MenuItem, Box, Select, FormControl, InputLabel,
 } from '@mui/material';
-import { createEntity } from '../api/entitiesApi';
-import type { EntityDto, EntityType } from '../types/entity';
+import { createEntity } from '../../api/entitiesApi';
+import type { EntityDto, EntityType } from '../../types/entity';
 
 interface Props {
   open: boolean;

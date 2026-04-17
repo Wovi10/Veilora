@@ -4,9 +4,9 @@ import {
   Box, List, ListItemButton, ListItemText, Typography,
   CircularProgress, TextField, Divider,
 } from '@mui/material';
-import { getCharactersByWorld, createCharacter } from '../api/charactersApi';
-import { addCharacterToFamilyTree } from '../api/familyTreesApi';
-import type { CharacterDto } from '../types/character';
+import { getCharactersByWorld, createCharacter } from '../../api/charactersApi';
+import { addCharacterToFamilyTree } from '../../api/familyTreesApi';
+import type { CharacterDto } from '../../types/character';
 
 interface Props {
   open: boolean;

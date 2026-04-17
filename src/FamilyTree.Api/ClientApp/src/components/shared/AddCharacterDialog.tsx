@@ -4,17 +4,17 @@ import {
   TextField, MenuItem, Box, Select, FormControl, InputLabel,
   Autocomplete, Chip,
 } from '@mui/material';
-import { createCharacter } from '../api/charactersApi';
-import { getLanguagesByWorld, getOrCreateLanguage } from '../api/languagesApi';
-import { getLocationsByWorld } from '../api/locationsApi';
-import { getDateSuffixesByWorld } from '../api/dateSuffixesApi';
-import type { CharacterDto } from '../types/character';
-import type { Gender } from '../types/character';
-import type { EntityDto } from '../types/entity';
-import type { EntityRefDto } from '../types/entityRef';
-import type { LanguageDto } from '../types/language';
-import type { LocationDto } from '../types/location';
-import type { DateSuffixDto } from '../types/dateSuffix';
+import { createCharacter } from '../../api/charactersApi';
+import { getLanguagesByWorld, getOrCreateLanguage } from '../../api/languagesApi';
+import { getLocationsByWorld } from '../../api/locationsApi';
+import { getDateSuffixesByWorld } from '../../api/dateSuffixesApi';
+import type { CharacterDto } from '../../types/character';
+import type { Gender } from '../../types/character';
+import type { EntityDto } from '../../types/entity';
+import type { EntityRefDto } from '../../types/entityRef';
+import type { LanguageDto } from '../../types/language';
+import type { LocationDto } from '../../types/location';
+import type { DateSuffixDto } from '../../types/dateSuffix';
 
 interface Props {
   open: boolean;
