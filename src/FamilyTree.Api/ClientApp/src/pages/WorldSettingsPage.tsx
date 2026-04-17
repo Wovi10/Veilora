@@ -176,6 +176,18 @@ export default function WorldSettingsPage() {
     setEras(prev => prev.filter(e => e.id !== era.id));
   }
 
+  async function handleToggleDefault(era: DateSuffixDto) {
+    if (!worldId) return;
+    const updated = await updateDateSuffix(era.id, {
+      abbreviation: era.abbreviation, name: era.name,
+      anchorYear: era.anchorYear, scale: era.scale,
+      isReversed: era.isReversed, isDefault: !era.isDefault,
+    });
+    setEras(prev =>
+      prev.map(e => e.id === era.id ? updated : (!era.isDefault ? { ...e, isDefault: false } : e))
+    );
+  }
+
   async function handleToggleCanEdit(perm: WorldPermissionDto) {
     if (!worldId) return;
     const updated = await upsertPermission(worldId, perm.userId, { canEdit: !perm.canEdit });
@@ -216,6 +228,7 @@ export default function WorldSettingsPage() {
 
   const eraEditCells = (
     <>
+      <TableCell />
       <TableCell sx={{ py: 0.5 }}>
         <TextField size="small" value={eraDraft.abbreviation} onChange={e => patchDraft({ abbreviation: e.target.value })}
           placeholder="e.g. TA" sx={{ width: 80 }} inputProps={{ maxLength: 20 }} />
@@ -236,9 +249,6 @@ export default function WorldSettingsPage() {
       </TableCell>
       <TableCell align="center" sx={{ py: 0.5 }}>
         <Checkbox size="small" checked={eraDraft.isReversed} onChange={e => patchDraft({ isReversed: e.target.checked })} />
-      </TableCell>
-      <TableCell align="center" sx={{ py: 0.5 }}>
-        <Checkbox size="small" checked={eraDraft.isDefault} onChange={e => patchDraft({ isDefault: e.target.checked })} />
       </TableCell>
       <TableCell align="right" sx={{ py: 0.5, fontFamily: 'monospace', fontSize: '0.75rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
         {(() => { const v = parseFloat(eraDraft.anchorYear) * parseFloat(eraDraft.scale); return isNaN(v) ? '—' : v.toLocaleString(undefined, { maximumFractionDigits: 3 }); })()}
@@ -297,12 +307,12 @@ export default function WorldSettingsPage() {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ '& th': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}>
+                <TableCell align="center"><Tooltip title="Pre-selected in character forms when no era has been chosen yet" placement="top"><span>Default</span></Tooltip></TableCell>
                 <TableCell><Tooltip title="Short label shown on character dates, e.g. TA or FA" placement="top"><span>Suffix</span></Tooltip></TableCell>
                 <TableCell><Tooltip title="Full name of the era, e.g. Third Age" placement="top"><span>Name</span></Tooltip></TableCell>
                 <TableCell align="right"><Tooltip title="The absolute year at which this era begins, used to order eras chronologically" placement="top"><span>Anchor year</span></Tooltip></TableCell>
                 <TableCell align="right"><Tooltip title="Converts era-years to absolute years. 1 means 1:1; 0.5 means 1 era-year = 0.5 absolute years" placement="top"><span>Scale</span></Tooltip></TableCell>
                 <TableCell align="center"><Tooltip title="Year numbers count down instead of up (like BCE). Year 100 is older than year 50." placement="top"><span>Reversed</span></Tooltip></TableCell>
-                <TableCell align="center"><Tooltip title="Pre-selected in character forms when no era has been chosen yet" placement="top"><span>Default</span></Tooltip></TableCell>
                 <TableCell align="right"><Tooltip title="Equivalent year in AY (anchorYear × scale)" placement="top"><span>AY year</span></Tooltip></TableCell>
                 <TableCell align="right" sx={stickyActionCell} />
               </TableRow>
@@ -314,15 +324,15 @@ export default function WorldSettingsPage() {
                     eraEditCells
                   ) : (
                     <>
+                      <TableCell align="center">
+                        <Checkbox size="small" checked={era.isDefault} onChange={() => handleToggleDefault(era)} disabled={editingEraId !== null} />
+                      </TableCell>
                       <TableCell sx={{ fontFamily: 'monospace', fontWeight: 600 }}>{era.abbreviation}</TableCell>
                       <TableCell>{era.name}</TableCell>
                       <TableCell align="right">{era.anchorYear}</TableCell>
                       <TableCell align="right">{era.scale}</TableCell>
                       <TableCell align="center">
                         {era.isReversed && <CheckIcon sx={{ fontSize: 16, color: 'text.secondary' }} />}
-                      </TableCell>
-                      <TableCell align="center">
-                        {era.isDefault && <CheckIcon sx={{ fontSize: 16, color: 'primary.main' }} />}
                       </TableCell>
                       <TableCell align="right" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
                         {(era.anchorYear * era.scale).toLocaleString(undefined, { maximumFractionDigits: 3 })}
