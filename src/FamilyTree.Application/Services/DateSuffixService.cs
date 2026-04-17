@@ -29,7 +29,9 @@ public class DateSuffixService(
         {
             Name = dto.Name.Trim(),
             Abbreviation = dto.Abbreviation.Trim(),
-            Order = dto.Order,
+            AnchorYear = dto.AnchorYear,
+            Scale = dto.Scale,
+            IsReversed = dto.IsReversed,
             IsDefault = dto.IsDefault,
             WorldId = dto.WorldId
         };
@@ -49,7 +51,9 @@ public class DateSuffixService(
 
         suffix.Name = dto.Name.Trim();
         suffix.Abbreviation = dto.Abbreviation.Trim();
-        suffix.Order = dto.Order;
+        suffix.AnchorYear = dto.AnchorYear;
+        suffix.Scale = dto.Scale;
+        suffix.IsReversed = dto.IsReversed;
         suffix.IsDefault = dto.IsDefault;
 
         await dateSuffixRepository.UpdateAsync(suffix);
