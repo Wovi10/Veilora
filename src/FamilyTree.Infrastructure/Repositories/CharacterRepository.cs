@@ -121,6 +121,8 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
         await _context.CharacterFamilyTrees
             .AsNoTracking()
             .Where(cft => cft.FamilyTreeId == familyTreeId)
+            .Include(cft => cft.Character).ThenInclude(c => c.BirthDateSuffix)
+            .Include(cft => cft.Character).ThenInclude(c => c.DeathDateSuffix)
             .Select(cft => cft.Character)
             .ToListAsync();
 }
