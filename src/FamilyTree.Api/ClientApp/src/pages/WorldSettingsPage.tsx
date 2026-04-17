@@ -4,7 +4,7 @@ import {
   Box, Typography, CircularProgress, Alert, Button, Paper,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Switch, IconButton, TextField, Divider, Dialog, DialogTitle,
-  DialogContent, DialogContentText, DialogActions, Checkbox,
+  DialogContent, DialogContentText, DialogActions, Checkbox, Tooltip,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -285,7 +285,7 @@ export default function WorldSettingsPage() {
         )}
       </Box>
       <Typography variant="body2" color="text.secondary" mb={2}>
-        Define the eras used in this world. The anchor year is the absolute year at which the era begins; scale converts era-years to absolute years (e.g. 0.5 means 1 era-year = 0.5 absolute years). Reversed means year numbers count down (like BCE).
+        Define the eras used in this world. Hover the column headers for details.
       </Typography>
 
       {(eras.length > 0 || editingEraId !== null) && (
@@ -293,12 +293,12 @@ export default function WorldSettingsPage() {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Suffix</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell align="right">Anchor year</TableCell>
-                <TableCell align="right">Scale</TableCell>
-                <TableCell align="center">Reversed</TableCell>
-                <TableCell align="center">Default</TableCell>
+                <TableCell><Tooltip title="Short label shown on character dates, e.g. TA or FA" placement="top"><span>Suffix</span></Tooltip></TableCell>
+                <TableCell><Tooltip title="Full name of the era, e.g. Third Age" placement="top"><span>Name</span></Tooltip></TableCell>
+                <TableCell align="right"><Tooltip title="The absolute year at which this era begins, used to order eras chronologically" placement="top"><span>Anchor year</span></Tooltip></TableCell>
+                <TableCell align="right"><Tooltip title="Converts era-years to absolute years. 1 means 1:1; 0.5 means 1 era-year = 0.5 absolute years" placement="top"><span>Scale</span></Tooltip></TableCell>
+                <TableCell align="center"><Tooltip title="Year numbers count down instead of up (like BCE). Year 100 is older than year 50." placement="top"><span>Reversed</span></Tooltip></TableCell>
+                <TableCell align="center"><Tooltip title="Pre-selected in character forms when no era has been chosen yet" placement="top"><span>Default</span></Tooltip></TableCell>
                 <TableCell align="right" />
               </TableRow>
             </TableHead>
