@@ -344,17 +344,41 @@ export default function WorldSettingsPage() {
       {eras.length >= 2 && (() => {
         const minYear = eras[0].anchorYear;
         const maxYear = eras[eras.length - 1].anchorYear;
+        const range = maxYear - minYear;
+
+        // pct position of each era's year 1 on the timeline
+        const items = eras.map(era => ({
+          era,
+          pct: range === 0 ? 50 : (era.anchorYear - minYear) / range * 100,
+        }));
+
+        // Assign vertical stacking levels for labels that are too close.
+        // Threshold ≈ 6% covers a ~30px label on a 500 px-wide container.
+        const THRESHOLD = 6;
+        const levels: number[] = [0];
+        for (let i = 1; i < items.length; i++) {
+          levels[i] = items[i].pct - items[i - 1].pct < THRESHOLD ? levels[i - 1] + 1 : 0;
+        }
+        const maxLevel = Math.max(...levels);
+
+        // Grow the SVG upward for each extra stacking level
+        const LEVEL_H = 14;
+        const svgH = 48 + maxLevel * LEVEL_H;
+        const lineY = svgH - 8;
+        const tickTop = lineY - 8;
+        const labelBaseY = tickTop - 6;
+
         return (
           <Box sx={{ color: 'text.secondary', mt: 2, mb: eraError ? 1 : 3 }}>
-            <svg width="100%" height="48" style={{ display: 'block', overflow: 'visible' }}>
-              <line x1="0" y1="40" x2="100%" y2="40" stroke="currentColor" strokeWidth="1.5" />
-              {eras.map(era => {
-                const pct = (era.anchorYear - minYear) / (maxYear - minYear) * 100;
+            <svg width="100%" height={svgH} style={{ display: 'block', overflow: 'visible' }}>
+              <line x1="0" y1={lineY} x2="100%" y2={lineY} stroke="currentColor" strokeWidth="1.5" />
+              {items.map(({ era, pct }, i) => {
                 const anchor = pct < 10 ? 'start' : pct > 90 ? 'end' : 'middle';
+                const labelY = labelBaseY - levels[i] * LEVEL_H;
                 return (
                   <g key={era.id}>
-                    <line x1={`${pct}%`} y1="32" x2={`${pct}%`} y2="48" stroke="currentColor" strokeWidth="1.5" />
-                    <text x={`${pct}%`} y="22" textAnchor={anchor} fontSize="12" fill="currentColor" fontFamily="monospace">
+                    <line x1={`${pct}%`} y1={tickTop} x2={`${pct}%`} y2={lineY + 8} stroke="currentColor" strokeWidth="1.5" />
+                    <text x={`${pct}%`} y={labelY} textAnchor={anchor} fontSize="12" fill="currentColor" fontFamily="monospace">
                       1{era.abbreviation}
                     </text>
                   </g>
