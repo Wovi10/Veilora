@@ -228,7 +228,7 @@ export default function WorldSettingsPage() {
 
   const eraEditCells = (
     <>
-      <TableCell />
+      <TableCell sx={{ display: 'none' }} />
       <TableCell sx={{ py: 0.5 }}>
         <TextField size="small" value={eraDraft.abbreviation} onChange={e => patchDraft({ abbreviation: e.target.value })}
           placeholder="e.g. TA" sx={{ width: 80 }} inputProps={{ maxLength: 20 }} />
@@ -307,7 +307,7 @@ export default function WorldSettingsPage() {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ '& th': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}>
-                <TableCell align="center"><Tooltip title="Pre-selected in character forms when no era has been chosen yet" placement="top"><span>Default</span></Tooltip></TableCell>
+                <TableCell align="center" sx={{ display: editingEraId !== null ? 'none' : 'table-cell' }}><Tooltip title="Pre-selected in character forms when no era has been chosen yet" placement="top"><span>Default</span></Tooltip></TableCell>
                 <TableCell><Tooltip title="Short label shown on character dates, e.g. TA or FA" placement="top"><span>Suffix</span></Tooltip></TableCell>
                 <TableCell><Tooltip title="Full name of the era, e.g. Third Age" placement="top"><span>Name</span></Tooltip></TableCell>
                 <TableCell align="right"><Tooltip title="The absolute year at which this era begins, used to order eras chronologically" placement="top"><span>Anchor year</span></Tooltip></TableCell>
@@ -324,8 +324,8 @@ export default function WorldSettingsPage() {
                     eraEditCells
                   ) : (
                     <>
-                      <TableCell align="center">
-                        <Checkbox size="small" checked={era.isDefault} onChange={() => handleToggleDefault(era)} disabled={editingEraId !== null} />
+                      <TableCell align="center" sx={{ display: editingEraId !== null ? 'none' : 'table-cell' }}>
+                        <Checkbox size="small" checked={era.isDefault} onChange={() => handleToggleDefault(era)} />
                       </TableCell>
                       <TableCell sx={{ fontFamily: 'monospace', fontWeight: 600 }}>{era.abbreviation}</TableCell>
                       <TableCell>{era.name}</TableCell>
