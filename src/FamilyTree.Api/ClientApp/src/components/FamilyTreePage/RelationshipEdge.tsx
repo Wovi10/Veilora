@@ -8,7 +8,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import ShieldIcon from '@mui/icons-material/Shield';
-import type { RelationshipType } from '../types/relationship';
+import type { RelationshipType } from '../../types/relationship';
 
 interface Bend { x: number; y: number }
 

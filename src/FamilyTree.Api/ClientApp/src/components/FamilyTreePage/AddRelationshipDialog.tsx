@@ -3,9 +3,9 @@ import {
   Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle,
   FormControl, InputLabel, MenuItem, Select, TextField, Typography,
 } from '@mui/material';
-import { createRelationship } from '../api/relationshipsApi';
-import type { RelationshipDto, RelationshipType } from '../types/relationship';
-import type { CharacterDto } from '../types/character';
+import { createRelationship } from '../../api/relationshipsApi';
+import type { RelationshipDto, RelationshipType } from '../../types/relationship';
+import type { CharacterDto } from '../../types/character';
 
 interface Props {
   open: boolean;

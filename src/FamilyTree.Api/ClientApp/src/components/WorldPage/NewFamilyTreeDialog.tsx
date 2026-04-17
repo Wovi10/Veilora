@@ -3,8 +3,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, TextField, Box,
 } from '@mui/material';
-import { createFamilyTree } from '../api/familyTreesApi';
-import type { FamilyTreeDto } from '../types/familyTree';
+import { createFamilyTree } from '../../api/familyTreesApi';
+import type { FamilyTreeDto } from '../../types/familyTree';
 
 interface Props {
   open: boolean;

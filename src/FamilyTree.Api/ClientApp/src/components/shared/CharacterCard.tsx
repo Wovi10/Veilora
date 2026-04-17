@@ -1,5 +1,5 @@
 import { Card, CardActionArea, CardContent, Chip, Typography } from '@mui/material';
-import type { CharacterDto } from '../types/character';
+import type { CharacterDto } from '../../types/character';
 
 export default function CharacterCard({ character, onClick }: { character: CharacterDto; onClick: () => void }) {
   return (

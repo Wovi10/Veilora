@@ -11,8 +11,8 @@ import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import TransgenderIcon from '@mui/icons-material/Transgender';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
-import type { CharacterDto, Gender } from '../types/character';
-import { useEditMode } from '../context/EditModeContext';
+import type { CharacterDto, Gender } from '../../types/character';
+import { useEditMode } from '../../context/EditModeContext';
 
 const glowPulse = keyframes`
   0%, 100% { box-shadow: 0 0 6px 2px rgba(99, 179, 237, 0.7); }

@@ -3,8 +3,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
   TextField, Box,
 } from '@mui/material';
-import { createLocation } from '../api/locationsApi';
-import type { LocationDto } from '../types/location';
+import { createLocation } from '../../api/locationsApi';
+import type { LocationDto } from '../../types/location';
 
 interface Props {
   open: boolean;

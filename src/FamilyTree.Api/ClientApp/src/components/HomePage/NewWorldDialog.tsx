@@ -3,8 +3,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, TextField, Box,
 } from '@mui/material';
-import { createWorld } from '../api/worldsApi';
-import type { WorldDto } from '../types/world';
+import { createWorld } from '../../api/worldsApi';
+import type { WorldDto } from '../../types/world';
 
 interface Props {
   open: boolean;
