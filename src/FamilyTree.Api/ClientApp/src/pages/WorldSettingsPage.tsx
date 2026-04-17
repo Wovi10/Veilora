@@ -212,6 +212,7 @@ export default function WorldSettingsPage() {
   if (error) return <Box sx={{ maxWidth: 800, mx: 'auto', px: 3, py: 4 }}><Alert severity="error">{error}</Alert></Box>;
 
   const patchDraft = (patch: Partial<EraDraft>) => setEraDraft(d => ({ ...d, ...patch }));
+  const stickyActionCell = { position: 'sticky', right: 0, bgcolor: 'background.paper', boxShadow: '-2px 0 4px -2px rgba(0,0,0,0.15)' } as const;
 
   const eraEditCells = (
     <>
@@ -242,7 +243,7 @@ export default function WorldSettingsPage() {
       <TableCell align="right" sx={{ py: 0.5, fontFamily: 'monospace', fontSize: '0.75rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
         {(() => { const v = parseFloat(eraDraft.anchorYear) * parseFloat(eraDraft.scale); return isNaN(v) ? '—' : v.toLocaleString(undefined, { maximumFractionDigits: 3 }); })()}
       </TableCell>
-      <TableCell align="right" sx={{ py: 0.5 }}>
+      <TableCell align="right" sx={{ py: 0.5, ...stickyActionCell }}>
         <IconButton size="small" onClick={saveEra} disabled={eraSaving}><CheckIcon fontSize="small" /></IconButton>
         <IconButton size="small" onClick={() => { setEditingEraId(null); setEraError(''); }}><CloseIcon fontSize="small" /></IconButton>
       </TableCell>
@@ -303,7 +304,7 @@ export default function WorldSettingsPage() {
                 <TableCell align="center"><Tooltip title="Year numbers count down instead of up (like BCE). Year 100 is older than year 50." placement="top"><span>Reversed</span></Tooltip></TableCell>
                 <TableCell align="center"><Tooltip title="Pre-selected in character forms when no era has been chosen yet" placement="top"><span>Default</span></Tooltip></TableCell>
                 <TableCell align="right"><Tooltip title="Equivalent year in AY (anchorYear × scale)" placement="top"><span>AY year</span></Tooltip></TableCell>
-                <TableCell align="right" />
+                <TableCell align="right" sx={stickyActionCell} />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -326,7 +327,7 @@ export default function WorldSettingsPage() {
                       <TableCell align="right" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
                         {(era.anchorYear * era.scale).toLocaleString(undefined, { maximumFractionDigits: 3 })}
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={stickyActionCell}>
                         <IconButton size="small" onClick={() => startEditEra(era)} disabled={editingEraId !== null}>
                           <EditIcon fontSize="small" />
                         </IconButton>
