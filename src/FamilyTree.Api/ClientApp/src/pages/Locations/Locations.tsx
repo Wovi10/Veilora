@@ -74,6 +74,7 @@ export default function Locations() {
             <Grid2 key={location.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <LocationCard
                 location={location}
+                onClick={() => navigate(`/worlds/${worldId}/locations/${location.id}`)}
                 canEdit={canEdit}
                 onEdit={() => setEditingLocation(location)}
               />
