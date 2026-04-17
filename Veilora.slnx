@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Veilora.Api/Veilora.Api.csproj" />
+    <Project Path="src/Veilora.Application/Veilora.Application.csproj" />
+    <Project Path="src/Veilora.Domain/Veilora.Domain.csproj" />
+    <Project Path="src/Veilora.Infrastructure/Veilora.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/tests/">
+    <Project Path="src/tests/Veilora.IntegrationTests/Veilora.IntegrationTests.csproj" />
+    <Project Path="src/tests/Veilora.UnitTests/Veilora.UnitTests.csproj" />
+  </Folder>
+</Solution>

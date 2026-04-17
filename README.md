@@ -45,18 +45,18 @@ A personal web-based family tree application for creating and visualizing family
 
 ```bash
 # Run the API (Swagger at https://localhost:7xxx/swagger)
-dotnet run --project src/FamilyTree.Api
+dotnet run --project src/Veilora.Api
 
 # Run the frontend dev server
-cd src/FamilyTree.Api/ClientApp
+cd src/Veilora.Api/ClientApp
 npm run dev
 ```
 
 Set required secrets before running:
 
 ```bash
-dotnet user-secrets set "Jwt:Key" "your-secret-key-at-least-32-chars" --project src/FamilyTree.Api
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Database=...;Username=...;Password=..." --project src/FamilyTree.Api
+dotnet user-secrets set "Jwt:Key" "your-secret-key-at-least-32-chars" --project src/Veilora.Api
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Database=...;Username=...;Password=..." --project src/Veilora.Api
 ```
 
 ## Running Tests

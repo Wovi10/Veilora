@@ -10,10 +10,10 @@
 
 ```
 FamilyTree/
-├── FamilyTree.sln                          # Solution file
+├── Veilora.sln                          # Solution file
 │
 ├── src/
-│   ├── FamilyTree.API/                     # Web API Layer
+│   ├── Veilora.API/                     # Web API Layer
 │   │   ├── Controllers/
 │   │   │   ├── PersonsController.cs
 │   │   │   ├── RelationshipsController.cs
@@ -29,9 +29,9 @@ FamilyTree/
 │   │   ├── appsettings.json
 │   │   ├── appsettings.Development.json
 │   │   ├── Program.cs
-│   │   └── FamilyTree.API.csproj
+│   │   └── Veilora.API.csproj
 │   │
-│   ├── FamilyTree.Application/             # Business Logic Layer
+│   ├── Veilora.Application/             # Business Logic Layer
 │   │   ├── DTOs/                           # Data Transfer Objects
 │   │   │   ├── Person/
 │   │   │   │   ├── PersonDto.cs
@@ -65,9 +65,9 @@ FamilyTree/
 │   │   │   ├── NotFoundException.cs
 │   │   │   ├── ValidationException.cs
 │   │   │   └── BusinessException.cs
-│   │   └── FamilyTree.Application.csproj
+│   │   └── Veilora.Application.csproj
 │   │
-│   ├── FamilyTree.Domain/                  # Domain Layer (Entities)
+│   ├── Veilora.Domain/                  # Domain Layer (Entities)
 │   │   ├── Entities/
 │   │   │   ├── Person.cs
 │   │   │   ├── Relationship.cs
@@ -81,9 +81,9 @@ FamilyTree/
 │   │   │   └── PermissionLevel.cs          # For Phase 3
 │   │   ├── Common/
 │   │   │   └── BaseEntity.cs               # Base class with Id, CreatedAt, UpdatedAt
-│   │   └── FamilyTree.Domain.csproj
+│   │   └── Veilora.Domain.csproj
 │   │
-│   └── FamilyTree.Infrastructure/          # Data Access Layer
+│   └── Veilora.Infrastructure/          # Data Access Layer
 │       ├── Data/
 │       │   ├── ApplicationDbContext.cs
 │       │   ├── Configurations/             # EF Core entity configurations
@@ -104,25 +104,25 @@ FamilyTree/
 │       │   └── TreeRepository.cs
 │       ├── Extensions/
 │       │   └── QueryExtensions.cs          # Extension methods for queries
-│       └── FamilyTree.Infrastructure.csproj
+│       └── Veilora.Infrastructure.csproj
 │
 ├── tests/
-│   ├── FamilyTree.UnitTests/
+│   ├── Veilora.UnitTests/
 │   │   ├── Services/
 │   │   │   ├── PersonServiceTests.cs
 │   │   │   ├── RelationshipServiceTests.cs
 │   │   │   └── TreeServiceTests.cs
 │   │   ├── Validators/
 │   │   │   └── PersonValidatorTests.cs
-│   │   └── FamilyTree.UnitTests.csproj
+│   │   └── Veilora.UnitTests.csproj
 │   │
-│   └── FamilyTree.IntegrationTests/
+│   └── Veilora.IntegrationTests/
 │       ├── Controllers/
 │       │   ├── PersonsControllerTests.cs
 │       │   └── TreesControllerTests.cs
 │       ├── TestFixtures/
 │       │   └── WebApplicationFactory.cs
-│       └── FamilyTree.IntegrationTests.csproj
+│       └── Veilora.IntegrationTests.csproj
 │
 ├── .gitignore
 └── README.md
@@ -132,7 +132,7 @@ FamilyTree/
 
 ## Layer Responsibilities
 
-### 1. FamilyTree.API (Presentation Layer)
+### 1. Veilora.API (Presentation Layer)
 **Purpose:** HTTP endpoints, request/response handling, routing
 
 **Responsibilities:**
@@ -144,13 +144,13 @@ FamilyTree/
 - Dependency injection configuration
 
 **Dependencies:**
-- References: `FamilyTree.Application`, `FamilyTree.Infrastructure`
+- References: `Veilora.Application`, `Veilora.Infrastructure`
 - NuGet Packages:
   - `Microsoft.AspNetCore.OpenApi`
   - `Swashbuckle.AspNetCore` (Swagger/OpenAPI)
   - `Serilog.AspNetCore` (Logging)
 
-### 2. FamilyTree.Application (Business Logic Layer)
+### 2. Veilora.Application (Business Logic Layer)
 **Purpose:** Business logic, use cases, orchestration
 
 **Responsibilities:**
@@ -162,13 +162,13 @@ FamilyTree/
 - Exception handling
 
 **Dependencies:**
-- References: `FamilyTree.Domain`
+- References: `Veilora.Domain`
 - NuGet Packages:
   - `AutoMapper`
   - `FluentValidation`
   - `MediatR` (optional - for CQRS pattern)
 
-### 3. FamilyTree.Domain (Core Layer)
+### 3. Veilora.Domain (Core Layer)
 **Purpose:** Business entities, domain logic, core models
 
 **Responsibilities:**
@@ -181,7 +181,7 @@ FamilyTree/
 **Dependencies:**
 - None (pure domain logic, no external dependencies)
 
-### 4. FamilyTree.Infrastructure (Data Access Layer)
+### 4. Veilora.Infrastructure (Data Access Layer)
 **Purpose:** Database access, external services, persistence
 
 **Responsibilities:**
@@ -193,7 +193,7 @@ FamilyTree/
 - External service integrations (future: file storage, email)
 
 **Dependencies:**
-- References: `FamilyTree.Domain`, `FamilyTree.Application` (for interfaces)
+- References: `Veilora.Domain`, `Veilora.Application` (for interfaces)
 - NuGet Packages:
   - `Npgsql.EntityFrameworkCore.PostgreSQL`
   - `Microsoft.EntityFrameworkCore.Tools`
@@ -203,7 +203,7 @@ FamilyTree/
 
 ## Key Files Explained
 
-### Program.cs (FamilyTree.API)
+### Program.cs (Veilora.API)
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
@@ -275,7 +275,7 @@ app.Run();
 }
 ```
 
-### ApplicationDbContext.cs (FamilyTree.Infrastructure)
+### ApplicationDbContext.cs (Veilora.Infrastructure)
 ```csharp
 public class ApplicationDbContext : DbContext
 {
@@ -301,7 +301,7 @@ public class ApplicationDbContext : DbContext
 }
 ```
 
-### Person.cs (FamilyTree.Domain)
+### Person.cs (Veilora.Domain)
 ```csharp
 public class Person : BaseEntity
 {
@@ -324,7 +324,7 @@ public class Person : BaseEntity
 }
 ```
 
-### BaseEntity.cs (FamilyTree.Domain)
+### BaseEntity.cs (Veilora.Domain)
 ```csharp
 public abstract class BaseEntity
 {
@@ -334,7 +334,7 @@ public abstract class BaseEntity
 }
 ```
 
-### PersonConfiguration.cs (FamilyTree.Infrastructure)
+### PersonConfiguration.cs (Veilora.Infrastructure)
 ```csharp
 public class PersonConfiguration : IEntityTypeConfiguration<Person>
 {
@@ -381,7 +381,7 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
 }
 ```
 
-### IPersonService.cs (FamilyTree.Application)
+### IPersonService.cs (Veilora.Application)
 ```csharp
 public interface IPersonService
 {
@@ -397,7 +397,7 @@ public interface IPersonService
 }
 ```
 
-### PersonsController.cs (FamilyTree.API)
+### PersonsController.cs (Veilora.API)
 ```csharp
 [ApiController]
 [Route("api/[controller]")]
@@ -477,14 +477,14 @@ public class PersonsController : ControllerBase
 
 ## NuGet Packages by Project
 
-### FamilyTree.API
+### Veilora.API
 ```xml
 <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.*" />
 <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.*" />
 <PackageReference Include="Serilog.AspNetCore" Version="8.0.*" />
 ```
 
-### FamilyTree.Application
+### Veilora.Application
 ```xml
 <PackageReference Include="AutoMapper" Version="12.0.*" />
 <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.*" />
@@ -492,12 +492,12 @@ public class PersonsController : ControllerBase
 <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.*" />
 ```
 
-### FamilyTree.Domain
+### Veilora.Domain
 ```xml
 <!-- No external packages - pure domain logic -->
 ```
 
-### FamilyTree.Infrastructure
+### Veilora.Infrastructure
 ```xml
 <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.*" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.*" />
@@ -512,21 +512,21 @@ public class PersonsController : ControllerBase
 ### Create Initial Migration
 ```bash
 # From solution root
-dotnet ef migrations add InitialCreate --project src/FamilyTree.Infrastructure --startup-project src/FamilyTree.API
+dotnet ef migrations add InitialCreate --project src/Veilora.Infrastructure --startup-project src/Veilora.API
 
 # Apply migration to database
-dotnet ef database update --project src/FamilyTree.Infrastructure --startup-project src/FamilyTree.API
+dotnet ef database update --project src/Veilora.Infrastructure --startup-project src/Veilora.API
 ```
 
 ### Add New Migration (after model changes)
 ```bash
-dotnet ef migrations add AddBiographyField --project src/FamilyTree.Infrastructure --startup-project src/FamilyTree.API
-dotnet ef database update --project src/FamilyTree.Infrastructure --startup-project src/FamilyTree.API
+dotnet ef migrations add AddBiographyField --project src/Veilora.Infrastructure --startup-project src/Veilora.API
+dotnet ef database update --project src/Veilora.Infrastructure --startup-project src/Veilora.API
 ```
 
 ### Remove Last Migration (if not applied to database)
 ```bash
-dotnet ef migrations remove --project src/FamilyTree.Infrastructure --startup-project src/FamilyTree.API
+dotnet ef migrations remove --project src/Veilora.Infrastructure --startup-project src/Veilora.API
 ```
 
 ---
@@ -538,34 +538,34 @@ dotnet ef migrations remove --project src/FamilyTree.Infrastructure --startup-pr
 dotnet new sln -n FamilyTree
 
 # Create projects
-dotnet new webapi -n FamilyTree.API -o src/FamilyTree.API
-dotnet new classlib -n FamilyTree.Application -o src/FamilyTree.Application
-dotnet new classlib -n FamilyTree.Domain -o src/FamilyTree.Domain
-dotnet new classlib -n FamilyTree.Infrastructure -o src/FamilyTree.Infrastructure
+dotnet new webapi -n Veilora.API -o src/Veilora.API
+dotnet new classlib -n Veilora.Application -o src/Veilora.Application
+dotnet new classlib -n Veilora.Domain -o src/Veilora.Domain
+dotnet new classlib -n Veilora.Infrastructure -o src/Veilora.Infrastructure
 
 # Create test projects
-dotnet new xunit -n FamilyTree.UnitTests -o tests/FamilyTree.UnitTests
-dotnet new xunit -n FamilyTree.IntegrationTests -o tests/FamilyTree.IntegrationTests
+dotnet new xunit -n Veilora.UnitTests -o tests/Veilora.UnitTests
+dotnet new xunit -n Veilora.IntegrationTests -o tests/Veilora.IntegrationTests
 
 # Add projects to solution
-dotnet sln add src/FamilyTree.API/FamilyTree.API.csproj
-dotnet sln add src/FamilyTree.Application/FamilyTree.Application.csproj
-dotnet sln add src/FamilyTree.Domain/FamilyTree.Domain.csproj
-dotnet sln add src/FamilyTree.Infrastructure/FamilyTree.Infrastructure.csproj
-dotnet sln add tests/FamilyTree.UnitTests/FamilyTree.UnitTests.csproj
-dotnet sln add tests/FamilyTree.IntegrationTests/FamilyTree.IntegrationTests.csproj
+dotnet sln add src/Veilora.API/Veilora.API.csproj
+dotnet sln add src/Veilora.Application/Veilora.Application.csproj
+dotnet sln add src/Veilora.Domain/Veilora.Domain.csproj
+dotnet sln add src/Veilora.Infrastructure/Veilora.Infrastructure.csproj
+dotnet sln add tests/Veilora.UnitTests/Veilora.UnitTests.csproj
+dotnet sln add tests/Veilora.IntegrationTests/Veilora.IntegrationTests.csproj
 
 # Add project references
-dotnet add src/FamilyTree.API reference src/FamilyTree.Application
-dotnet add src/FamilyTree.API reference src/FamilyTree.Infrastructure
-dotnet add src/FamilyTree.Application reference src/FamilyTree.Domain
-dotnet add src/FamilyTree.Infrastructure reference src/FamilyTree.Domain
-dotnet add src/FamilyTree.Infrastructure reference src/FamilyTree.Application
+dotnet add src/Veilora.API reference src/Veilora.Application
+dotnet add src/Veilora.API reference src/Veilora.Infrastructure
+dotnet add src/Veilora.Application reference src/Veilora.Domain
+dotnet add src/Veilora.Infrastructure reference src/Veilora.Domain
+dotnet add src/Veilora.Infrastructure reference src/Veilora.Application
 
 # Add test references
-dotnet add tests/FamilyTree.UnitTests reference src/FamilyTree.Application
-dotnet add tests/FamilyTree.UnitTests reference src/FamilyTree.Domain
-dotnet add tests/FamilyTree.IntegrationTests reference src/FamilyTree.API
+dotnet add tests/Veilora.UnitTests reference src/Veilora.Application
+dotnet add tests/Veilora.UnitTests reference src/Veilora.Domain
+dotnet add tests/Veilora.IntegrationTests reference src/Veilora.API
 ```
 
 ---
@@ -581,7 +581,7 @@ dotnet restore
 dotnet build
 
 # Run API (starts on https://localhost:7000 by default)
-dotnet run --project src/FamilyTree.API
+dotnet run --project src/Veilora.API
 
 # Access Swagger UI
 # Open browser: https://localhost:7000/swagger
@@ -594,7 +594,7 @@ dotnet run --project src/FamilyTree.API
 # Update connection string in appsettings.json
 
 # Run migrations
-dotnet ef database update --project src/FamilyTree.Infrastructure --startup-project src/FamilyTree.API
+dotnet ef database update --project src/Veilora.Infrastructure --startup-project src/Veilora.API
 ```
 
 ### 3. Testing
@@ -603,7 +603,7 @@ dotnet ef database update --project src/FamilyTree.Infrastructure --startup-proj
 dotnet test
 
 # Run specific test project
-dotnet test tests/FamilyTree.UnitTests
+dotnet test tests/Veilora.UnitTests
 
 # Run with coverage
 dotnet test --collect:"XPlat Code Coverage"

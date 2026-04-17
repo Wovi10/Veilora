@@ -1,10 +1,10 @@
 <Solution>
   <Folder Name="/tests/">
-    <Project Path="tests/FamilyTree.IntegrationTests/FamilyTree.IntegrationTests.csproj" />
-    <Project Path="tests/FamilyTree.UnitTests/FamilyTree.UnitTests.csproj" />
+    <Project Path="tests/Veilora.IntegrationTests/Veilora.IntegrationTests.csproj" />
+    <Project Path="tests/Veilora.UnitTests/Veilora.UnitTests.csproj" />
   </Folder>
-  <Project Path="FamilyTree.Api/FamilyTree.Api.csproj" />
-  <Project Path="FamilyTree.Application/FamilyTree.Application.csproj" />
-  <Project Path="FamilyTree.Domain/FamilyTree.Domain.csproj" />
-  <Project Path="FamilyTree.Infrastructure/FamilyTree.Infrastructure.csproj" />
+  <Project Path="Veilora.Api/Veilora.Api.csproj" />
+  <Project Path="Veilora.Application/Veilora.Application.csproj" />
+  <Project Path="Veilora.Domain/Veilora.Domain.csproj" />
+  <Project Path="Veilora.Infrastructure/Veilora.Infrastructure.csproj" />
 </Solution>
