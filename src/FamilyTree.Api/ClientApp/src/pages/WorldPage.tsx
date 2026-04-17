@@ -39,9 +39,13 @@ export default function WorldPage() {
 
   const [world, setWorld] = useState<WorldDto | null>(null);
   const [characters, setCharacters] = useState<CharacterDto[]>([]);
+  const [characterCount, setCharacterCount] = useState(0);
   const [entitiesByType, setEntitiesByType] = useState<Record<EntityType, EntityDto[]>>({} as Record<EntityType, EntityDto[]>);
+  const [entityCountByType, setEntityCountByType] = useState<Record<EntityType, number>>({} as Record<EntityType, number>);
   const [locations, setLocations] = useState<LocationDto[]>([]);
+  const [locationCount, setLocationCount] = useState(0);
   const [familyTrees, setFamilyTrees] = useState<FamilyTreeDto[]>([]);
+  const [familyTreeCount, setFamilyTreeCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -65,13 +69,21 @@ export default function WorldPage() {
       .then(([w, chars, locs, groups, events, concepts, trees]) => {
         setWorld(w);
         setCharacters(chars.items);
+        setCharacterCount(chars.totalCount);
         setLocations(locs.items);
+        setLocationCount(locs.totalCount);
         setEntitiesByType({
           Group: groups.items,
           Event: events.items,
           Concept: concepts.items,
         } as Record<EntityType, EntityDto[]>);
+        setEntityCountByType({
+          Group: groups.totalCount,
+          Event: events.totalCount,
+          Concept: concepts.totalCount,
+        } as Record<EntityType, number>);
         setFamilyTrees(trees.items);
+        setFamilyTreeCount(trees.totalCount);
       })
       .catch(() => setError('Failed to load world'))
       .finally(() => setLoading(false));
@@ -120,7 +132,12 @@ export default function WorldPage() {
       <Box mb={5}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" fontWeight={600}>Characters</Typography>
+            <Typography variant="h5" fontWeight={600}>
+              Characters
+              <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
+                {characterCount}
+              </Typography>
+            </Typography>
             <Button
               size="small"
               startIcon={<OpenInFullIcon fontSize="small" />}
@@ -159,7 +176,12 @@ export default function WorldPage() {
       <Box mb={5}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" fontWeight={600}>Locations</Typography>
+            <Typography variant="h5" fontWeight={600}>
+              Locations
+              <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
+                {locationCount}
+              </Typography>
+            </Typography>
             <Button
               size="small"
               startIcon={<OpenInFullIcon fontSize="small" />}
@@ -198,7 +220,12 @@ export default function WorldPage() {
           <Box key={type} mb={5}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
               <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="h5" fontWeight={600}>{plural}</Typography>
+                <Typography variant="h5" fontWeight={600}>
+                  {plural}
+                  <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
+                    {entityCountByType[type] ?? 0}
+                  </Typography>
+                </Typography>
                 <Button
                   size="small"
                   startIcon={<OpenInFullIcon fontSize="small" />}
@@ -236,7 +263,12 @@ export default function WorldPage() {
       <Box mb={5}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" fontWeight={600}>Family Trees</Typography>
+            <Typography variant="h5" fontWeight={600}>
+              Family Trees
+              <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
+                {familyTreeCount}
+              </Typography>
+            </Typography>
             <Button
               size="small"
               startIcon={<OpenInFullIcon fontSize="small" />}
