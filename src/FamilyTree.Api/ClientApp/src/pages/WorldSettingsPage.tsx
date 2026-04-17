@@ -289,7 +289,7 @@ export default function WorldSettingsPage() {
       </Typography>
 
       {(eras.length > 0 || editingEraId !== null) && (
-        <TableContainer component={Paper} variant="outlined" sx={{ mb: eraError ? 1 : 3 }}>
+        <TableContainer component={Paper} variant="outlined" sx={{ mb: 0 }}>
           <Table size="small">
             <TableHead>
               <TableRow sx={{ '& th': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}>
@@ -340,6 +340,30 @@ export default function WorldSettingsPage() {
           </Table>
         </TableContainer>
       )}
+
+      {eras.length >= 2 && (() => {
+        const minYear = eras[0].anchorYear;
+        const maxYear = eras[eras.length - 1].anchorYear;
+        return (
+          <Box sx={{ color: 'text.secondary', mt: 2, mb: eraError ? 1 : 3 }}>
+            <svg width="100%" height="48" style={{ display: 'block', overflow: 'visible' }}>
+              <line x1="0" y1="40" x2="100%" y2="40" stroke="currentColor" strokeWidth="1.5" />
+              {eras.map(era => {
+                const pct = (era.anchorYear - minYear) / (maxYear - minYear) * 100;
+                const anchor = pct < 10 ? 'start' : pct > 90 ? 'end' : 'middle';
+                return (
+                  <g key={era.id}>
+                    <line x1={`${pct}%`} y1="32" x2={`${pct}%`} y2="48" stroke="currentColor" strokeWidth="1.5" />
+                    <text x={`${pct}%`} y="22" textAnchor={anchor} fontSize="12" fill="currentColor" fontFamily="monospace">
+                      1{era.abbreviation}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </Box>
+        );
+      })()}
 
       {eraError && <Alert severity="error" sx={{ mb: 3 }}>{eraError}</Alert>}
 
