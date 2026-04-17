@@ -292,7 +292,7 @@ export default function WorldSettingsPage() {
         <TableContainer component={Paper} variant="outlined" sx={{ mb: eraError ? 1 : 3 }}>
           <Table size="small">
             <TableHead>
-              <TableRow>
+              <TableRow sx={{ '& th': { bgcolor: 'primary.main', color: 'primary.contrastText' } }}>
                 <TableCell><Tooltip title="Short label shown on character dates, e.g. TA or FA" placement="top"><span>Suffix</span></Tooltip></TableCell>
                 <TableCell><Tooltip title="Full name of the era, e.g. Third Age" placement="top"><span>Name</span></Tooltip></TableCell>
                 <TableCell align="right"><Tooltip title="The absolute year at which this era begins, used to order eras chronologically" placement="top"><span>Anchor year</span></Tooltip></TableCell>
