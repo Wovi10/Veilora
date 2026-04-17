@@ -213,40 +213,38 @@ export default function WorldSettingsPage() {
 
   const patchDraft = (patch: Partial<EraDraft>) => setEraDraft(d => ({ ...d, ...patch }));
 
-  function EraEditCells() {
-    return (
-      <>
-        <TableCell sx={{ py: 0.5 }}>
-          <TextField size="small" value={eraDraft.abbreviation} onChange={e => patchDraft({ abbreviation: e.target.value })}
-            placeholder="e.g. TA" sx={{ width: 80 }} inputProps={{ maxLength: 20 }} />
-        </TableCell>
-        <TableCell sx={{ py: 0.5 }}>
-          <TextField size="small" value={eraDraft.name} onChange={e => patchDraft({ name: e.target.value })}
-            placeholder="e.g. Third Age" fullWidth inputProps={{ maxLength: 100 }} />
-        </TableCell>
-        <TableCell align="right" sx={{ py: 0.5 }}>
-          <TextField size="small" type="number" value={eraDraft.anchorYear}
-            onChange={e => patchDraft({ anchorYear: e.target.value })}
-            sx={{ width: 110 }} inputProps={{ style: { textAlign: 'right' } }} />
-        </TableCell>
-        <TableCell align="right" sx={{ py: 0.5 }}>
-          <TextField size="small" type="number" value={eraDraft.scale}
-            onChange={e => patchDraft({ scale: e.target.value })}
-            sx={{ width: 90 }} inputProps={{ step: '0.001', min: '0', style: { textAlign: 'right' } }} />
-        </TableCell>
-        <TableCell align="center" sx={{ py: 0.5 }}>
-          <Checkbox size="small" checked={eraDraft.isReversed} onChange={e => patchDraft({ isReversed: e.target.checked })} />
-        </TableCell>
-        <TableCell align="center" sx={{ py: 0.5 }}>
-          <Checkbox size="small" checked={eraDraft.isDefault} onChange={e => patchDraft({ isDefault: e.target.checked })} />
-        </TableCell>
-        <TableCell align="right" sx={{ py: 0.5 }}>
-          <IconButton size="small" onClick={saveEra} disabled={eraSaving}><CheckIcon fontSize="small" /></IconButton>
-          <IconButton size="small" onClick={() => { setEditingEraId(null); setEraError(''); }}><CloseIcon fontSize="small" /></IconButton>
-        </TableCell>
-      </>
-    );
-  }
+  const eraEditCells = (
+    <>
+      <TableCell sx={{ py: 0.5 }}>
+        <TextField size="small" value={eraDraft.abbreviation} onChange={e => patchDraft({ abbreviation: e.target.value })}
+          placeholder="e.g. TA" sx={{ width: 80 }} inputProps={{ maxLength: 20 }} />
+      </TableCell>
+      <TableCell sx={{ py: 0.5 }}>
+        <TextField size="small" value={eraDraft.name} onChange={e => patchDraft({ name: e.target.value })}
+          placeholder="e.g. Third Age" fullWidth inputProps={{ maxLength: 100 }} />
+      </TableCell>
+      <TableCell align="right" sx={{ py: 0.5 }}>
+        <TextField size="small" type="number" value={eraDraft.anchorYear}
+          onChange={e => patchDraft({ anchorYear: e.target.value })}
+          sx={{ width: 110 }} inputProps={{ style: { textAlign: 'right' } }} />
+      </TableCell>
+      <TableCell align="right" sx={{ py: 0.5 }}>
+        <TextField size="small" type="number" value={eraDraft.scale}
+          onChange={e => patchDraft({ scale: e.target.value })}
+          sx={{ width: 90 }} inputProps={{ step: '0.001', min: '0', style: { textAlign: 'right' } }} />
+      </TableCell>
+      <TableCell align="center" sx={{ py: 0.5 }}>
+        <Checkbox size="small" checked={eraDraft.isReversed} onChange={e => patchDraft({ isReversed: e.target.checked })} />
+      </TableCell>
+      <TableCell align="center" sx={{ py: 0.5 }}>
+        <Checkbox size="small" checked={eraDraft.isDefault} onChange={e => patchDraft({ isDefault: e.target.checked })} />
+      </TableCell>
+      <TableCell align="right" sx={{ py: 0.5 }}>
+        <IconButton size="small" onClick={saveEra} disabled={eraSaving}><CheckIcon fontSize="small" /></IconButton>
+        <IconButton size="small" onClick={() => { setEditingEraId(null); setEraError(''); }}><CloseIcon fontSize="small" /></IconButton>
+      </TableCell>
+    </>
+  );
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', px: 3, py: 4 }}>
@@ -308,7 +306,7 @@ export default function WorldSettingsPage() {
               {eras.map(era => (
                 <TableRow key={era.id}>
                   {editingEraId === era.id ? (
-                    <EraEditCells />
+                    eraEditCells
                   ) : (
                     <>
                       <TableCell sx={{ fontFamily: 'monospace', fontWeight: 600 }}>{era.abbreviation}</TableCell>
@@ -335,7 +333,7 @@ export default function WorldSettingsPage() {
               ))}
               {editingEraId === 'new' && (
                 <TableRow>
-                  <EraEditCells />
+                  {eraEditCells}
                 </TableRow>
               )}
             </TableBody>
