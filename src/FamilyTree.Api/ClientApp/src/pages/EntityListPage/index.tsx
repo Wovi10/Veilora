@@ -1,35 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Box, Typography, CircularProgress, Alert, Button,
-  Chip, Grid2,
-  Checkbox, FormControl, InputLabel, InputAdornment, ListItemText, MenuItem, Select, TextField,
+  Box, Typography, CircularProgress, Alert, Button, Grid2,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import type { SelectChangeEvent } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import { getWorld } from '../../api/worldsApi';
 import { getEntities } from '../../api/entitiesApi';
-import { getCharactersByWorld } from '../../api/charactersApi';
 import { getLocationsByWorld } from '../../api/locationsApi';
 import type { WorldDto } from '../../types/world';
 import type { EntityDto, EntityType } from '../../types/entity';
-import type { CharacterDto } from '../../types/character';
 import type { LocationDto } from '../../types/location';
 import { useEditMode } from '../../context/EditModeContext';
 import { useAuth } from '../../context/AuthContext';
-import AddCharacterDialog from '../../components/AddCharacterDialog';
-import AddEntityDialog from '../../components/AddEntityDialog';
-import EditEntityDialog from '../../components/EditEntityDialog';
-import AddLocationDialog from '../../components/AddLocationDialog';
-import EditLocationDialog from '../../components/EditLocationDialog';
-import CharacterCard from '../../components/CharacterCard';
-import LocationCard from '../../components/LocationCard';
-import EntityCard from './EntityCard';
+import {
+  AddEntityDialog, EditEntityDialog,
+  AddLocationDialog, EditLocationDialog, LocationCard, EntityCard,
+} from '../../components';
 
 const PLURAL: Record<string, string> = {
-  Character: 'Characters',
   Place: 'Locations',
   Group: 'Groups',
   Event: 'Events',
@@ -42,12 +31,10 @@ export default function EntityListPage() {
   const { isEditMode } = useEditMode();
   const { userId } = useAuth();
 
-  const isCharacterType = entityType === 'Character';
   const isLocationType = entityType === 'Place';
   const plural = PLURAL[entityType ?? ''] ?? entityType ?? '';
 
   const [world, setWorld] = useState<WorldDto | null>(null);
-  const [characters, setCharacters] = useState<CharacterDto[]>([]);
   const [entities, setEntities] = useState<EntityDto[]>([]);
   const [locations, setLocations] = useState<LocationDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,22 +42,10 @@ export default function EntityListPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<EntityDto | null>(null);
   const [editingLocation, setEditingLocation] = useState<LocationDto | null>(null);
-  const [speciesFilter, setSpeciesFilter] = useState<string[]>([]);
-  const [languageFilter, setLanguageFilter] = useState<string[]>([]);
-  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     if (!worldId || !entityType) return;
-    if (isCharacterType) {
-      Promise.all([getWorld(worldId), getCharactersByWorld(worldId), getEntities()])
-        .then(([w, chars, allEntities]) => {
-          setWorld(w);
-          setCharacters(chars);
-          setEntities(allEntities.filter(e => e.worldId === worldId));
-        })
-        .catch(() => setError('Failed to load'))
-        .finally(() => setLoading(false));
-    } else if (isLocationType) {
+    if (isLocationType) {
       Promise.all([getWorld(worldId), getLocationsByWorld(worldId)])
         .then(([w, locs]) => {
           setWorld(w);
@@ -82,15 +57,16 @@ export default function EntityListPage() {
       Promise.all([getWorld(worldId), getEntities()])
         .then(([w, allEntities]) => {
           setWorld(w);
-          const filtered = allEntities
-            .filter(e => e.worldId === worldId && e.type === entityType)
-            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-          setEntities(filtered);
+          setEntities(
+            allEntities
+              .filter(e => e.worldId === worldId && e.type === entityType)
+              .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+          );
         })
         .catch(() => setError('Failed to load'))
         .finally(() => setLoading(false));
     }
-  }, [worldId, entityType, isCharacterType, isLocationType]);
+  }, [worldId, entityType, isLocationType]);
 
   if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
   if (error)   return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
@@ -98,27 +74,10 @@ export default function EntityListPage() {
 
   const isOwner = !!userId && world.createdById === userId;
   const canEdit = isEditMode && isOwner;
-
-  const speciesOptions = isCharacterType
-    ? [...new Set(characters.map(c => c.species).filter((s): s is string => !!s))].sort()
-    : [];
-  const languageOptions = isCharacterType
-    ? [...new Map(characters.flatMap(c => c.languages).map(l => [l.id, l])).values()]
-        .sort((a, b) => a.name.localeCompare(b.name))
-    : [];
-  const searchLower = searchText.trim().toLowerCase();
-  const visibleCharacters = characters.filter(c => {
-    if (speciesFilter.length > 0 && !(c.species && speciesFilter.includes(c.species))) return false;
-    if (languageFilter.length > 0 && !c.languages.some(l => languageFilter.includes(l.id))) return false;
-    if (searchLower && !c.name.toLowerCase().includes(searchLower) && !(c.otherNames?.toLowerCase().includes(searchLower))) return false;
-    return true;
-  });
-
-  const count = isCharacterType ? visibleCharacters.length : isLocationType ? locations.length : entities.length;
+  const count = isLocationType ? locations.length : entities.length;
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
-      {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}`)}>
           {world.name}
@@ -130,102 +89,17 @@ export default function EntityListPage() {
         )}
       </Box>
 
-      <Typography variant="h4" fontWeight={700} mb={isCharacterType ? 2 : 3}>
+      <Typography variant="h4" fontWeight={700} mb={3}>
         {plural}
         <Typography component="span" variant="h6" color="text.secondary" fontWeight={400} ml={1.5}>
           {count}
         </Typography>
       </Typography>
 
-      {isCharacterType && (
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', mb: 3 }}>
-          <TextField
-            size="small"
-            placeholder="Search by name…"
-            value={searchText}
-            onChange={e => setSearchText(e.target.value)}
-            sx={{ minWidth: 220 }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-          {speciesOptions.length > 0 && (
-            <FormControl size="small" sx={{ minWidth: 220 }}>
-              <InputLabel>Species / Race</InputLabel>
-              <Select
-                multiple
-                value={speciesFilter}
-                label="Species / Race"
-                onChange={(e: SelectChangeEvent<string[]>) =>
-                  setSpeciesFilter(typeof e.target.value === 'string' ? [e.target.value] : e.target.value)
-                }
-                renderValue={selected => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {(selected as string[]).map(s => <Chip key={s} label={s} size="small" />)}
-                  </Box>
-                )}
-              >
-                {speciesOptions.map(species => (
-                  <MenuItem key={species} value={species}>
-                    <Checkbox checked={speciesFilter.includes(species)} size="small" />
-                    <ListItemText primary={species} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-          {languageOptions.length > 0 && (
-            <FormControl size="small" sx={{ minWidth: 220 }}>
-              <InputLabel>Language</InputLabel>
-              <Select
-                multiple
-                value={languageFilter}
-                label="Language"
-                onChange={(e: SelectChangeEvent<string[]>) =>
-                  setLanguageFilter(typeof e.target.value === 'string' ? [e.target.value] : e.target.value)
-                }
-                renderValue={selected => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {(selected as string[]).map(id => {
-                      const lang = languageOptions.find(l => l.id === id);
-                      return <Chip key={id} label={lang?.name ?? id} size="small" />;
-                    })}
-                  </Box>
-                )}
-              >
-                {languageOptions.map(lang => (
-                  <MenuItem key={lang.id} value={lang.id}>
-                    <Checkbox checked={languageFilter.includes(lang.id)} size="small" />
-                    <ListItemText primary={lang.name} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-        </Box>
-      )}
-
       {count === 0 ? (
         <Typography variant="body2" color="text.secondary" fontStyle="italic">
-          {speciesFilter.length > 0 || languageFilter.length > 0 || searchLower ? `No ${plural.toLowerCase()} matching this filter.` : `No ${plural.toLowerCase()} yet.`}
+          No {plural.toLowerCase()} yet.
         </Typography>
-      ) : isCharacterType ? (
-        <Grid2 container spacing={2}>
-          {visibleCharacters.map(character => (
-            <Grid2 key={character.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-              <CharacterCard
-                character={character}
-                onClick={() => navigate(`/worlds/${worldId}/characters/${character.id}`)}
-              />
-            </Grid2>
-          ))}
-        </Grid2>
       ) : isLocationType ? (
         <Grid2 container spacing={2}>
           {locations.map(location => (
@@ -252,30 +126,6 @@ export default function EntityListPage() {
         </Grid2>
       )}
 
-      {worldId && isCharacterType && (
-        <AddCharacterDialog
-          open={addOpen}
-          worldId={worldId}
-          worldCharacters={characters}
-          worldEntities={entities}
-          onClose={() => setAddOpen(false)}
-          onCreated={character => {
-            setCharacters(prev =>
-              [...prev, character].sort((a, b) => {
-                const lastA = a.lastName ?? '\uffff';
-                const lastB = b.lastName ?? '\uffff';
-                if (lastA !== lastB) return lastA.localeCompare(lastB);
-                if (!a.birthDate && !b.birthDate) return 0;
-                if (!a.birthDate) return 1;
-                if (!b.birthDate) return -1;
-                return a.birthDate < b.birthDate ? -1 : a.birthDate > b.birthDate ? 1 : 0;
-              })
-            );
-            setAddOpen(false);
-          }}
-        />
-      )}
-
       {worldId && isLocationType && (
         <AddLocationDialog
           open={addOpen}
@@ -292,7 +142,7 @@ export default function EntityListPage() {
         />
       )}
 
-      {worldId && !isCharacterType && !isLocationType && (
+      {worldId && !isLocationType && (
         <AddEntityDialog
           open={addOpen}
           defaultType={entityType as EntityType}

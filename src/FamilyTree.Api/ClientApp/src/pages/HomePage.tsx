@@ -8,7 +8,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { getWorlds } from '../api/worldsApi';
 import type { WorldDto } from '../types/world';
 import { useEditMode } from '../context/EditModeContext';
-import NewWorldDialog from '../components/NewWorldDialog';
+import { NewWorldDialog } from '../components';
 
 export default function HomePage() {
   const navigate = useNavigate();

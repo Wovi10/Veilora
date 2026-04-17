@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, CircularProgress, Alert, Button,
-  Card, CardContent, CardActionArea, Chip, Divider, Grid2,
+  Card, CardContent, CardActionArea, Divider, Grid2,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -21,10 +21,10 @@ import type { FamilyTreeDto } from '../types/familyTree';
 import type { LocationDto } from '../types/location';
 import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
-import AddCharacterDialog from '../components/AddCharacterDialog';
-import AddEntityDialog from '../components/AddEntityDialog';
-import AddLocationDialog from '../components/AddLocationDialog';
-import NewFamilyTreeDialog from '../components/NewFamilyTreeDialog';
+import {
+  AddCharacterDialog, AddEntityDialog, AddLocationDialog,
+  NewFamilyTreeDialog, CharacterCard, LocationCard,
+} from '../components';
 
 const ENTITY_SECTIONS: { type: EntityType; plural: string }[] = [
   { type: 'Group',    plural: 'Groups'   },
@@ -125,7 +125,7 @@ export default function WorldPage() {
             <Button
               size="small"
               startIcon={<OpenInFullIcon fontSize="small" />}
-              onClick={() => navigate(`/worlds/${worldId}/entities/Character`)}
+              onClick={() => navigate(`/worlds/${worldId}/characters`)}
               sx={{ textTransform: 'none', minWidth: 0 }}
             >
               View all
@@ -315,55 +315,6 @@ export default function WorldPage() {
         />
       )}
     </Box>
-  );
-}
-
-function CharacterCard({ character, onClick }: { character: CharacterDto; onClick: () => void }) {
-  return (
-    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      <CardActionArea onClick={onClick} sx={{ height: '100%' }}>
-        <CardContent sx={{ pb: '12px !important' }}>
-          <Typography variant="subtitle1" fontWeight={600} noWrap>{character.name}</Typography>
-          {character.species && (
-            <Chip label={character.species} size="small" variant="outlined" sx={{ mt: 0.5, mr: 0.5 }} />
-          )}
-          {character.birthDate && (
-            <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-              °&nbsp;{new Date(character.birthDate).toLocaleDateString('en-GB')}{character.birthDateSuffixAbbreviation && ` ${character.birthDateSuffixAbbreviation}`}
-              {character.deathDate && ` — †\u00a0${new Date(character.deathDate).toLocaleDateString('en-GB')}${character.deathDateSuffixAbbreviation ? ` ${character.deathDateSuffixAbbreviation}` : ''}`}
-            </Typography>
-          )}
-          {character.description && !character.birthDate && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-            >
-              {character.description}
-            </Typography>
-          )}
-        </CardContent>
-      </CardActionArea>
-    </Card>
-  );
-}
-
-function LocationCard({ location }: { location: LocationDto }) {
-  return (
-    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      <CardContent sx={{ pb: '12px !important' }}>
-        <Typography variant="subtitle1" fontWeight={600} noWrap>{location.name}</Typography>
-        {location.description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-          >
-            {location.description}
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 
