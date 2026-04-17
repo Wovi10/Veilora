@@ -164,7 +164,7 @@ export default function WorldPage() {
             <Button
               size="small"
               startIcon={<OpenInFullIcon fontSize="small" />}
-              onClick={() => navigate(`/worlds/${worldId}/entities/Place`)}
+              onClick={() => navigate(`/worlds/${worldId}/locations`)}
               sx={{ textTransform: 'none', minWidth: 0 }}
             >
               View all
