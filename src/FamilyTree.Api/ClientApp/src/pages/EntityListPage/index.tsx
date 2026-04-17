@@ -2,33 +2,35 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, CircularProgress, Alert, Button,
-  Card, CardActionArea, CardContent, Chip, Grid2, IconButton,
+  Chip, Grid2,
   Checkbox, FormControl, InputLabel, InputAdornment, ListItemText, MenuItem, Select, TextField,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import type { SelectChangeEvent } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import { getWorld } from '../api/worldsApi';
-import { getEntities } from '../api/entitiesApi';
-import { getCharactersByWorld } from '../api/charactersApi';
-import { getLocationsByWorld } from '../api/locationsApi';
-import type { WorldDto } from '../types/world';
-import type { EntityDto, EntityType } from '../types/entity';
-import type { CharacterDto } from '../types/character';
-import type { LocationDto } from '../types/location';
-import { useEditMode } from '../context/EditModeContext';
-import { useAuth } from '../context/AuthContext';
-import AddCharacterDialog from '../components/AddCharacterDialog';
-import AddEntityDialog from '../components/AddEntityDialog';
-import EditEntityDialog from '../components/EditEntityDialog';
-import AddLocationDialog from '../components/AddLocationDialog';
-import EditLocationDialog from '../components/EditLocationDialog';
+import { getWorld } from '../../api/worldsApi';
+import { getEntities } from '../../api/entitiesApi';
+import { getCharactersByWorld } from '../../api/charactersApi';
+import { getLocationsByWorld } from '../../api/locationsApi';
+import type { WorldDto } from '../../types/world';
+import type { EntityDto, EntityType } from '../../types/entity';
+import type { CharacterDto } from '../../types/character';
+import type { LocationDto } from '../../types/location';
+import { useEditMode } from '../../context/EditModeContext';
+import { useAuth } from '../../context/AuthContext';
+import AddCharacterDialog from '../../components/AddCharacterDialog';
+import AddEntityDialog from '../../components/AddEntityDialog';
+import EditEntityDialog from '../../components/EditEntityDialog';
+import AddLocationDialog from '../../components/AddLocationDialog';
+import EditLocationDialog from '../../components/EditLocationDialog';
+import CharacterCard from '../../components/CharacterCard';
+import LocationCard from '../../components/LocationCard';
+import EntityCard from './EntityCard';
 
 const PLURAL: Record<string, string> = {
   Character: 'Characters',
-  Place: 'Places',
+  Place: 'Locations',
   Group: 'Groups',
   Event: 'Events',
   Concept: 'Concepts',
@@ -211,7 +213,7 @@ export default function EntityListPage() {
 
       {count === 0 ? (
         <Typography variant="body2" color="text.secondary" fontStyle="italic">
-          {speciesFilter.length > 0 ? `No ${plural.toLowerCase()} matching this filter.` : `No ${plural.toLowerCase()} yet.`}
+          {speciesFilter.length > 0 || languageFilter.length > 0 || searchLower ? `No ${plural.toLowerCase()} matching this filter.` : `No ${plural.toLowerCase()} yet.`}
         </Typography>
       ) : isCharacterType ? (
         <Grid2 container spacing={2}>
@@ -339,96 +341,5 @@ export default function EntityListPage() {
         />
       )}
     </Box>
-  );
-}
-
-function CharacterCard({ character, onClick }: { character: CharacterDto; onClick: () => void }) {
-  return (
-    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      <CardActionArea onClick={onClick} sx={{ height: '100%' }}>
-        <CardContent sx={{ pb: '12px !important' }}>
-          <Typography variant="subtitle1" fontWeight={600} noWrap>{character.name}</Typography>
-          {character.species && (
-            <Chip label={character.species} size="small" variant="outlined" sx={{ mt: 0.5, mr: 0.5 }} />
-          )}
-          {character.birthDate && (
-            <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-              °&nbsp;{new Date(character.birthDate).toLocaleDateString('en-GB')}{character.birthDateSuffixAbbreviation && ` ${character.birthDateSuffixAbbreviation}`}
-              {character.deathDate && ` — †\u00a0${new Date(character.deathDate).toLocaleDateString('en-GB')}${character.deathDateSuffixAbbreviation ? ` ${character.deathDateSuffixAbbreviation}` : ''}`}
-            </Typography>
-          )}
-          {character.description && !character.birthDate && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-            >
-              {character.description}
-            </Typography>
-          )}
-          <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-            Updated {new Date(character.updatedAt).toLocaleDateString('en-GB')}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-    </Card>
-  );
-}
-
-function LocationCard({ location, canEdit, onEdit }: { location: LocationDto; canEdit: boolean; onEdit: () => void }) {
-  return (
-    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      <CardContent sx={{ pb: '12px !important' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ flex: 1 }}>{location.name}</Typography>
-          {canEdit && (
-            <IconButton size="small" onClick={onEdit} sx={{ ml: 0.5, mt: -0.5 }}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-          )}
-        </Box>
-        {location.description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-          >
-            {location.description}
-          </Typography>
-        )}
-        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-          Updated {new Date(location.updatedAt).toLocaleDateString('en-GB')}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
-}
-
-function EntityCard({ entity, canEdit, onEdit }: { entity: EntityDto; canEdit: boolean; onEdit: () => void }) {
-  return (
-    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      <CardContent sx={{ pb: '12px !important' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ flex: 1 }}>{entity.name}</Typography>
-          {canEdit && (
-            <IconButton size="small" onClick={onEdit} sx={{ ml: 0.5, mt: -0.5 }}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-          )}
-        </Box>
-        {entity.description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-          >
-            {entity.description}
-          </Typography>
-        )}
-        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-          Updated {new Date(entity.updatedAt).toLocaleDateString('en-GB')}
-        </Typography>
-      </CardContent>
-    </Card>
   );
 }

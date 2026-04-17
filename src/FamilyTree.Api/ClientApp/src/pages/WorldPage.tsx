@@ -156,11 +156,11 @@ export default function WorldPage() {
         <Divider sx={{ mt: 4 }} />
       </Box>
 
-      {/* Places (Locations) section */}
+      {/* Locations section */}
       <Box mb={5}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" fontWeight={600}>Places</Typography>
+            <Typography variant="h5" fontWeight={600}>Locations</Typography>
             <Button
               size="small"
               startIcon={<OpenInFullIcon fontSize="small" />}
@@ -172,7 +172,7 @@ export default function WorldPage() {
           </Box>
           {canEdit && (
             <Button size="small" startIcon={<AddIcon />} onClick={() => setAddLocationOpen(true)}>
-              Add Place
+              Add Location
             </Button>
           )}
         </Box>
