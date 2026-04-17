@@ -342,22 +342,27 @@ export default function WorldSettingsPage() {
       )}
 
       {eras.length >= 2 && (() => {
-        const minYear = eras[0].anchorYear;
-        const maxYear = eras[eras.length - 1].anchorYear;
-        const range = maxYear - minYear;
+        // Absolute position = anchorYear × scale (AY is the zero reference)
+        const items = eras
+          .map(era => ({ era, absPos: era.anchorYear * era.scale }))
+          .sort((a, b) => a.absPos - b.absPos);
+
+        const minPos = items[0].absPos;
+        const maxPos = items[items.length - 1].absPos;
+        const range = maxPos - minPos;
 
         // pct position of each era's year 1 on the timeline
-        const items = eras.map(era => ({
-          era,
-          pct: range === 0 ? 50 : (era.anchorYear - minYear) / range * 100,
+        const withPct = items.map(item => ({
+          ...item,
+          pct: range === 0 ? 50 : (item.absPos - minPos) / range * 100,
         }));
 
         // Assign vertical stacking levels for labels that are too close.
         // Threshold ≈ 6% covers a ~30px label on a 500 px-wide container.
         const THRESHOLD = 6;
         const levels: number[] = [0];
-        for (let i = 1; i < items.length; i++) {
-          levels[i] = items[i].pct - items[i - 1].pct < THRESHOLD ? levels[i - 1] + 1 : 0;
+        for (let i = 1; i < withPct.length; i++) {
+          levels[i] = withPct[i].pct - withPct[i - 1].pct < THRESHOLD ? levels[i - 1] + 1 : 0;
         }
         const maxLevel = Math.max(...levels);
 
@@ -372,7 +377,7 @@ export default function WorldSettingsPage() {
           <Box sx={{ color: 'text.secondary', mt: 2, mb: eraError ? 1 : 3 }}>
             <svg width="100%" height={svgH} style={{ display: 'block', overflow: 'visible' }}>
               <line x1="0" y1={lineY} x2="100%" y2={lineY} stroke="currentColor" strokeWidth="1.5" />
-              {items.map(({ era, pct }, i) => {
+              {withPct.map(({ era, pct }, i) => {
                 const anchor = pct < 10 ? 'start' : pct > 90 ? 'end' : 'middle';
                 const labelY = labelBaseY - levels[i] * LEVEL_H;
                 return (

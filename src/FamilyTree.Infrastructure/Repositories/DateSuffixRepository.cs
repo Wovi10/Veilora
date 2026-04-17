@@ -11,7 +11,7 @@ public class DateSuffixRepository(ApplicationDbContext context) : Repository<Dat
         await _context.DateSuffixes
             .AsNoTracking()
             .Where(d => d.WorldId == worldId)
-            .OrderBy(d => d.AnchorYear)
+            .OrderBy(d => d.AnchorYear * (double)d.Scale)
             .ToListAsync();
 
     public async Task<DateSuffix?> GetDefaultForWorldAsync(Guid worldId) =>
