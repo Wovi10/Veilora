@@ -125,7 +125,7 @@ export default function WorldSettingsPage() {
 
   function startAddEra() {
     setEditingEraId('new');
-    setEraDraft(emptyDraft);
+    setEraDraft({ ...emptyDraft, isDefault: eras.length === 0 });
     setEraError('');
   }
 
