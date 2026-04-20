@@ -14,23 +14,19 @@ public class WorldSearchService(
 {
     public async Task<WorldSearchResultDto> SearchAsync(WorldSearchCriteria criteria)
     {
-        var charsTask      = characterRepository.SearchByWorldAsync(criteria);
-        var locsTask       = locationRepository.SearchByWorldAsync(criteria);
-        var entitiesTask   = entityRepository.SearchByWorldAsync(criteria);
-        var treesTask      = familyTreeRepository.SearchByWorldAsync(criteria);
-
-        await Task.WhenAll(charsTask, locsTask, entitiesTask, treesTask);
-
-        var entities = await entitiesTask;
+        var chars    = await characterRepository.SearchByWorldAsync(criteria);
+        var locs     = await locationRepository.SearchByWorldAsync(criteria);
+        var entities = await entityRepository.SearchByWorldAsync(criteria);
+        var trees    = await familyTreeRepository.SearchByWorldAsync(criteria);
 
         return new WorldSearchResultDto
         {
-            Characters  = (await charsTask).Select(c  => new WorldSearchItemDto(c.Id, c.Name)).ToList(),
-            Locations   = (await locsTask).Select(l   => new WorldSearchItemDto(l.Id, l.Name)).ToList(),
+            Characters  = chars.Select(c    => new WorldSearchItemDto(c.Id, c.Name)).ToList(),
+            Locations   = locs.Select(l     => new WorldSearchItemDto(l.Id, l.Name)).ToList(),
             Groups      = entities.Where(e => e.Type == EntityType.Group)  .Select(e => new WorldSearchItemDto(e.Id, e.Name)).ToList(),
             Events      = entities.Where(e => e.Type == EntityType.Event)  .Select(e => new WorldSearchItemDto(e.Id, e.Name)).ToList(),
             Concepts    = entities.Where(e => e.Type == EntityType.Concept).Select(e => new WorldSearchItemDto(e.Id, e.Name)).ToList(),
-            FamilyTrees = (await treesTask).Select(ft => new WorldSearchItemDto(ft.Id, ft.Name)).ToList(),
+            FamilyTrees = trees.Select(ft   => new WorldSearchItemDto(ft.Id, ft.Name)).ToList(),
         };
     }
 }
