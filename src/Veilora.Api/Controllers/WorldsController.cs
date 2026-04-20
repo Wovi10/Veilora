@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Veilora.Application.Criteria;
 using Veilora.Application.DTOs.World;
 using Veilora.Application.Exceptions;
 using Veilora.Application.Services.Interfaces;
@@ -10,7 +11,7 @@ namespace Veilora.Api.Controllers;
 [ApiController]
 [Route("api/worlds")]
 [Authorize]
-public class WorldsController(IWorldService worldService) : ControllerBase
+public class WorldsController(IWorldService worldService, IWorldSearchService worldSearchService) : ControllerBase
 {
     private Guid? CurrentUserId =>
         Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
@@ -56,6 +57,15 @@ public class WorldsController(IWorldService worldService) : ControllerBase
 
         var found = await worldService.TransferOwnershipAsync(id, dto.Email);
         return found ? NoContent() : NotFound(new { message = "No user found with that email address." });
+    }
+
+    [HttpGet("{id:guid}/search")]
+    public async Task<IActionResult> Search(Guid id, [FromQuery] string name, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return BadRequest("Search term is required.");
+        var criteria = new WorldSearchCriteria(id, name, page, pageSize);
+        var result = await worldSearchService.SearchAsync(criteria);
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]

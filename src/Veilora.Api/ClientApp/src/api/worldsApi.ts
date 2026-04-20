@@ -1,5 +1,6 @@
 import { apiFetch } from './apiFetch';
 import type { WorldDto, CreateWorldDto, UpdateWorldDto } from '../types/world';
+import type { WorldSearchResult } from '../types/worldSearch';
 
 export async function getWorlds(): Promise<WorldDto[]> {
   const res = await apiFetch('/api/worlds');
@@ -31,6 +32,11 @@ export async function updateWorld(id: string, dto: UpdateWorldDto): Promise<Worl
 
 export async function deleteWorld(id: string): Promise<void> {
   await apiFetch(`/api/worlds/${id}`, { method: 'DELETE' });
+}
+
+export async function searchWorld(worldId: string, name: string): Promise<WorldSearchResult> {
+  const res = await apiFetch(`/api/worlds/${worldId}/search?name=${encodeURIComponent(name)}`);
+  return res.json();
 }
 
 export async function transferOwnership(id: string, email: string): Promise<boolean> {

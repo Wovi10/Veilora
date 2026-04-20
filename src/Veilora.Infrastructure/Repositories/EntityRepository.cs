@@ -19,6 +19,16 @@ public class EntityRepository(ApplicationDbContext context) : Repository<Entity>
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Entity>> SearchByWorldAsync(WorldSearchCriteria criteria)
+    {
+        var term = criteria.Name.ToLower();
+        return await _context.Entities
+            .AsNoTracking()
+            .Where(e => e.WorldId == criteria.WorldId && e.Name.ToLower().Contains(term))
+            .OrderBy(e => e.Name)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Entity>> GetByWorldIdAsync(Guid worldId) =>
         await _context.Entities
             .AsNoTracking()
