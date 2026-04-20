@@ -28,6 +28,22 @@ import { useThemeMode } from './context/ThemeModeContext';
 import { ReadingSessionProvider, useReadingSession } from './context/ReadingSessionContext';
 import ReadingFab from './components/ReadingFab/ReadingFab';
 
+function LogoutButton() {
+  const { session, pause } = useReadingSession();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    if (session?.isActive) await pause();
+    logout();
+    navigate('/login', { replace: true });
+  }
+
+  return (
+    <Button color="inherit" onClick={handleLogout}>Logout</Button>
+  );
+}
+
 function NotesButton() {
   const { session } = useReadingSession();
   const navigate = useNavigate();
@@ -56,7 +72,6 @@ export default function App() {
   const theme = useMemo(() => createTheme({ palette: { mode } }), [mode]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
-  const { logout } = useAuth();
   const { isEditMode, toggleEditMode } = useEditMode();
 
   return (
@@ -106,9 +121,7 @@ export default function App() {
           <IconButton color="inherit" onClick={toggleThemeMode} sx={{ mr: 1 }}>
             {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
-          <Button color="inherit" onClick={() => { logout(); navigate('/login', { replace: true }); }}>
-            Logout
-          </Button>
+          <LogoutButton />
         </Toolbar>
       </AppBar>
 
