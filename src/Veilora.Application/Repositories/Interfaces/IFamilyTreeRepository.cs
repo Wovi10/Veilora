@@ -13,5 +13,4 @@ public interface IFamilyTreeRepository : IRepository<FamilyTreeEntity>
     Task RemoveCharacterFromFamilyTreeAsync(Guid familyTreeId, Guid characterId);
     Task<bool> IsCharacterInFamilyTreeAsync(Guid familyTreeId, Guid characterId);
     Task UpdateCharacterPositionAsync(Guid familyTreeId, Guid characterId, double x, double y);
-    Task<IEnumerable<FamilyTreeEntity>> SearchByWorldAsync(WorldSearchCriteria criteria);
 }

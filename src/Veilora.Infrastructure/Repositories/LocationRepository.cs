@@ -21,22 +21,17 @@ public class LocationRepository(ApplicationDbContext context) : Repository<Locat
             .Where(l => l.WorldId == worldId && l.Name.ToLower() == name.ToLower())
             .FirstOrDefaultAsync();
 
-    public async Task<IEnumerable<Location>> SearchByWorldAsync(WorldSearchCriteria criteria)
-    {
-        var term = criteria.Name.ToLower();
-        return await _context.Locations
-            .AsNoTracking()
-            .Where(l => l.WorldId == criteria.WorldId && l.Name.ToLower().Contains(term))
-            .OrderBy(l => l.Name)
-            .ToListAsync();
-    }
-
     public async Task<PagedResult<Location>> GetPagedAsync(LocationCriteria criteria)
     {
         var query = _context.Locations
             .AsNoTracking()
-            .Where(l => l.WorldId == criteria.WorldId)
-            .OrderBy(l => l.Name);
+            .Where(l => l.WorldId == criteria.WorldId);
+        if (criteria.Name is not null)
+        {
+            var term = criteria.Name.ToLower();
+            query = query.Where(l => l.Name.ToLower().Contains(term));
+        }
+        query = query.OrderBy(l => l.Name);
         var totalCount = await query.CountAsync();
         var items = await query
             .Skip((criteria.Page - 1) * criteria.PageSize)

@@ -7,8 +7,9 @@ export async function getCharactersByWorld(worldId: string): Promise<CharacterDt
   return res.json();
 }
 
-export async function getCharactersByWorldPaged(worldId: string, page: number, pageSize: number): Promise<PagedResult<CharacterDto>> {
-  const res = await apiFetch(`/api/characters?worldId=${worldId}&page=${page}&pageSize=${pageSize}`);
+export async function getCharactersByWorldPaged(worldId: string, page: number, pageSize: number, name?: string): Promise<PagedResult<CharacterDto>> {
+  const url = `/api/characters?worldId=${worldId}&page=${page}&pageSize=${pageSize}${name ? `&name=${encodeURIComponent(name)}` : ''}`;
+  const res = await apiFetch(url);
   return res.json();
 }
 
