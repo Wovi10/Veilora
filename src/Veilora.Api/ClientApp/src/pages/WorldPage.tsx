@@ -11,8 +11,7 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import { getWorld, searchWorld } from '../api/worldsApi';
-import type { WorldSearchResult } from '../types/worldSearch';
+import { getWorld } from '../api/worldsApi';
 import { getEntitiesByTypePaged } from '../api/entitiesApi';
 import { getCharactersByWorldPaged } from '../api/charactersApi';
 import { getFamilyTreesByWorldPaged } from '../api/familyTreesApi';
@@ -53,8 +52,8 @@ export default function WorldPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [searchQuery, setSearchQuery]     = useState('');
-  const [searchResults, setSearchResults] = useState<WorldSearchResult | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
   const [addCharacterOpen, setAddCharacterOpen] = useState(false);
@@ -63,16 +62,17 @@ export default function WorldPage() {
   const [addLocationOpen, setAddLocationOpen] = useState(false);
   const [newFamilyTreeOpen, setNewFamilyTreeOpen] = useState(false);
 
-  useEffect(() => {
+  const loadData = (name?: string) => {
     if (!worldId) return;
+    const pageSize = name ? 50 : 4;
     Promise.all([
       getWorld(worldId),
-      getCharactersByWorldPaged(worldId, 1, 4),
-      getLocationsByWorldPaged(worldId, 1, 4),
-      getEntitiesByTypePaged(worldId, 'Group', 1, 4),
-      getEntitiesByTypePaged(worldId, 'Event', 1, 4),
-      getEntitiesByTypePaged(worldId, 'Concept', 1, 4),
-      getFamilyTreesByWorldPaged(worldId, 1, 4),
+      getCharactersByWorldPaged(worldId, 1, pageSize, name),
+      getLocationsByWorldPaged(worldId, 1, pageSize, name),
+      getEntitiesByTypePaged(worldId, 'Group', 1, pageSize, name),
+      getEntitiesByTypePaged(worldId, 'Event', 1, pageSize, name),
+      getEntitiesByTypePaged(worldId, 'Concept', 1, pageSize, name),
+      getFamilyTreesByWorldPaged(worldId, 1, pageSize, name),
     ])
       .then(([w, chars, locs, groups, events, concepts, trees]) => {
         setWorld(w);
@@ -92,27 +92,24 @@ export default function WorldPage() {
         } as Record<EntityType, number>);
         setFamilyTrees(trees.items);
         setFamilyTreeCount(trees.totalCount);
+        setIsSearching(!!name);
       })
       .catch(() => setError('Failed to load world'))
-      .finally(() => setLoading(false));
-  }, [worldId]);
+      .finally(() => { setLoading(false); setSearchLoading(false); });
+  };
 
-  const handleSearch = async () => {
-    if (!worldId || searchQuery.trim().length < 2) return;
+  useEffect(() => { loadData(); }, [worldId]);
+
+  const handleSearch = () => {
+    if (searchQuery.trim().length < 2) return;
     setSearchLoading(true);
-    try {
-      const results = await searchWorld(worldId, searchQuery.trim());
-      setSearchResults(results);
-    } catch {
-      // search errors are non-fatal
-    } finally {
-      setSearchLoading(false);
-    }
+    loadData(searchQuery.trim());
   };
 
   const clearSearch = () => {
     setSearchQuery('');
-    setSearchResults(null);
+    setLoading(true);
+    loadData();
   };
 
   if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
@@ -161,7 +158,7 @@ export default function WorldPage() {
           size="small"
           placeholder="Search characters, locations, groups, events… (press Enter)"
           value={searchQuery}
-          onChange={e => { setSearchQuery(e.target.value); if (!e.target.value) setSearchResults(null); }}
+          onChange={e => { setSearchQuery(e.target.value); if (!e.target.value) clearSearch(); }}
           onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
           slotProps={{
             input: {
@@ -186,14 +183,14 @@ export default function WorldPage() {
       </Box>
 
       {/* Characters section */}
-      {(!searchResults || searchResults.characters.length > 0) && (
+      {(!isSearching || characters.length > 0) && (
         <Box mb={5}>
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
             <Box display="flex" alignItems="center" gap={1}>
               <Typography variant="h5" fontWeight={600}>
                 Characters
                 <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
-                  {searchResults ? searchResults.characters.length : characterCount}
+                  {characterCount}
                 </Typography>
               </Typography>
               <Button
@@ -205,21 +202,13 @@ export default function WorldPage() {
                 View all
               </Button>
             </Box>
-            {canEdit && !searchResults && (
+            {canEdit && !isSearching && (
               <Button size="small" startIcon={<AddIcon />} onClick={() => setAddCharacterOpen(true)}>
                 Add Character
               </Button>
             )}
           </Box>
-          {searchResults ? (
-            <Grid2 container spacing={2}>
-              {searchResults.characters.map(item => (
-                <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <SearchResultCard name={item.name} onClick={() => navigate(`/worlds/${worldId}/characters/${item.id}`)} />
-                </Grid2>
-              ))}
-            </Grid2>
-          ) : characters.length === 0 ? (
+          {characters.length === 0 ? (
             <Typography variant="body2" color="text.secondary" fontStyle="italic">No characters yet.</Typography>
           ) : (
             <Grid2 container spacing={2}>
@@ -235,14 +224,14 @@ export default function WorldPage() {
       )}
 
       {/* Locations section */}
-      {(!searchResults || searchResults.locations.length > 0) && (
+      {(!isSearching || locations.length > 0) && (
         <Box mb={5}>
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
             <Box display="flex" alignItems="center" gap={1}>
               <Typography variant="h5" fontWeight={600}>
                 Locations
                 <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
-                  {searchResults ? searchResults.locations.length : locationCount}
+                  {locationCount}
                 </Typography>
               </Typography>
               <Button
@@ -254,21 +243,13 @@ export default function WorldPage() {
                 View all
               </Button>
             </Box>
-            {canEdit && !searchResults && (
+            {canEdit && !isSearching && (
               <Button size="small" startIcon={<AddIcon />} onClick={() => setAddLocationOpen(true)}>
                 Add Location
               </Button>
             )}
           </Box>
-          {searchResults ? (
-            <Grid2 container spacing={2}>
-              {searchResults.locations.map(item => (
-                <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <SearchResultCard name={item.name} onClick={() => navigate(`/worlds/${worldId}/locations/${item.id}`)} />
-                </Grid2>
-              ))}
-            </Grid2>
-          ) : locations.length === 0 ? (
+          {locations.length === 0 ? (
             <Typography variant="body2" color="text.secondary" fontStyle="italic">No places yet.</Typography>
           ) : (
             <Grid2 container spacing={2}>
@@ -286,9 +267,7 @@ export default function WorldPage() {
       {/* Group / Event / Concept sections */}
       {ENTITY_SECTIONS.map(({ type, plural }) => {
         const sectionEntities = entitiesByType[type] ?? [];
-        const searchKey = type.toLowerCase() + 's' as 'groups' | 'events' | 'concepts';
-        const searchItems = searchResults?.[searchKey] ?? [];
-        if (searchResults && searchItems.length === 0) return null;
+        if (isSearching && sectionEntities.length === 0) return null;
         return (
           <Box key={type} mb={5}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
@@ -296,7 +275,7 @@ export default function WorldPage() {
                 <Typography variant="h5" fontWeight={600}>
                   {plural}
                   <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
-                    {searchResults ? searchItems.length : (entityCountByType[type] ?? 0)}
+                    {entityCountByType[type] ?? 0}
                   </Typography>
                 </Typography>
                 <Button
@@ -308,21 +287,13 @@ export default function WorldPage() {
                   View all
                 </Button>
               </Box>
-              {canEdit && !searchResults && (
+              {canEdit && !isSearching && (
                 <Button size="small" startIcon={<AddIcon />} onClick={() => openAddEntity(type)}>
                   Add {type}
                 </Button>
               )}
             </Box>
-            {searchResults ? (
-              <Grid2 container spacing={2}>
-                {searchItems.map(item => (
-                  <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <SearchResultCard name={item.name} onClick={() => navigate(`/worlds/${worldId}/entities/${type}`)} />
-                  </Grid2>
-                ))}
-              </Grid2>
-            ) : sectionEntities.length === 0 ? (
+            {sectionEntities.length === 0 ? (
               <Typography variant="body2" color="text.secondary" fontStyle="italic">
                 No {plural.toLowerCase()} yet.
               </Typography>
@@ -341,14 +312,14 @@ export default function WorldPage() {
       })}
 
       {/* Family Trees section */}
-      {(!searchResults || searchResults.familyTrees.length > 0) && (
+      {(!isSearching || familyTrees.length > 0) && (
         <Box mb={5}>
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
             <Box display="flex" alignItems="center" gap={1}>
               <Typography variant="h5" fontWeight={600}>
                 Family Trees
                 <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
-                  {searchResults ? searchResults.familyTrees.length : familyTreeCount}
+                  {familyTreeCount}
                 </Typography>
               </Typography>
               <Button
@@ -360,21 +331,13 @@ export default function WorldPage() {
                 View all
               </Button>
             </Box>
-            {canEdit && !searchResults && (
+            {canEdit && !isSearching && (
               <Button size="small" startIcon={<AddIcon />} onClick={() => setNewFamilyTreeOpen(true)}>
                 New Family Tree
               </Button>
             )}
           </Box>
-          {searchResults ? (
-            <Grid2 container spacing={2}>
-              {searchResults.familyTrees.map(item => (
-                <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <SearchResultCard name={item.name} onClick={() => navigate(`/worlds/${worldId}/family-trees/${item.id}`)} />
-                </Grid2>
-              ))}
-            </Grid2>
-          ) : familyTrees.length === 0 ? (
+          {familyTrees.length === 0 ? (
             <Typography variant="body2" color="text.secondary" fontStyle="italic">No family trees yet.</Typography>
           ) : (
             <Grid2 container spacing={2}>
@@ -433,19 +396,6 @@ export default function WorldPage() {
         />
       )}
     </Box>
-  );
-}
-
-function SearchResultCard({ name, onClick }: { name: string; onClick: () => void }) {
-  return (
-    <Card
-      onClick={onClick}
-      sx={{ borderRadius: 2, height: '100%', cursor: 'pointer', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}
-    >
-      <CardContent sx={{ pb: '12px !important' }}>
-        <Typography variant="subtitle1" fontWeight={600} noWrap>{name}</Typography>
-      </CardContent>
-    </Card>
   );
 }
 
