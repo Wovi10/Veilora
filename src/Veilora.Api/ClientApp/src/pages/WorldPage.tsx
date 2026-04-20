@@ -159,7 +159,7 @@ export default function WorldPage() {
           placeholder="Search characters, locations, groups, events… (press Enter)"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+          onKeyDown={e => { if (e.key === 'Enter') searchQuery.trim() ? handleSearch() : clearSearch(); }}
           slotProps={{
             input: {
               startAdornment: (
