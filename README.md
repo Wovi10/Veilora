@@ -18,6 +18,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 - **Languages** — Track languages spoken in a world
 - **Custom Calendars** — Define custom date systems with `DateSuffix` (anchor years, scale, reversal)
 - **Permissions** — Share worlds with other users (read or edit access)
+- **World Search** — Name-based search bar on the world dashboard, filters all sections in place
 - **JWT Auth** — Secure registration and login
 
 ---
@@ -50,7 +51,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 - [ ] Rich text biography / notes editor
 - [ ] Photo uploads for characters
 - [ ] Export family tree as image / PDF
-- [ ] Advanced search and filtering across a world
+- [x] World search — name-based search across all entity types, filters sections in place
 - [ ] Mobile-responsive design
 - [ ] GEDCOM import/export
 

@@ -8,7 +8,7 @@ A worldbuilding companion app for fantasy writers. Users create **Worlds** and p
 
 ## Project Status
 
-Core features are fully implemented — 11 backend controllers, 11 services, 10+ frontend pages, JWT auth, world permissions. Active development continues on UI polish and new features.
+Core features are fully implemented — 11 backend controllers, 11 services, 10+ frontend pages, JWT auth, world permissions, world-scoped name search. Active development continues on UI polish and new features.
 
 ## Commands
 
