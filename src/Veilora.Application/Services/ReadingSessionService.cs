@@ -23,6 +23,10 @@ public partial class ReadingSessionService(
         var world = await worldRepository.GetByIdAsync(dto.WorldId)
             ?? throw new NotFoundException(nameof(World), dto.WorldId);
 
+        var existing = await sessionRepository.GetActiveByUserAsync(userId);
+        if (existing is not null)
+            throw new BusinessException("End your current session before starting a new one.");
+
         var session = new ReadingSession
         {
             WorldId = dto.WorldId,
