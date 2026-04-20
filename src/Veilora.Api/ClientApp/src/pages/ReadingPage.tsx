@@ -1,20 +1,24 @@
+import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Button, Chip, Divider, IconButton, CircularProgress, Stack,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import StopCircleOutlinedIcon from '@mui/icons-material/StopCircleOutlined';
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import type { ReadingNoteDto } from '../types/readingSession';
 import { useReadingSession } from '../context/ReadingSessionContext';
 
 export default function ReadingPage() {
-  const { activeSession, notes, loading, end, removeNote } = useReadingSession();
+  const { session, notes, loading, pause, resume, clear, removeNote } = useReadingSession();
+  const navigate = useNavigate();
 
   if (loading) {
     return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
   }
 
-  if (!activeSession) {
+  if (!session) {
     return (
       <Box display="flex" flexDirection="column" alignItems="center" gap={2} mt={12} color="text.secondary">
         <MenuBookIcon sx={{ fontSize: 56, opacity: 0.25 }} />
@@ -25,33 +29,66 @@ export default function ReadingPage() {
     );
   }
 
-  const started = new Date(activeSession.startedAt);
+  const started = new Date(session.startedAt);
+
+  async function handleClear() {
+    const worldId = await clear();
+    navigate(`/worlds/${worldId}`);
+  }
 
   return (
     <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
       {/* Session header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" px={3} py={2} borderBottom={1} borderColor="divider">
         <Box>
-          <Typography variant="h6" fontWeight={700}>{activeSession.worldName}</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h6" fontWeight={700}>{session.worldName}</Typography>
+            {!session.isActive && (
+              <Chip label="Paused" size="small" color="warning" variant="outlined" />
+            )}
+          </Box>
           <Typography variant="body2" color="text.secondary">
             Started {started.toLocaleDateString()} at {started.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </Typography>
         </Box>
+
         <Box display="flex" alignItems="center" gap={1.5}>
           <Chip
-            label={`${activeSession.noteCount} ${activeSession.noteCount === 1 ? 'note' : 'notes'}`}
+            label={`${session.noteCount} ${session.noteCount === 1 ? 'note' : 'notes'}`}
             size="small"
             color="primary"
           />
-          <Button
-            size="small"
-            color="error"
-            startIcon={<StopCircleOutlinedIcon />}
-            onClick={end}
-            sx={{ textTransform: 'none' }}
-          >
-            End session
-          </Button>
+          {session.isActive ? (
+            <Button
+              size="small"
+              startIcon={<PauseCircleOutlineIcon />}
+              onClick={pause}
+              sx={{ textTransform: 'none' }}
+            >
+              Pause session
+            </Button>
+          ) : (
+            <>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<PlayArrowIcon />}
+                onClick={resume}
+                sx={{ textTransform: 'none' }}
+              >
+                Resume
+              </Button>
+              <Button
+                size="small"
+                color="error"
+                startIcon={<DeleteForeverIcon />}
+                onClick={handleClear}
+                sx={{ textTransform: 'none' }}
+              >
+                Clear session
+              </Button>
+            </>
+          )}
         </Box>
       </Box>
 
@@ -66,7 +103,11 @@ export default function ReadingPage() {
           ) : (
             <Stack gap={0.5}>
               {notes.map(note => (
-                <NoteRow key={note.id} note={note} onDelete={() => removeNote(note.id)} />
+                <NoteRow
+                  key={note.id}
+                  note={note}
+                  onDelete={session.isActive ? () => removeNote(note.id) : undefined}
+                />
               ))}
             </Stack>
           )}
@@ -74,14 +115,14 @@ export default function ReadingPage() {
 
         <Divider orientation="vertical" flexItem />
 
-        {/* Right — placeholder for Layer 2 (convert to entities) */}
+        {/* Right — placeholder for Layer 2 */}
         <Box sx={{ width: '50%', overflowY: 'auto', px: 3, py: 2 }} />
       </Box>
     </Box>
   );
 }
 
-function NoteRow({ note, onDelete }: { note: ReadingNoteDto; onDelete: () => void }) {
+function NoteRow({ note, onDelete }: { note: ReadingNoteDto; onDelete?: () => void }) {
   const time = new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return (
     <Box
@@ -103,9 +144,11 @@ function NoteRow({ note, onDelete }: { note: ReadingNoteDto; onDelete: () => voi
           </Box>
         )}
       </Box>
-      <IconButton size="small" onClick={onDelete} sx={{ opacity: 0.4, '&:hover': { opacity: 1 }, flexShrink: 0 }}>
-        <DeleteOutlineIcon fontSize="small" />
-      </IconButton>
+      {onDelete && (
+        <IconButton size="small" onClick={onDelete} sx={{ opacity: 0.4, '&:hover': { opacity: 1 }, flexShrink: 0 }}>
+          <DeleteOutlineIcon fontSize="small" />
+        </IconButton>
+      )}
     </Box>
   );
 }

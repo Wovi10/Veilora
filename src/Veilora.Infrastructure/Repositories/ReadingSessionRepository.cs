@@ -8,6 +8,12 @@ namespace Veilora.Infrastructure.Repositories;
 public class ReadingSessionRepository(ApplicationDbContext context)
     : Repository<ReadingSession>(context), IReadingSessionRepository
 {
+    public async Task<ReadingSession?> GetCurrentByUserAsync(Guid userId) =>
+        await _context.ReadingSessions
+            .AsNoTracking()
+            .OrderByDescending(s => s.StartedAt)
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
     public async Task<ReadingSession?> GetActiveByUserAsync(Guid userId) =>
         await _context.ReadingSessions
             .AsNoTracking()

@@ -23,7 +23,7 @@ public partial class ReadingSessionService(
         var world = await worldRepository.GetByIdAsync(dto.WorldId)
             ?? throw new NotFoundException(nameof(World), dto.WorldId);
 
-        var existing = await sessionRepository.GetActiveByUserAsync(userId);
+        var existing = await sessionRepository.GetCurrentByUserAsync(userId);
         if (existing is not null)
             throw new BusinessException("End your current session before starting a new one.");
 
@@ -40,9 +40,9 @@ public partial class ReadingSessionService(
         return ReadingSessionMapper.ToDto(session, world.Name, 0);
     }
 
-    public async Task<ReadingSessionDto?> GetActiveAsync(Guid userId)
+    public async Task<ReadingSessionDto?> GetCurrentAsync(Guid userId)
     {
-        var session = await sessionRepository.GetActiveByUserAsync(userId);
+        var session = await sessionRepository.GetCurrentByUserAsync(userId);
         if (session is null) return null;
 
         var world = await worldRepository.GetByIdAsync(session.WorldId);
@@ -51,22 +51,7 @@ public partial class ReadingSessionService(
         return ReadingSessionMapper.ToDto(session, world?.Name ?? "Unknown", notes.Count());
     }
 
-    public async Task<IEnumerable<ReadingSessionDto>> GetAllAsync(Guid userId)
-    {
-        var sessions = await sessionRepository.GetByUserAsync(userId);
-        var result = new List<ReadingSessionDto>();
-
-        foreach (var session in sessions)
-        {
-            var world = await worldRepository.GetByIdAsync(session.WorldId);
-            var notes = await noteRepository.GetBySessionAsync(session.Id);
-            result.Add(ReadingSessionMapper.ToDto(session, world?.Name ?? "Unknown", notes.Count()));
-        }
-
-        return result;
-    }
-
-    public async Task EndAsync(Guid sessionId, Guid userId)
+    public async Task PauseAsync(Guid sessionId, Guid userId)
     {
         var session = await sessionRepository.GetByIdAsync(sessionId)
             ?? throw new NotFoundException(nameof(ReadingSession), sessionId);
@@ -74,7 +59,6 @@ public partial class ReadingSessionService(
         if (session.UserId != userId)
             throw new BusinessException("Access denied.");
 
-        // GetByIdAsync uses AsNoTracking — re-attach for update
         var tracked = new ReadingSession
         {
             Id = session.Id,
@@ -88,6 +72,43 @@ public partial class ReadingSessionService(
 
         await sessionRepository.UpdateAsync(tracked);
         await sessionRepository.SaveChangesAsync();
+    }
+
+    public async Task ResumeAsync(Guid sessionId, Guid userId)
+    {
+        var session = await sessionRepository.GetByIdAsync(sessionId)
+            ?? throw new NotFoundException(nameof(ReadingSession), sessionId);
+
+        if (session.UserId != userId)
+            throw new BusinessException("Access denied.");
+
+        var tracked = new ReadingSession
+        {
+            Id = session.Id,
+            WorldId = session.WorldId,
+            UserId = session.UserId,
+            StartedAt = session.StartedAt,
+            EndedAt = null,
+            CreatedAt = session.CreatedAt,
+            UpdatedAt = session.UpdatedAt,
+        };
+
+        await sessionRepository.UpdateAsync(tracked);
+        await sessionRepository.SaveChangesAsync();
+    }
+
+    public async Task<Guid> ClearAsync(Guid sessionId, Guid userId)
+    {
+        var session = await sessionRepository.GetByIdAsync(sessionId)
+            ?? throw new NotFoundException(nameof(ReadingSession), sessionId);
+
+        if (session.UserId != userId)
+            throw new BusinessException("Access denied.");
+
+        await sessionRepository.DeleteAsync(session);
+        await sessionRepository.SaveChangesAsync();
+
+        return session.WorldId;
     }
 
     public async Task<IEnumerable<ReadingNoteDto>> GetNotesAsync(Guid sessionId, Guid userId)

@@ -10,9 +10,9 @@ export async function startSession(dto: CreateReadingSessionDto): Promise<Readin
   return res.json();
 }
 
-export async function getActiveSession(): Promise<ReadingSessionDto | null> {
+export async function getCurrentSession(): Promise<ReadingSessionDto | null> {
   try {
-    const res = await apiFetch('/api/reading-sessions/active');
+    const res = await apiFetch('/api/reading-sessions/current');
     if (res.status === 204) return null;
     return res.json();
   } catch {
@@ -20,13 +20,17 @@ export async function getActiveSession(): Promise<ReadingSessionDto | null> {
   }
 }
 
-export async function getAllSessions(): Promise<ReadingSessionDto[]> {
-  const res = await apiFetch('/api/reading-sessions');
-  return res.json();
+export async function pauseSession(sessionId: string): Promise<void> {
+  await apiFetch(`/api/reading-sessions/${sessionId}/pause`, { method: 'POST' });
 }
 
-export async function endSession(sessionId: string): Promise<void> {
-  await apiFetch(`/api/reading-sessions/${sessionId}/end`, { method: 'POST' });
+export async function resumeSession(sessionId: string): Promise<void> {
+  await apiFetch(`/api/reading-sessions/${sessionId}/resume`, { method: 'POST' });
+}
+
+export async function clearSession(sessionId: string): Promise<{ worldId: string }> {
+  const res = await apiFetch(`/api/reading-sessions/${sessionId}`, { method: 'DELETE' });
+  return res.json();
 }
 
 export async function getNotes(sessionId: string): Promise<ReadingNoteDto[]> {

@@ -5,6 +5,7 @@ export interface ReadingSessionDto {
   startedAt: string;
   endedAt?: string;
   noteCount: number;
+  isActive: boolean;
 }
 
 export interface ReadingNoteDto {

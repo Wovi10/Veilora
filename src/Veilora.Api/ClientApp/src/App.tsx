@@ -29,9 +29,9 @@ import { ReadingSessionProvider, useReadingSession } from './context/ReadingSess
 import ReadingFab from './components/ReadingFab/ReadingFab';
 
 function NotesButton() {
-  const { activeSession } = useReadingSession();
+  const { session } = useReadingSession();
   const navigate = useNavigate();
-  const count = activeSession?.noteCount ?? 0;
+  const count = session?.noteCount ?? 0;
 
   return (
     <Button
