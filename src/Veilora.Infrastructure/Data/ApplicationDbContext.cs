@@ -20,6 +20,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<WorldPermission> WorldPermissions => Set<WorldPermission>();
     public DbSet<Language> Languages => Set<Language>();
     public DbSet<DateSuffix> DateSuffixes => Set<DateSuffix>();
+    public DbSet<ReadingSession> ReadingSessions => Set<ReadingSession>();
+    public DbSet<ReadingNote> ReadingNotes => Set<ReadingNote>();
     public DbSet<CharacterLocation> CharacterLocations => Set<CharacterLocation>();
     public DbSet<EntityAffiliation> EntityAffiliations => Set<EntityAffiliation>();
     public DbSet<EntityLanguage> EntityLanguages => Set<EntityLanguage>();

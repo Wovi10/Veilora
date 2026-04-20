@@ -14,15 +14,42 @@ import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import HomeIcon from '@mui/icons-material/Home';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MenuIcon from '@mui/icons-material/Menu';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import Badge from '@mui/material/Badge';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useAuth } from './context/AuthContext';
 import { useEditMode } from './context/EditModeContext';
 import { useThemeMode } from './context/ThemeModeContext';
+import { ReadingSessionProvider, useReadingSession } from './context/ReadingSessionContext';
+import ReadingFab from './components/ReadingFab/ReadingFab';
+
+function NotesButton() {
+  const { activeSession } = useReadingSession();
+  const navigate = useNavigate();
+  const count = activeSession?.noteCount ?? 0;
+
+  return (
+    <Button
+      color="inherit"
+      onClick={() => navigate('/reading')}
+      sx={{ mr: 1, textTransform: 'none', pr: 2 }}
+    >
+      <Badge
+        badgeContent={count || undefined}
+        color="error"
+        max={99}
+        sx={{ '& .MuiBadge-badge': { right: -10 } }}
+      >
+        Notes
+      </Badge>
+    </Button>
+  );
+}
 
 export default function App() {
   const { mode, toggleThemeMode } = useThemeMode();
@@ -33,6 +60,7 @@ export default function App() {
   const { isEditMode, toggleEditMode } = useEditMode();
 
   return (
+    <ReadingSessionProvider>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppBar position="sticky">
@@ -45,10 +73,20 @@ export default function App() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography onClick={() => { navigate('/'); setDrawerOpen(false); }}
-                      variant="h6" component="div" sx={{ flexGrow: 1, cursor: "pointer" }}>
-            Veilora
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ flexGrow: 1 }}
+          >
+            <Box
+              component="span"
+              onClick={() => navigate('/')}
+              sx={{ cursor: 'pointer', '&:hover': { opacity: 0.85 } }}
+            >
+              Veilora
+            </Box>
           </Typography>
+          <NotesButton />
           <Button
             color="inherit"
             variant={isEditMode ? 'outlined' : 'text'}
@@ -84,12 +122,18 @@ export default function App() {
             <ListItemIcon><HomeIcon /></ListItemIcon>
             <ListItemText primary="Worlds" />
           </ListItemButton>
+          <ListItemButton onClick={() => { navigate('/reading'); setDrawerOpen(false); }}>
+            <ListItemIcon><MenuBookIcon /></ListItemIcon>
+            <ListItemText primary="Reading" />
+          </ListItemButton>
         </List>
       </Drawer>
 
       <Box component="main">
         <Outlet />
       </Box>
+      <ReadingFab />
     </ThemeProvider>
+    </ReadingSessionProvider>
   );
 }
