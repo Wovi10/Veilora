@@ -47,7 +47,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 
 ### Planned
 
-- [ ] Reading notes — quick-capture interface during reading + helper page to convert notes into world entries
+- [ ] Reading notes — quick-capture interface during reading + helper page to convert notes into world entries *(in progress)*
 - [ ] Rich text biography / notes editor
 - [ ] Photo uploads for characters
 - [ ] Export family tree as image / PDF
