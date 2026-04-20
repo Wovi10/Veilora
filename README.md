@@ -14,6 +14,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 - **Entities** — Organize groups, events, and concepts (factions, battles, religions, etc.)
 - **Locations** — Define and manage places within a world
 - **Notes** — Attach free-form notes to worlds and entities
+- **Reading Notes** — Quickly jot down names, places, and details while reading. A dedicated helper page lists all open notes and lets you convert each one into a proper world entry (Character, Location, Entity, etc.)
 - **Languages** — Track languages spoken in a world
 - **Custom Calendars** — Define custom date systems with `DateSuffix` (anchor years, scale, reversal)
 - **Permissions** — Share worlds with other users (read or edit access)
@@ -45,6 +46,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 
 ### Planned
 
+- [ ] Reading notes — quick-capture interface during reading + helper page to convert notes into world entries
 - [ ] Rich text biography / notes editor
 - [ ] Photo uploads for characters
 - [ ] Export family tree as image / PDF
