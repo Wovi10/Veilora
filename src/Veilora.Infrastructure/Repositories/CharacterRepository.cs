@@ -63,6 +63,18 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Character>> SearchByWorldAsync(WorldSearchCriteria criteria)
+    {
+        var term = criteria.Name.ToLower();
+        return await _context.Characters
+            .AsNoTracking()
+            .Where(c => c.WorldId == criteria.WorldId
+                && (c.Name.ToLower().Contains(term)
+                    || (c.FirstName != null && c.FirstName.ToLower().Contains(term))
+                    || (c.LastName != null && c.LastName.ToLower().Contains(term))))
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Character>> GetAncestorsAsync(Guid characterId)
     {
         var ancestors = new List<Character>();

@@ -3,12 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, CircularProgress, Alert, Button,
   Card, CardContent, Divider, Grid2,
+  TextField, InputAdornment, IconButton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { getWorld } from '../api/worldsApi';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import { getWorld, searchWorld } from '../api/worldsApi';
+import type { WorldSearchResult } from '../types/worldSearch';
+import WorldSearchDropdown from '../components/WorldPage/WorldSearchDropdown';
 import { getEntitiesByTypePaged } from '../api/entitiesApi';
 import { getCharactersByWorldPaged } from '../api/charactersApi';
 import { getFamilyTreesByWorldPaged } from '../api/familyTreesApi';
@@ -48,6 +53,11 @@ export default function WorldPage() {
   const [familyTreeCount, setFamilyTreeCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const [searchQuery, setSearchQuery]     = useState('');
+  const [searchResults, setSearchResults] = useState<WorldSearchResult | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchOpen, setSearchOpen]       = useState(false);
 
   const [addCharacterOpen, setAddCharacterOpen] = useState(false);
   const [addEntityOpen, setAddEntityOpen] = useState(false);
@@ -89,6 +99,27 @@ export default function WorldPage() {
       .finally(() => setLoading(false));
   }, [worldId]);
 
+  useEffect(() => {
+    if (!worldId || searchQuery.trim().length < 2) {
+      setSearchResults(null);
+      setSearchOpen(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const results = await searchWorld(worldId, searchQuery.trim());
+        setSearchResults(results);
+        setSearchOpen(true);
+      } catch {
+        // search errors are non-fatal
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, worldId]);
+
   if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
   if (error)   return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
   if (!world)  return null;
@@ -126,6 +157,45 @@ export default function WorldPage() {
             <Typography variant="body1" color="text.secondary" mt={1}>{world.description}</Typography>
           )}
         </Box>
+      </Box>
+
+      {/* Search */}
+      <Box mb={5} position="relative">
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search characters, locations, groups, events…"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
+          onFocus={() => searchResults && setSearchOpen(true)}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  {searchLoading
+                    ? <CircularProgress size={16} />
+                    : <SearchIcon fontSize="small" />}
+                </InputAdornment>
+              ),
+              endAdornment: searchQuery && (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => { setSearchQuery(''); setSearchOpen(false); }}>
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+          sx={{ bgcolor: 'background.paper' }}
+        />
+        {searchOpen && searchResults && worldId && (
+          <WorldSearchDropdown
+            worldId={worldId}
+            results={searchResults}
+            onNavigate={path => { setSearchOpen(false); setSearchQuery(''); navigate(path); }}
+          />
+        )}
       </Box>
 
       {/* Characters section */}

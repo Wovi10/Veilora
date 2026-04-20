@@ -82,4 +82,14 @@ public class FamilyTreeRepository(ApplicationDbContext context) : Repository<Fam
         junction.PositionY = y;
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<FamilyTreeEntity>> SearchByWorldAsync(WorldSearchCriteria criteria)
+    {
+        var term = criteria.Name.ToLower();
+        return await _context.FamilyTrees
+            .AsNoTracking()
+            .Where(ft => ft.WorldId == criteria.WorldId && ft.Name.ToLower().Contains(term))
+            .OrderBy(ft => ft.Name)
+            .ToListAsync();
+    }
 }

@@ -10,4 +10,5 @@ public interface IEntityRepository : IRepository<Entity>
     Task<IEnumerable<Entity>> GetByWorldIdAsync(Guid worldId);
     Task<IEnumerable<Entity>> GetByWorldIdAndTypeAsync(Guid worldId, string type);
     Task<PagedResult<Entity>> GetPagedAsync(EntityCriteria criteria);
+    Task<IEnumerable<Entity>> SearchByWorldAsync(WorldSearchCriteria criteria);
 }

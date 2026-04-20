@@ -10,6 +10,7 @@ public interface ICharacterRepository : IRepository<Character>
     Task<IEnumerable<Character>> GetByWorldIdAsync(Guid worldId);
     Task<PagedResult<Character>> GetPagedAsync(CharacterCriteria criteria);
     Task<IEnumerable<Character>> SearchAsync(string searchTerm);
+    Task<IEnumerable<Character>> SearchByWorldAsync(WorldSearchCriteria criteria);
     Task<IEnumerable<Character>> GetAncestorsAsync(Guid characterId);
     Task<IEnumerable<Character>> GetDescendantsAsync(Guid characterId);
     Task<IEnumerable<Character>> GetChildrenAsync(Guid characterId);
