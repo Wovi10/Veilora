@@ -8,4 +8,5 @@ public record ReadingSessionDto
     public required DateTime StartedAt { get; init; }
     public DateTime? EndedAt { get; init; }
     public required int NoteCount { get; init; }
+    public required bool IsActive { get; init; }
 }

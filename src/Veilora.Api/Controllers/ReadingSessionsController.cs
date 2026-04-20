@@ -23,28 +23,36 @@ public class ReadingSessionsController(IReadingSessionService readingSessionServ
         return Ok(session);
     }
 
-    [HttpGet("active")]
-    public async Task<IActionResult> GetActive()
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrent()
     {
         if (UserId is not { } userId) return Unauthorized();
-        var session = await readingSessionService.GetActiveAsync(userId);
+        var session = await readingSessionService.GetCurrentAsync(userId);
         return session is null ? NoContent() : Ok(session);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [HttpPost("{id:guid}/pause")]
+    public async Task<IActionResult> Pause(Guid id)
     {
         if (UserId is not { } userId) return Unauthorized();
-        var sessions = await readingSessionService.GetAllAsync(userId);
-        return Ok(sessions);
+        await readingSessionService.PauseAsync(id, userId);
+        return NoContent();
     }
 
-    [HttpPost("{id:guid}/end")]
-    public async Task<IActionResult> End(Guid id)
+    [HttpPost("{id:guid}/resume")]
+    public async Task<IActionResult> Resume(Guid id)
     {
         if (UserId is not { } userId) return Unauthorized();
-        await readingSessionService.EndAsync(id, userId);
+        await readingSessionService.ResumeAsync(id, userId);
         return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Clear(Guid id)
+    {
+        if (UserId is not { } userId) return Unauthorized();
+        var worldId = await readingSessionService.ClearAsync(id, userId);
+        return Ok(new { worldId });
     }
 
     [HttpGet("{id:guid}/notes")]

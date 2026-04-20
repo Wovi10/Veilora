@@ -14,6 +14,7 @@ public static class ReadingSessionMapper
         StartedAt = session.StartedAt,
         EndedAt = session.EndedAt,
         NoteCount = noteCount,
+        IsActive = session.IsActive,
     };
 
     public static ReadingNoteDto ToNoteDto(ReadingNote note) => new()
