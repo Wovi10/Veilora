@@ -13,7 +13,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { getWorld, searchWorld } from '../api/worldsApi';
 import type { WorldSearchResult } from '../types/worldSearch';
-import WorldSearchDropdown from '../components/WorldPage/WorldSearchDropdown';
 import { getEntitiesByTypePaged } from '../api/entitiesApi';
 import { getCharactersByWorldPaged } from '../api/charactersApi';
 import { getFamilyTreesByWorldPaged } from '../api/familyTreesApi';
@@ -57,7 +56,6 @@ export default function WorldPage() {
   const [searchQuery, setSearchQuery]     = useState('');
   const [searchResults, setSearchResults] = useState<WorldSearchResult | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [searchOpen, setSearchOpen]       = useState(false);
 
   const [addCharacterOpen, setAddCharacterOpen] = useState(false);
   const [addEntityOpen, setAddEntityOpen] = useState(false);
@@ -99,26 +97,23 @@ export default function WorldPage() {
       .finally(() => setLoading(false));
   }, [worldId]);
 
-  useEffect(() => {
-    if (!worldId || searchQuery.trim().length < 2) {
-      setSearchResults(null);
-      setSearchOpen(false);
-      return;
+  const handleSearch = async () => {
+    if (!worldId || searchQuery.trim().length < 2) return;
+    setSearchLoading(true);
+    try {
+      const results = await searchWorld(worldId, searchQuery.trim());
+      setSearchResults(results);
+    } catch {
+      // search errors are non-fatal
+    } finally {
+      setSearchLoading(false);
     }
-    const timer = setTimeout(async () => {
-      setSearchLoading(true);
-      try {
-        const results = await searchWorld(worldId, searchQuery.trim());
-        setSearchResults(results);
-        setSearchOpen(true);
-      } catch {
-        // search errors are non-fatal
-      } finally {
-        setSearchLoading(false);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery, worldId]);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(null);
+  };
 
   if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
   if (error)   return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
@@ -160,15 +155,14 @@ export default function WorldPage() {
       </Box>
 
       {/* Search */}
-      <Box mb={5} position="relative">
+      <Box mb={5}>
         <TextField
           fullWidth
           size="small"
-          placeholder="Search characters, locations, groups, events…"
+          placeholder="Search characters, locations, groups, events… (press Enter)"
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
-          onFocus={() => searchResults && setSearchOpen(true)}
+          onChange={e => { setSearchQuery(e.target.value); if (!e.target.value) setSearchResults(null); }}
+          onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
           slotProps={{
             input: {
               startAdornment: (
@@ -180,7 +174,7 @@ export default function WorldPage() {
               ),
               endAdornment: searchQuery && (
                 <InputAdornment position="end">
-                  <IconButton size="small" onClick={() => { setSearchQuery(''); setSearchOpen(false); }}>
+                  <IconButton size="small" onClick={clearSearch}>
                     <ClearIcon fontSize="small" />
                   </IconButton>
                 </InputAdornment>
@@ -189,103 +183,112 @@ export default function WorldPage() {
           }}
           sx={{ bgcolor: 'background.paper' }}
         />
-        {searchOpen && searchResults && worldId && (
-          <WorldSearchDropdown
-            worldId={worldId}
-            results={searchResults}
-            onNavigate={path => { setSearchOpen(false); setSearchQuery(''); navigate(path); }}
-          />
-        )}
       </Box>
 
       {/* Characters section */}
-      <Box mb={5}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" fontWeight={600}>
-              Characters
-              <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
-                {characterCount}
+      {(!searchResults || searchResults.characters.length > 0) && (
+        <Box mb={5}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography variant="h5" fontWeight={600}>
+                Characters
+                <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
+                  {searchResults ? searchResults.characters.length : characterCount}
+                </Typography>
               </Typography>
-            </Typography>
-            <Button
-              size="small"
-              startIcon={<OpenInFullIcon fontSize="small" />}
-              onClick={() => navigate(`/worlds/${worldId}/characters`)}
-              sx={{ textTransform: 'none', minWidth: 0 }}
-            >
-              View all
-            </Button>
+              <Button
+                size="small"
+                startIcon={<OpenInFullIcon fontSize="small" />}
+                onClick={() => navigate(`/worlds/${worldId}/characters`)}
+                sx={{ textTransform: 'none', minWidth: 0 }}
+              >
+                View all
+              </Button>
+            </Box>
+            {canEdit && !searchResults && (
+              <Button size="small" startIcon={<AddIcon />} onClick={() => setAddCharacterOpen(true)}>
+                Add Character
+              </Button>
+            )}
           </Box>
-          {canEdit && (
-            <Button size="small" startIcon={<AddIcon />} onClick={() => setAddCharacterOpen(true)}>
-              Add Character
-            </Button>
+          {searchResults ? (
+            <Grid2 container spacing={2}>
+              {searchResults.characters.map(item => (
+                <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <SearchResultCard name={item.name} onClick={() => navigate(`/worlds/${worldId}/characters/${item.id}`)} />
+                </Grid2>
+              ))}
+            </Grid2>
+          ) : characters.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" fontStyle="italic">No characters yet.</Typography>
+          ) : (
+            <Grid2 container spacing={2}>
+              {characters.map(character => (
+                <Grid2 key={character.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <CharacterCard character={character} onClick={() => navigate(`/worlds/${worldId}/characters/${character.id}`)} />
+                </Grid2>
+              ))}
+            </Grid2>
           )}
+          <Divider sx={{ mt: 4 }} />
         </Box>
-        {characters.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" fontStyle="italic">
-            No characters yet.
-          </Typography>
-        ) : (
-          <Grid2 container spacing={2}>
-            {characters.map(character => (
-              <Grid2 key={character.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                <CharacterCard
-                  character={character}
-                  onClick={() => navigate(`/worlds/${worldId}/characters/${character.id}`)}
-                />
-              </Grid2>
-            ))}
-          </Grid2>
-        )}
-        <Divider sx={{ mt: 4 }} />
-      </Box>
+      )}
 
       {/* Locations section */}
-      <Box mb={5}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" fontWeight={600}>
-              Locations
-              <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
-                {locationCount}
+      {(!searchResults || searchResults.locations.length > 0) && (
+        <Box mb={5}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography variant="h5" fontWeight={600}>
+                Locations
+                <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
+                  {searchResults ? searchResults.locations.length : locationCount}
+                </Typography>
               </Typography>
-            </Typography>
-            <Button
-              size="small"
-              startIcon={<OpenInFullIcon fontSize="small" />}
-              onClick={() => navigate(`/worlds/${worldId}/locations`)}
-              sx={{ textTransform: 'none', minWidth: 0 }}
-            >
-              View all
-            </Button>
+              <Button
+                size="small"
+                startIcon={<OpenInFullIcon fontSize="small" />}
+                onClick={() => navigate(`/worlds/${worldId}/locations`)}
+                sx={{ textTransform: 'none', minWidth: 0 }}
+              >
+                View all
+              </Button>
+            </Box>
+            {canEdit && !searchResults && (
+              <Button size="small" startIcon={<AddIcon />} onClick={() => setAddLocationOpen(true)}>
+                Add Location
+              </Button>
+            )}
           </Box>
-          {canEdit && (
-            <Button size="small" startIcon={<AddIcon />} onClick={() => setAddLocationOpen(true)}>
-              Add Location
-            </Button>
+          {searchResults ? (
+            <Grid2 container spacing={2}>
+              {searchResults.locations.map(item => (
+                <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <SearchResultCard name={item.name} onClick={() => navigate(`/worlds/${worldId}/locations/${item.id}`)} />
+                </Grid2>
+              ))}
+            </Grid2>
+          ) : locations.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" fontStyle="italic">No places yet.</Typography>
+          ) : (
+            <Grid2 container spacing={2}>
+              {locations.map(location => (
+                <Grid2 key={location.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <LocationCard location={location} />
+                </Grid2>
+              ))}
+            </Grid2>
           )}
+          <Divider sx={{ mt: 4 }} />
         </Box>
-        {locations.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" fontStyle="italic">
-            No places yet.
-          </Typography>
-        ) : (
-          <Grid2 container spacing={2}>
-            {locations.map(location => (
-              <Grid2 key={location.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                <LocationCard location={location} />
-              </Grid2>
-            ))}
-          </Grid2>
-        )}
-        <Divider sx={{ mt: 4 }} />
-      </Box>
+      )}
 
       {/* Group / Event / Concept sections */}
       {ENTITY_SECTIONS.map(({ type, plural }) => {
         const sectionEntities = entitiesByType[type] ?? [];
+        const searchKey = type.toLowerCase() + 's' as 'groups' | 'events' | 'concepts';
+        const searchItems = searchResults?.[searchKey] ?? [];
+        if (searchResults && searchItems.length === 0) return null;
         return (
           <Box key={type} mb={5}>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
@@ -293,7 +296,7 @@ export default function WorldPage() {
                 <Typography variant="h5" fontWeight={600}>
                   {plural}
                   <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
-                    {entityCountByType[type] ?? 0}
+                    {searchResults ? searchItems.length : (entityCountByType[type] ?? 0)}
                   </Typography>
                 </Typography>
                 <Button
@@ -305,13 +308,21 @@ export default function WorldPage() {
                   View all
                 </Button>
               </Box>
-              {canEdit && (
+              {canEdit && !searchResults && (
                 <Button size="small" startIcon={<AddIcon />} onClick={() => openAddEntity(type)}>
                   Add {type}
                 </Button>
               )}
             </Box>
-            {sectionEntities.length === 0 ? (
+            {searchResults ? (
+              <Grid2 container spacing={2}>
+                {searchItems.map(item => (
+                  <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <SearchResultCard name={item.name} onClick={() => navigate(`/worlds/${worldId}/entities/${type}`)} />
+                  </Grid2>
+                ))}
+              </Grid2>
+            ) : sectionEntities.length === 0 ? (
               <Typography variant="body2" color="text.secondary" fontStyle="italic">
                 No {plural.toLowerCase()} yet.
               </Typography>
@@ -330,47 +341,52 @@ export default function WorldPage() {
       })}
 
       {/* Family Trees section */}
-      <Box mb={5}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h5" fontWeight={600}>
-              Family Trees
-              <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
-                {familyTreeCount}
+      {(!searchResults || searchResults.familyTrees.length > 0) && (
+        <Box mb={5}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography variant="h5" fontWeight={600}>
+                Family Trees
+                <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
+                  {searchResults ? searchResults.familyTrees.length : familyTreeCount}
+                </Typography>
               </Typography>
-            </Typography>
-            <Button
-              size="small"
-              startIcon={<OpenInFullIcon fontSize="small" />}
-              onClick={() => navigate(`/worlds/${worldId}/family-trees`)}
-              sx={{ textTransform: 'none', minWidth: 0 }}
-            >
-              View all
-            </Button>
+              <Button
+                size="small"
+                startIcon={<OpenInFullIcon fontSize="small" />}
+                onClick={() => navigate(`/worlds/${worldId}/family-trees`)}
+                sx={{ textTransform: 'none', minWidth: 0 }}
+              >
+                View all
+              </Button>
+            </Box>
+            {canEdit && !searchResults && (
+              <Button size="small" startIcon={<AddIcon />} onClick={() => setNewFamilyTreeOpen(true)}>
+                New Family Tree
+              </Button>
+            )}
           </Box>
-          {canEdit && (
-            <Button size="small" startIcon={<AddIcon />} onClick={() => setNewFamilyTreeOpen(true)}>
-              New Family Tree
-            </Button>
+          {searchResults ? (
+            <Grid2 container spacing={2}>
+              {searchResults.familyTrees.map(item => (
+                <Grid2 key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <SearchResultCard name={item.name} onClick={() => navigate(`/worlds/${worldId}/family-trees/${item.id}`)} />
+                </Grid2>
+              ))}
+            </Grid2>
+          ) : familyTrees.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" fontStyle="italic">No family trees yet.</Typography>
+          ) : (
+            <Grid2 container spacing={2}>
+              {familyTrees.map(tree => (
+                <Grid2 key={tree.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <FamilyTreeCard tree={tree} onClick={() => navigate(`/worlds/${worldId}/family-trees/${tree.id}`)} />
+                </Grid2>
+              ))}
+            </Grid2>
           )}
         </Box>
-        {familyTrees.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" fontStyle="italic">
-            No family trees yet.
-          </Typography>
-        ) : (
-          <Grid2 container spacing={2}>
-            {familyTrees.map(tree => (
-              <Grid2 key={tree.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <FamilyTreeCard
-                  tree={tree}
-                  onClick={() => navigate(`/worlds/${worldId}/family-trees/${tree.id}`)}
-                />
-              </Grid2>
-            ))}
-          </Grid2>
-        )}
-      </Box>
+      )}
 
       {worldId && (
         <AddCharacterDialog
@@ -417,6 +433,19 @@ export default function WorldPage() {
         />
       )}
     </Box>
+  );
+}
+
+function SearchResultCard({ name, onClick }: { name: string; onClick: () => void }) {
+  return (
+    <Card
+      onClick={onClick}
+      sx={{ borderRadius: 2, height: '100%', cursor: 'pointer', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}
+    >
+      <CardContent sx={{ pb: '12px !important' }}>
+        <Typography variant="subtitle1" fontWeight={600} noWrap>{name}</Typography>
+      </CardContent>
+    </Card>
   );
 }
 
