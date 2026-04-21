@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Button, Chip, Divider, IconButton, CircularProgress, Stack,
@@ -13,6 +14,7 @@ import { useReadingSession } from '../context/ReadingSessionContext';
 export default function ReadingPage() {
   const { session, notes, loading, pause, resume, clear, removeNote } = useReadingSession();
   const navigate = useNavigate();
+  const [selectedNote, setSelectedNote] = useState<ReadingNoteDto | null>(null);
 
   if (loading) {
     return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
@@ -34,6 +36,11 @@ export default function ReadingPage() {
   async function handleClear() {
     const worldId = await clear();
     navigate(`/worlds/${worldId}`);
+  }
+
+  function handleRemoveNote(noteId: string) {
+    if (selectedNote?.id === noteId) setSelectedNote(null);
+    removeNote(noteId);
   }
 
   return (
@@ -94,23 +101,53 @@ export default function ReadingPage() {
 
       {/* Two-column body */}
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Left — notes */}
-        <Box sx={{ width: '50%', overflowY: 'auto', px: 3, py: 2 }}>
-          {notes.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" fontStyle="italic" mt={2}>
-              No notes yet. Start writing in the panel below.
-            </Typography>
-          ) : (
-            <Stack gap={0.5}>
-              {notes.map(note => (
-                <NoteRow
-                  key={note.id}
-                  note={note}
-                  onDelete={session.isActive ? () => removeNote(note.id) : undefined}
-                />
-              ))}
-            </Stack>
-          )}
+        {/* Left — detail (top) + notes list (bottom) */}
+        <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Detail panel */}
+          <Box sx={{ flex: 1, overflowY: 'auto', px: 3, py: 2 }}>
+            {selectedNote == null ? (
+              <Typography variant="body2" color="text.secondary" fontStyle="italic" mt={2}>
+                Click a note to read it.
+              </Typography>
+            ) : (
+              <Box>
+                <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                  {new Date(selectedNote.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Typography>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{selectedNote.text}</Typography>
+                {selectedNote.tags.length > 0 && (
+                  <Box display="flex" gap={0.5} mt={1.5} flexWrap="wrap">
+                    {selectedNote.tags.map(tag => (
+                      <Chip key={tag} label={`#${tag}`} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.72rem' }} />
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
+
+          <Divider />
+
+          {/* Notes list */}
+          <Box sx={{ height: 240, overflowY: 'auto', px: 3, py: 1 }}>
+            {notes.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" fontStyle="italic" mt={1}>
+                No notes yet. Start writing in the panel below.
+              </Typography>
+            ) : (
+              <Stack gap={0}>
+                {notes.map(note => (
+                  <NoteRow
+                    key={note.id}
+                    note={note}
+                    selected={selectedNote?.id === note.id}
+                    onSelect={() => setSelectedNote(note)}
+                    onDelete={() => handleRemoveNote(note.id)}
+                  />
+                ))}
+              </Stack>
+            )}
+          </Box>
         </Box>
 
         <Divider orientation="vertical" flexItem />
@@ -122,30 +159,39 @@ export default function ReadingPage() {
   );
 }
 
-function NoteRow({ note, onDelete }: { note: ReadingNoteDto; onDelete?: () => void }) {
+function NoteRow({
+  note, selected, onSelect, onDelete,
+}: {
+  note: ReadingNoteDto;
+  selected: boolean;
+  onSelect: () => void;
+  onDelete?: () => void;
+}) {
   const time = new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return (
     <Box
       display="flex"
-      alignItems="flex-start"
+      alignItems="center"
       gap={1.5}
-      sx={{ py: 1, px: 1, borderRadius: 1, '&:hover': { bgcolor: 'action.hover' } }}
+      onClick={onSelect}
+      sx={{
+        py: 0.75, px: 1, borderRadius: 1, cursor: 'pointer',
+        bgcolor: selected ? 'action.selected' : 'transparent',
+        '&:hover': { bgcolor: selected ? 'action.selected' : 'action.hover' },
+      }}
     >
-      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.3, minWidth: 36, flexShrink: 0 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ minWidth: 36, flexShrink: 0 }}>
         {time}
       </Typography>
-      <Box flex={1}>
-        <Typography variant="body2">{note.text}</Typography>
-        {note.tags.length > 0 && (
-          <Box display="flex" gap={0.5} mt={0.5} flexWrap="wrap">
-            {note.tags.map(tag => (
-              <Chip key={tag} label={`#${tag}`} size="small" variant="outlined" sx={{ height: 18, fontSize: '0.7rem' }} />
-            ))}
-          </Box>
-        )}
-      </Box>
+      <Typography variant="body2" flex={1} noWrap>
+        {note.text}
+      </Typography>
       {onDelete && (
-        <IconButton size="small" onClick={onDelete} sx={{ opacity: 0.4, '&:hover': { opacity: 1 }, flexShrink: 0 }}>
+        <IconButton
+          size="small"
+          onClick={e => { e.stopPropagation(); onDelete(); }}
+          sx={{ opacity: 0.4, '&:hover': { opacity: 1 }, flexShrink: 0 }}
+        >
           <DeleteOutlineIcon fontSize="small" />
         </IconButton>
       )}
