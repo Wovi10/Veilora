@@ -21,6 +21,19 @@ public class LocationRepository(ApplicationDbContext context) : Repository<Locat
             .Where(l => l.WorldId == worldId && l.Name.ToLower() == name.ToLower())
             .FirstOrDefaultAsync();
 
+    public async Task<IEnumerable<(Guid Id, string Name)>> SearchByWorldAsync(Guid worldId, string term, int limit)
+    {
+        var lower = term.ToLower();
+        return await _context.Locations
+            .AsNoTracking()
+            .Where(l => l.WorldId == worldId && l.Name.ToLower().Contains(lower))
+            .OrderBy(l => l.Name)
+            .Take(limit)
+            .Select(l => new { l.Id, l.Name })
+            .ToListAsync()
+            .ContinueWith(t => t.Result.Select(x => (x.Id, x.Name)));
+    }
+
     public async Task<PagedResult<Location>> GetPagedAsync(LocationCriteria criteria)
     {
         var query = _context.Locations

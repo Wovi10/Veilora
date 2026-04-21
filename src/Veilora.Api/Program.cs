@@ -71,6 +71,7 @@ builder.Services.AddScoped<ILanguageService, LanguageService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IDateSuffixService, DateSuffixService>();
 builder.Services.AddScoped<IReadingSessionService, ReadingSessionService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWorldDtoValidator>();
