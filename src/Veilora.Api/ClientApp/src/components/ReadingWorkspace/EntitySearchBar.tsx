@@ -10,10 +10,10 @@ import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import PersonIcon from '@mui/icons-material/Person';
 import PlaceIcon from '@mui/icons-material/Place';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { searchWorld } from '../../api/searchApi';
+import { searchWorld } from '../../api/worldSearchApi';
 import { createEntity } from '../../api/entitiesApi';
 import type { EntityDto, EntityType } from '../../types/entity';
-import type { EntitySearchItem, NamedItem } from '../../api/searchApi';
+import type { EntitySearchItem, NamedItem } from '../../api/worldSearchApi';
 
 const ENTITY_TYPE_META: Record<EntityType, { icon: React.ReactNode; color: string; muiColor: 'primary' | 'warning' | 'secondary' }> = {
   Group:   { icon: <GroupsIcon sx={{ fontSize: 14 }} />,   color: 'primary.main',   muiColor: 'primary' },
@@ -34,12 +34,13 @@ const SECTION_LABEL_SX = {
 
 interface Props {
   worldId: string;
-  selectedEntity: EntityDto | null;
-  onSelect: (entity: EntityDto) => void;
+  hasSelection: boolean;
+  onSelectEntity: (entity: EntityDto) => void;
+  onSelectCharacter: (id: string) => void;
   onDeselect: () => void;
 }
 
-export default function EntitySearchBar({ worldId, selectedEntity, onSelect, onDeselect }: Props) {
+export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity, onSelectCharacter, onDeselect }: Props) {
   const [query, setQuery] = useState('');
   const [entities, setEntities] = useState<EntitySearchItem[]>([]);
   const [characters, setCharacters] = useState<NamedItem[]>([]);
@@ -78,24 +79,31 @@ export default function EntitySearchBar({ worldId, selectedEntity, onSelect, onD
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [query, worldId]);
 
-  function handleSelect(entity: EntityDto) {
+  function handleSelectEntity(entity: EntityDto) {
     setQuery('');
     setShowResults(false);
     setPendingType(null);
-    onSelect(entity);
+    onSelectEntity(entity);
+  }
+
+  function handleSelectCharacter(id: string) {
+    setQuery('');
+    setShowResults(false);
+    setPendingType(null);
+    onSelectCharacter(id);
   }
 
   function handleQueryChange(value: string) {
     setQuery(value);
     setPendingType(null);
-    if (selectedEntity) onDeselect();
+    if (hasSelection) onDeselect();
   }
 
   async function handleCreate(type: EntityType) {
     setCreating(true);
     try {
       const entity = await createEntity({ name: query.trim(), type, worldId });
-      handleSelect(entity);
+      handleSelectEntity(entity);
     } catch {
       // keep UI open on error
     } finally {
@@ -150,7 +158,7 @@ export default function EntitySearchBar({ worldId, selectedEntity, onSelect, onD
                       label={entity.name}
                       icon={meta.icon}
                       accentColor={meta.color}
-                      onClick={() => handleSelect({ id: entity.id, name: entity.name, type: entity.type, worldId, createdAt: '', updatedAt: '' })}
+                      onClick={() => handleSelectEntity({ id: entity.id, name: entity.name, type: entity.type, worldId, createdAt: '', updatedAt: '' })}
                     />
                   ))}
                 </Box>
@@ -164,7 +172,7 @@ export default function EntitySearchBar({ worldId, selectedEntity, onSelect, onD
               <Typography variant="caption" sx={SECTION_LABEL_SX}>Characters</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                 {characters.map(c => (
-                  <EntityNode key={c.id} label={c.name} icon={<PersonIcon sx={{ fontSize: 14 }} />} accentColor="info.main" />
+                  <EntityNode key={c.id} label={c.name} icon={<PersonIcon sx={{ fontSize: 14 }} />} accentColor="info.main" onClick={() => handleSelectCharacter(c.id)} />
                 ))}
               </Box>
             </Box>
