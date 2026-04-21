@@ -7,6 +7,11 @@ export async function getEntities(): Promise<EntityDto[]> {
   return res.json();
 }
 
+export async function getEntitiesByWorldAndType(worldId: string, type: string): Promise<EntityDto[]> {
+  const res = await apiFetch(`/api/entities?worldId=${worldId}&type=${type}`);
+  return res.json();
+}
+
 export async function getEntitiesByTypePaged(worldId: string, type: string, page: number, pageSize: number, name?: string): Promise<PagedResult<EntityDto>> {
   const url = `/api/entities?worldId=${worldId}&type=${type}&page=${page}&pageSize=${pageSize}${name ? `&name=${encodeURIComponent(name)}` : ''}`;
   const res = await apiFetch(url);

@@ -10,7 +10,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import type { ReadingNoteDto } from '../types/readingSession';
 import { useReadingSession } from '../context/ReadingSessionContext';
-import EntityWorkspace from '../components/EntityWorkspace/EntityWorkspace';
+import ReadingWorkspace from '../components/ReadingWorkspace/ReadingWorkspace';
 
 export default function ReadingPage() {
   const { session, notes, loading, pause, resume, clear, removeNote } = useReadingSession();
@@ -155,7 +155,7 @@ export default function ReadingPage() {
 
         {/* Right — entity workspace */}
         <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <EntityWorkspace />
+          <ReadingWorkspace />
         </Box>
       </Box>
     </Box>
