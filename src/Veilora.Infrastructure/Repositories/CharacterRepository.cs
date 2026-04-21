@@ -60,6 +60,22 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
         return new PagedResult<Character>(items, totalCount, criteria.Page, criteria.PageSize);
     }
 
+    public async Task<IEnumerable<(Guid Id, string Name)>> SearchByWorldAsync(Guid worldId, string term, int limit)
+    {
+        var lower = term.ToLower();
+        return await _context.Characters
+            .AsNoTracking()
+            .Where(c => c.WorldId == worldId && (
+                c.Name.ToLower().Contains(lower)
+                || (c.FirstName != null && c.FirstName.ToLower().Contains(lower))
+                || (c.LastName  != null && c.LastName.ToLower().Contains(lower))))
+            .OrderBy(c => c.Name)
+            .Take(limit)
+            .Select(c => new { c.Id, c.Name })
+            .ToListAsync()
+            .ContinueWith(t => t.Result.Select(x => (x.Id, x.Name)));
+    }
+
     public async Task<IEnumerable<Character>> SearchAsync(string searchTerm)
     {
         var term = searchTerm.ToLower();
