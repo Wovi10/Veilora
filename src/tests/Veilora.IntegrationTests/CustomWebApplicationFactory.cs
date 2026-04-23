@@ -20,6 +20,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public Mock<IWorldService> WorldServiceMock { get; } = new();
     public Mock<INoteService> NoteServiceMock { get; } = new();
     public Mock<ICharacterService> CharacterServiceMock { get; } = new();
+    public Mock<IReadingSessionService> ReadingSessionServiceMock { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -45,7 +46,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             RemoveAll<IWorldPermissionService>(services);
             RemoveAll<ILanguageService>(services);
             RemoveAll<IDateSuffixService>(services);
-            RemoveAll<IReadingSessionService>(services);
+            RemoveAndMock<IReadingSessionService>(services, ReadingSessionServiceMock.Object);
             RemoveAll<ISearchService>(services);
 
             // Remove all repository registrations
