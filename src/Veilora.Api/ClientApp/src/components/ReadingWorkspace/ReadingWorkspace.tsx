@@ -3,15 +3,20 @@ import { Box, Typography } from '@mui/material';
 import CategoryIcon from '@mui/icons-material/Category';
 import type { EntityDto } from '../../types/entity';
 import { useReadingSession } from '../../context/ReadingSessionContext';
+import { deleteEntity } from '../../api/entitiesApi';
+import { deleteLocation } from '../../api/locationsApi';
+import { deleteCharacter } from '../../api/charactersApi';
 import EntitySearchBar from './EntitySearchBar';
 import EntityEditor from './EntityEditor';
 import CharacterEditor from './CharacterEditor';
 import LocationEditor from './LocationEditor';
+import CreateEntityPanel from './CreateEntityPanel';
 
 type Selection =
-  | { kind: 'entity'; data: EntityDto }
-  | { kind: 'character'; id: string }
-  | { kind: 'location'; id: string }
+  | { kind: 'entity'; data: EntityDto; isNew?: boolean }
+  | { kind: 'character'; id: string; isNew?: boolean }
+  | { kind: 'location'; id: string; isNew?: boolean }
+  | { kind: 'create'; name: string }
   | null;
 
 export default function ReadingWorkspace() {
@@ -19,6 +24,13 @@ export default function ReadingWorkspace() {
   const [selection, setSelection] = useState<Selection>(null);
 
   if (!session) return null;
+
+  async function handleClose() {
+    if (selection?.kind === 'entity' && selection.isNew) await deleteEntity(selection.data.id).catch(() => {});
+    else if (selection?.kind === 'location' && selection.isNew) await deleteLocation(selection.id).catch(() => {});
+    else if (selection?.kind === 'character' && selection.isNew) await deleteCharacter(selection.id).catch(() => {});
+    setSelection(null);
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -28,6 +40,7 @@ export default function ReadingWorkspace() {
         onSelectEntity={entity => setSelection({ kind: 'entity', data: entity })}
         onSelectCharacter={id => setSelection({ kind: 'character', id })}
         onSelectLocation={id => setSelection({ kind: 'location', id })}
+        onStartCreate={name => setSelection({ kind: 'create', name })}
         onDeselect={() => setSelection(null)}
       />
 
@@ -44,7 +57,7 @@ export default function ReadingWorkspace() {
         <EntityEditor
           entity={selection.data}
           onSaved={updated => setSelection({ kind: 'entity', data: updated })}
-          onClose={() => setSelection(null)}
+          onClose={selection.isNew ? handleClose : () => setSelection(null)}
         />
       )}
 
@@ -52,13 +65,26 @@ export default function ReadingWorkspace() {
         <CharacterEditor
           characterId={selection.id}
           worldId={session.worldId}
-          onClose={() => setSelection(null)}
+          onClose={selection.isNew ? handleClose : () => setSelection(null)}
         />
       )}
 
       {selection?.kind === 'location' && (
         <LocationEditor
           locationId={selection.id}
+          onClose={selection.isNew ? handleClose : () => setSelection(null)}
+        />
+      )}
+
+      {selection?.kind === 'create' && (
+        <CreateEntityPanel
+          initialName={selection.name}
+          worldId={session.worldId}
+          onCreated={result => {
+            if (result.kind === 'entity') setSelection({ kind: 'entity', data: result.data, isNew: true });
+            else if (result.kind === 'location') setSelection({ kind: 'location', id: result.data.id, isNew: true });
+            else setSelection({ kind: 'character', id: result.data.id, isNew: true });
+          }}
           onClose={() => setSelection(null)}
         />
       )}
