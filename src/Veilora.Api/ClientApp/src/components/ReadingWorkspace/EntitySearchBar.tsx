@@ -15,11 +15,10 @@ import type { EntitySearchItem, NamedItem } from '../../api/worldSearchApi';
 
 const ENTITY_TYPE_META: Record<EntityType, { icon: React.ReactNode; color: string }> = {
   Group:   { icon: <GroupsIcon sx={{ fontSize: 14 }} />,    color: 'primary.main' },
-  Event:   { icon: <BoltIcon sx={{ fontSize: 14 }} />,      color: 'warning.main' },
   Concept: { icon: <LightbulbIcon sx={{ fontSize: 14 }} />, color: 'secondary.main' },
 };
 
-const ENTITY_TYPES: EntityType[] = ['Group', 'Event', 'Concept'];
+const ENTITY_TYPES: EntityType[] = ['Group', 'Concept'];
 
 const SECTION_LABEL_SX = {
   textTransform: 'uppercase' as const,
@@ -36,26 +35,28 @@ interface Props {
   onSelectEntity: (entity: EntityDto) => void;
   onSelectCharacter: (id: string) => void;
   onSelectLocation: (id: string) => void;
+  onSelectEvent: (id: string) => void;
   onStartCreate: (name: string) => void;
   onDeselect: () => void;
 }
 
-export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity, onSelectCharacter, onSelectLocation, onStartCreate, onDeselect }: Props) {
+export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity, onSelectCharacter, onSelectLocation, onSelectEvent, onStartCreate, onDeselect }: Props) {
   const [query, setQuery] = useState('');
   const [entities, setEntities] = useState<EntitySearchItem[]>([]);
   const [characters, setCharacters] = useState<NamedItem[]>([]);
   const [locations, setLocations] = useState<NamedItem[]>([]);
+  const [events, setEvents] = useState<NamedItem[]>([]);
   const [searching, setSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const hasResults = entities.length > 0 || characters.length > 0 || locations.length > 0;
+  const hasResults = entities.length > 0 || characters.length > 0 || locations.length > 0 || events.length > 0;
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const trimmed = query.trim();
     if (!trimmed) {
-      setEntities([]); setCharacters([]); setLocations([]);
+      setEntities([]); setCharacters([]); setLocations([]); setEvents([]);
       setShowResults(false);
       return;
     }
@@ -66,10 +67,11 @@ export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity,
         setEntities(result.entities);
         setCharacters(result.characters);
         setLocations(result.locations);
+        setEvents(result.events);
         setShowResults(true);
       } catch (err) {
         console.error('[EntitySearch] error:', err);
-        setEntities([]); setCharacters([]); setLocations([]);
+        setEntities([]); setCharacters([]); setLocations([]); setEvents([]);
       } finally {
         setSearching(false);
       }
@@ -80,22 +82,25 @@ export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity,
   function handleSelectEntity(entity: EntityDto) {
     setQuery('');
     setShowResults(false);
-    setPendingType(null);
     onSelectEntity(entity);
   }
 
   function handleSelectCharacter(id: string) {
     setQuery('');
     setShowResults(false);
-    setPendingType(null);
     onSelectCharacter(id);
   }
 
   function handleSelectLocation(id: string) {
     setQuery('');
     setShowResults(false);
-    setPendingType(null);
     onSelectLocation(id);
+  }
+
+  function handleSelectEvent(id: string) {
+    setQuery('');
+    setShowResults(false);
+    onSelectEvent(id);
   }
 
   function handleQueryChange(value: string) {
@@ -176,6 +181,18 @@ export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity,
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                 {locations.map(l => (
                   <EntityNode key={l.id} label={l.name} icon={<PlaceIcon sx={{ fontSize: 14 }} />} accentColor="success.main" onClick={() => handleSelectLocation(l.id)} />
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* Events */}
+          {events.length > 0 && (
+            <Box>
+              <Typography variant="caption" sx={SECTION_LABEL_SX}>Events</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                {events.map(e => (
+                  <EntityNode key={e.id} label={e.name} icon={<BoltIcon sx={{ fontSize: 14 }} />} accentColor="warning.main" onClick={() => handleSelectEvent(e.id)} />
                 ))}
               </Box>
             </Box>

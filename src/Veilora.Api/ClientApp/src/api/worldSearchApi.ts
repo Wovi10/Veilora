@@ -16,6 +16,7 @@ export interface WorldSearchResult {
   entities: EntitySearchItem[];
   characters: NamedItem[];
   locations: NamedItem[];
+  events: NamedItem[];
 }
 
 export async function searchWorld(worldId: string, q: string): Promise<WorldSearchResult> {

@@ -1,24 +1,19 @@
-export type EntityType = 'Group' | 'Concept';
-
-export interface EntityDto {
+export interface EventDto {
   id: string;
   name: string;
-  type: EntityType;
   worldId: string;
   description?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CreateEntityDto {
+export interface CreateEventDto {
   name: string;
-  type: EntityType;
   worldId: string;
   description?: string;
 }
 
-export interface UpdateEntityDto {
+export interface UpdateEventDto {
   name: string;
-  type: EntityType;
   description?: string;
 }

@@ -1,6 +1,7 @@
 // Shared — used by multiple pages
 export { default as AddCharacterDialog } from './shared/AddCharacterDialog';
 export { default as AddEntityDialog } from './shared/AddEntityDialog';
+export { default as AddEventDialog } from './shared/AddEventDialog';
 export { default as AddLocationDialog } from './shared/AddLocationDialog';
 export { default as CharacterCard } from './shared/CharacterCard';
 export { default as EditCharacterDialog } from './shared/EditCharacterDialog';

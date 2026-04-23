@@ -6,16 +6,19 @@ import { useReadingSession } from '../../context/ReadingSessionContext';
 import { deleteEntity } from '../../api/entitiesApi';
 import { deleteLocation } from '../../api/locationsApi';
 import { deleteCharacter } from '../../api/charactersApi';
+import { deleteEvent } from '../../api/eventsApi';
 import EntitySearchBar from './EntitySearchBar';
 import EntityEditor from './EntityEditor';
 import CharacterEditor from './CharacterEditor';
 import LocationEditor from './LocationEditor';
+import EventEditor from './EventEditor';
 import CreateEntityPanel from './CreateEntityPanel';
 
 type Selection =
   | { kind: 'entity'; data: EntityDto; isNew?: boolean }
   | { kind: 'character'; id: string; isNew?: boolean }
   | { kind: 'location'; id: string; isNew?: boolean }
+  | { kind: 'event'; id: string; isNew?: boolean }
   | { kind: 'create'; name: string }
   | null;
 
@@ -29,6 +32,7 @@ export default function ReadingWorkspace() {
     if (selection?.kind === 'entity' && selection.isNew) await deleteEntity(selection.data.id).catch(() => {});
     else if (selection?.kind === 'location' && selection.isNew) await deleteLocation(selection.id).catch(() => {});
     else if (selection?.kind === 'character' && selection.isNew) await deleteCharacter(selection.id).catch(() => {});
+    else if (selection?.kind === 'event' && selection.isNew) await deleteEvent(selection.id).catch(() => {});
     setSelection(null);
   }
 
@@ -40,6 +44,7 @@ export default function ReadingWorkspace() {
         onSelectEntity={entity => setSelection({ kind: 'entity', data: entity })}
         onSelectCharacter={id => setSelection({ kind: 'character', id })}
         onSelectLocation={id => setSelection({ kind: 'location', id })}
+        onSelectEvent={id => setSelection({ kind: 'event', id })}
         onStartCreate={name => setSelection({ kind: 'create', name })}
         onDeselect={() => setSelection(null)}
       />
@@ -76,6 +81,13 @@ export default function ReadingWorkspace() {
         />
       )}
 
+      {selection?.kind === 'event' && (
+        <EventEditor
+          eventId={selection.id}
+          onClose={selection.isNew ? handleClose : () => setSelection(null)}
+        />
+      )}
+
       {selection?.kind === 'create' && (
         <CreateEntityPanel
           initialName={selection.name}
@@ -83,6 +95,7 @@ export default function ReadingWorkspace() {
           onCreated={result => {
             if (result.kind === 'entity') setSelection({ kind: 'entity', data: result.data, isNew: true });
             else if (result.kind === 'location') setSelection({ kind: 'location', id: result.data.id, isNew: true });
+            else if (result.kind === 'event') setSelection({ kind: 'event', id: result.data.id, isNew: true });
             else setSelection({ kind: 'character', id: result.data.id, isNew: true });
           }}
           onClose={() => setSelection(null)}
