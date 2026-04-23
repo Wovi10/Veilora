@@ -6,10 +6,12 @@ import { useReadingSession } from '../../context/ReadingSessionContext';
 import EntitySearchBar from './EntitySearchBar';
 import EntityEditor from './EntityEditor';
 import CharacterEditor from './CharacterEditor';
+import LocationEditor from './LocationEditor';
 
 type Selection =
   | { kind: 'entity'; data: EntityDto }
   | { kind: 'character'; id: string }
+  | { kind: 'location'; id: string }
   | null;
 
 export default function ReadingWorkspace() {
@@ -25,6 +27,7 @@ export default function ReadingWorkspace() {
         hasSelection={selection !== null}
         onSelectEntity={entity => setSelection({ kind: 'entity', data: entity })}
         onSelectCharacter={id => setSelection({ kind: 'character', id })}
+        onSelectLocation={id => setSelection({ kind: 'location', id })}
         onDeselect={() => setSelection(null)}
       />
 
@@ -49,6 +52,13 @@ export default function ReadingWorkspace() {
         <CharacterEditor
           characterId={selection.id}
           worldId={session.worldId}
+          onClose={() => setSelection(null)}
+        />
+      )}
+
+      {selection?.kind === 'location' && (
+        <LocationEditor
+          locationId={selection.id}
           onClose={() => setSelection(null)}
         />
       )}

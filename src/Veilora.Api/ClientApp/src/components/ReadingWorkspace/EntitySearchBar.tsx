@@ -37,10 +37,11 @@ interface Props {
   hasSelection: boolean;
   onSelectEntity: (entity: EntityDto) => void;
   onSelectCharacter: (id: string) => void;
+  onSelectLocation: (id: string) => void;
   onDeselect: () => void;
 }
 
-export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity, onSelectCharacter, onDeselect }: Props) {
+export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity, onSelectCharacter, onSelectLocation, onDeselect }: Props) {
   const [query, setQuery] = useState('');
   const [entities, setEntities] = useState<EntitySearchItem[]>([]);
   const [characters, setCharacters] = useState<NamedItem[]>([]);
@@ -91,6 +92,13 @@ export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity,
     setShowResults(false);
     setPendingType(null);
     onSelectCharacter(id);
+  }
+
+  function handleSelectLocation(id: string) {
+    setQuery('');
+    setShowResults(false);
+    setPendingType(null);
+    onSelectLocation(id);
   }
 
   function handleQueryChange(value: string) {
@@ -184,7 +192,7 @@ export default function EntitySearchBar({ worldId, hasSelection, onSelectEntity,
               <Typography variant="caption" sx={SECTION_LABEL_SX}>Locations</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                 {locations.map(l => (
-                  <EntityNode key={l.id} label={l.name} icon={<PlaceIcon sx={{ fontSize: 14 }} />} accentColor="success.main" />
+                  <EntityNode key={l.id} label={l.name} icon={<PlaceIcon sx={{ fontSize: 14 }} />} accentColor="success.main" onClick={() => handleSelectLocation(l.id)} />
                 ))}
               </Box>
             </Box>
