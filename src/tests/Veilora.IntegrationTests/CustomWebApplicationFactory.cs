@@ -21,6 +21,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public Mock<INoteService> NoteServiceMock { get; } = new();
     public Mock<ICharacterService> CharacterServiceMock { get; } = new();
     public Mock<IReadingSessionService> ReadingSessionServiceMock { get; } = new();
+    public Mock<IEventService> EventServiceMock { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -47,6 +48,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             RemoveAll<ILanguageService>(services);
             RemoveAll<IDateSuffixService>(services);
             RemoveAndMock<IReadingSessionService>(services, ReadingSessionServiceMock.Object);
+            RemoveAndMock<IEventService>(services, EventServiceMock.Object);
             RemoveAll<ISearchService>(services);
 
             // Remove all repository registrations
@@ -63,6 +65,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             RemoveAll<IDateSuffixRepository>(services);
             RemoveAll<IReadingSessionRepository>(services);
             RemoveAll<IReadingNoteRepository>(services);
+            RemoveAll<IEventRepository>(services);
 
             // Replace JWT auth with a test scheme that always authenticates
             services.AddAuthentication(TestAuthHandler.SchemeName)

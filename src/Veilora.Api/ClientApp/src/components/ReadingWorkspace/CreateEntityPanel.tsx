@@ -7,16 +7,18 @@ import CloseIcon from '@mui/icons-material/Close';
 import { createEntity } from '../../api/entitiesApi';
 import { createLocation } from '../../api/locationsApi';
 import { createCharacter } from '../../api/charactersApi';
+import { createEvent } from '../../api/eventsApi';
 import type { EntityDto, EntityType as EntitySubType } from '../../types/entity';
 import type { LocationDto } from '../../types/location';
 import type { CharacterDto } from '../../types/character';
+import type { EventDto } from '../../types/event';
 
-type EntityType = EntitySubType | 'Location' | 'Character';
+type EntityType = EntitySubType | 'Location' | 'Character' | 'Event';
 
 const TYPE_OPTIONS: { value: EntityType; label: string }[] = [
   { value: 'Group',     label: 'Group' },
-  { value: 'Event',     label: 'Event' },
   { value: 'Concept',   label: 'Concept' },
+  { value: 'Event',     label: 'Event' },
   { value: 'Location',  label: 'Location' },
   { value: 'Character', label: 'Character' },
 ];
@@ -24,7 +26,8 @@ const TYPE_OPTIONS: { value: EntityType; label: string }[] = [
 type CreatedResult =
   | { kind: 'entity'; data: EntityDto }
   | { kind: 'location'; data: LocationDto }
-  | { kind: 'character'; data: CharacterDto };
+  | { kind: 'character'; data: CharacterDto }
+  | { kind: 'event'; data: EventDto };
 
 interface Props {
   initialName: string;
@@ -51,6 +54,9 @@ export default function CreateEntityPanel({ initialName, worldId, onCreated, onC
       } else if (type === 'Character') {
         const data = await createCharacter({ name: trimmed, worldId });
         onCreated({ kind: 'character', data });
+      } else if (type === 'Event') {
+        const data = await createEvent({ name: trimmed, worldId });
+        onCreated({ kind: 'event', data });
       } else {
         const data = await createEntity({ name: trimmed, type, worldId });
         onCreated({ kind: 'entity', data });

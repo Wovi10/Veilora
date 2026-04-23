@@ -10,6 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<World> Worlds => Set<World>();
     public DbSet<Entity> Entities => Set<Entity>();
     public DbSet<Location> Locations => Set<Location>();
+    public DbSet<Event> Events => Set<Event>();
     public DbSet<Character> Characters => Set<Character>();
     public DbSet<FamilyTreeEntity> FamilyTrees => Set<FamilyTreeEntity>();
     public DbSet<CharacterFamilyTree> CharacterFamilyTrees => Set<CharacterFamilyTree>();

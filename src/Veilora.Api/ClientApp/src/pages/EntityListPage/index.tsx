@@ -15,7 +15,6 @@ import { AddEntityDialog, EditEntityDialog, EntityCard } from '../../components'
 
 const PLURAL: Record<string, string> = {
   Group: 'Groups',
-  Event: 'Events',
   Concept: 'Concepts',
 };
 

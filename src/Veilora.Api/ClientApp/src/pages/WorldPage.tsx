@@ -16,21 +16,22 @@ import { getEntitiesByTypePaged } from '../api/entitiesApi';
 import { getCharactersByWorldPaged } from '../api/charactersApi';
 import { getFamilyTreesByWorldPaged } from '../api/familyTreesApi';
 import { getLocationsByWorldPaged } from '../api/locationsApi';
+import { getEventsByWorldPaged } from '../api/eventsApi';
 import type { WorldDto } from '../types/world';
 import type { EntityDto, EntityType } from '../types/entity';
 import type { CharacterDto } from '../types/character';
 import type { FamilyTreeDto } from '../types/familyTree';
 import type { LocationDto } from '../types/location';
+import type { EventDto } from '../types/event';
 import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
 import {
-  AddCharacterDialog, AddEntityDialog, AddLocationDialog,
+  AddCharacterDialog, AddEntityDialog, AddEventDialog, AddLocationDialog,
   NewFamilyTreeDialog, CharacterCard, FamilyTreeCard, LocationCard,
 } from '../components';
 
 const ENTITY_SECTIONS: { type: EntityType; plural: string }[] = [
   { type: 'Group',    plural: 'Groups'   },
-  { type: 'Event',    plural: 'Events'   },
   { type: 'Concept',  plural: 'Concepts' },
 ];
 
@@ -47,6 +48,8 @@ export default function WorldPage() {
   const [entityCountByType, setEntityCountByType] = useState<Record<EntityType, number>>({} as Record<EntityType, number>);
   const [locations, setLocations] = useState<LocationDto[]>([]);
   const [locationCount, setLocationCount] = useState(0);
+  const [events, setEvents] = useState<EventDto[]>([]);
+  const [eventCount, setEventCount] = useState(0);
   const [familyTrees, setFamilyTrees] = useState<FamilyTreeDto[]>([]);
   const [familyTreeCount, setFamilyTreeCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -60,6 +63,7 @@ export default function WorldPage() {
   const [addEntityOpen, setAddEntityOpen] = useState(false);
   const [addEntityType, setAddEntityType] = useState<EntityType>('Group');
   const [addLocationOpen, setAddLocationOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
   const [newFamilyTreeOpen, setNewFamilyTreeOpen] = useState(false);
 
   const loadData = (name?: string) => {
@@ -69,25 +73,25 @@ export default function WorldPage() {
       getWorld(worldId),
       getCharactersByWorldPaged(worldId, 1, pageSize, name),
       getLocationsByWorldPaged(worldId, 1, pageSize, name),
+      getEventsByWorldPaged(worldId, 1, pageSize, name),
       getEntitiesByTypePaged(worldId, 'Group', 1, pageSize, name),
-      getEntitiesByTypePaged(worldId, 'Event', 1, pageSize, name),
       getEntitiesByTypePaged(worldId, 'Concept', 1, pageSize, name),
       getFamilyTreesByWorldPaged(worldId, 1, pageSize, name),
     ])
-      .then(([w, chars, locs, groups, events, concepts, trees]) => {
+      .then(([w, chars, locs, evts, groups, concepts, trees]) => {
         setWorld(w);
         setCharacters(chars.items);
         setCharacterCount(chars.totalCount);
         setLocations(locs.items);
         setLocationCount(locs.totalCount);
+        setEvents(evts.items);
+        setEventCount(evts.totalCount);
         setEntitiesByType({
           Group: groups.items,
-          Event: events.items,
           Concept: concepts.items,
         } as Record<EntityType, EntityDto[]>);
         setEntityCountByType({
           Group: groups.totalCount,
-          Event: events.totalCount,
           Concept: concepts.totalCount,
         } as Record<EntityType, number>);
         setFamilyTrees(trees.items);
@@ -264,7 +268,40 @@ export default function WorldPage() {
         </Box>
       )}
 
-      {/* Group / Event / Concept sections */}
+      {/* Events section */}
+      {(!isSearching || events.length > 0) && (
+        <Box mb={5}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography variant="h5" fontWeight={600}>
+                Events
+                <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
+                  {eventCount}
+                </Typography>
+              </Typography>
+            </Box>
+            {canEdit && !isSearching && (
+              <Button size="small" startIcon={<AddIcon />} onClick={() => setAddEventOpen(true)}>
+                Add Event
+              </Button>
+            )}
+          </Box>
+          {events.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" fontStyle="italic">No events yet.</Typography>
+          ) : (
+            <Grid2 container spacing={2}>
+              {events.map(event => (
+                <Grid2 key={event.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <EventCard event={event} />
+                </Grid2>
+              ))}
+            </Grid2>
+          )}
+          <Divider sx={{ mt: 4 }} />
+        </Box>
+      )}
+
+      {/* Group / Concept sections */}
       {ENTITY_SECTIONS.map(({ type, plural }) => {
         const sectionEntities = entitiesByType[type] ?? [];
         if (isSearching && sectionEntities.length === 0) return null;
@@ -372,6 +409,15 @@ export default function WorldPage() {
       )}
 
       {worldId && (
+        <AddEventDialog
+          open={addEventOpen}
+          worldId={worldId}
+          onClose={() => setAddEventOpen(false)}
+          onCreated={event => { setEvents(prev => [event, ...prev]); setAddEventOpen(false); }}
+        />
+      )}
+
+      {worldId && (
         <AddEntityDialog
           open={addEntityOpen}
           defaultType={addEntityType}
@@ -411,6 +457,25 @@ function EntityCard({ entity }: { entity: EntityDto }) {
             sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
           >
             {entity.description}
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function EventCard({ event }: { event: EventDto }) {
+  return (
+    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
+      <CardContent sx={{ pb: '12px !important' }}>
+        <Typography variant="subtitle1" fontWeight={600} noWrap>{event.name}</Typography>
+        {event.description && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          >
+            {event.description}
           </Typography>
         )}
       </CardContent>
