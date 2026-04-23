@@ -14,7 +14,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 - **Entities** — Organize groups, events, and concepts (factions, battles, religions, etc.)
 - **Locations** — Define and manage places within a world
 - **Notes** — Attach free-form notes to worlds and entities
-- **Reading Notes** — Quickly jot down names, places, and details while reading. A dedicated helper page lists all open notes and lets you convert each one into a proper world entry (Character, Location, Entity, etc.)
+- **Reading Notes** — Capture notes while reading via a persistent FAB. A dedicated page shows all notes alongside a live entity workspace: search, edit, or create Characters, Locations, and Entities (Group, Event, Concept) without leaving the page
 - **Languages** — Track languages spoken in a world
 - **Custom Calendars** — Define custom date systems with `DateSuffix` (anchor years, scale, reversal)
 - **Permissions** — Share worlds with other users (read or edit access)
@@ -28,7 +28,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 ### Done
 
 - [x] Clean Architecture project setup (.NET 10)
-- [x] PostgreSQL + EF Core with Fluent API configuration (10 migrations)
+- [x] PostgreSQL + EF Core with Fluent API configuration (12 migrations)
 - [x] Domain models: World, Character, FamilyTree, Entity, Location, Note, Language, DateSuffix, WorldPermission, User
 - [x] Full CRUD API: 11 controllers, 60+ endpoints
 - [x] JWT authentication (register + login)
@@ -47,7 +47,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 
 ### Planned
 
-- [ ] Reading notes — quick-capture interface during reading + helper page to convert notes into world entries *(in progress)*
+- [x] Reading notes — persistent FAB for quick capture, dedicated page with note list and live entity workspace (search, edit, create)
 - [ ] Rich text biography / notes editor
 - [ ] Photo uploads for characters
 - [ ] Export family tree as image / PDF
