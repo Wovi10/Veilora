@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Box, Button, Paper, TextField, Typography,
   IconButton, Tooltip, CircularProgress,
@@ -12,7 +13,12 @@ import StartSessionDialog from './StartSessionDialog';
 
 export default function ReadingFab() {
   const { session, loading, pause, resume, captureNote } = useReadingSession();
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === '/reading') setMinimized(true);
+  }, [location.pathname]);
   const [startOpen, setStartOpen] = useState(false);
   const [text, setText] = useState('');
   const [saving, setSaving] = useState(false);
