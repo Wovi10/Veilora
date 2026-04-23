@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Box, TextField, Typography, Button, CircularProgress, IconButton,
 } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { getLocation, updateLocation } from '../../api/locationsApi';
 import type { LocationDto } from '../../types/location';
@@ -25,6 +26,7 @@ export default function LocationEditor({ locationId, onClose }: Props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -49,6 +51,8 @@ export default function LocationEditor({ locationId, onClose }: Props) {
         description: description.trim() || undefined,
       });
       setLocation(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch {
       setError('Failed to save changes');
     } finally {
@@ -107,10 +111,11 @@ export default function LocationEditor({ locationId, onClose }: Props) {
           size="small"
           onClick={handleSave}
           disabled={saving}
-          startIcon={saving ? <CircularProgress size={14} color="inherit" /> : undefined}
+          color={saved ? 'success' : 'primary'}
+          startIcon={saving ? <CircularProgress size={14} color="inherit" /> : saved ? <CheckIcon fontSize="small" /> : undefined}
           sx={{ textTransform: 'none', alignSelf: 'flex-start' }}
         >
-          Save
+          {saved ? 'Saved' : 'Save'}
         </Button>
       </Box>
     </Box>

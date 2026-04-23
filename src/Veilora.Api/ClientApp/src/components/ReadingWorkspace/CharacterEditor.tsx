@@ -3,6 +3,7 @@ import {
   Box, TextField, Typography, Button, CircularProgress, Divider,
   FormControl, InputLabel, Select, MenuItem, Autocomplete, Chip, IconButton,
 } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { getCharacter, updateCharacter } from '../../api/charactersApi';
 import { getLocationsByWorld } from '../../api/locationsApi';
@@ -75,6 +76,7 @@ export default function CharacterEditor({ characterId, worldId, onClose }: Props
   const [description, setDescription] = useState('');
 
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
   // Load character + reference data
@@ -195,6 +197,8 @@ export default function CharacterEditor({ characterId, worldId, onClose }: Props
         childIds: selectedChildren.map(c => c.id),
       });
       setCharacter(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch {
       setError('Failed to save changes');
     } finally {
@@ -434,10 +438,11 @@ export default function CharacterEditor({ characterId, worldId, onClose }: Props
           size="small"
           onClick={handleSave}
           disabled={saving}
-          startIcon={saving ? <CircularProgress size={14} color="inherit" /> : undefined}
+          color={saved ? 'success' : 'primary'}
+          startIcon={saving ? <CircularProgress size={14} color="inherit" /> : saved ? <CheckIcon fontSize="small" /> : undefined}
           sx={{ textTransform: 'none', alignSelf: 'flex-start' }}
         >
-          Save
+          {saved ? 'Saved' : 'Save'}
         </Button>
 
       </Box>
