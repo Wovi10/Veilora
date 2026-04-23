@@ -46,8 +46,13 @@ public class FamilyTreeRepository(ApplicationDbContext context) : Repository<Fam
     {
         var query = _context.FamilyTrees
             .AsNoTracking()
-            .Where(ft => ft.WorldId == criteria.WorldId)
-            .OrderBy(ft => ft.Name);
+            .Where(ft => ft.WorldId == criteria.WorldId);
+        if (criteria.Name is not null)
+        {
+            var term = criteria.Name.ToLower();
+            query = query.Where(ft => ft.Name.ToLower().Contains(term));
+        }
+        query = query.OrderBy(ft => ft.Name);
         var totalCount = await query.CountAsync();
         var items = await query
             .Skip((criteria.Page - 1) * criteria.PageSize)
@@ -83,13 +88,4 @@ public class FamilyTreeRepository(ApplicationDbContext context) : Repository<Fam
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<FamilyTreeEntity>> SearchByWorldAsync(WorldSearchCriteria criteria)
-    {
-        var term = criteria.Name.ToLower();
-        return await _context.FamilyTrees
-            .AsNoTracking()
-            .Where(ft => ft.WorldId == criteria.WorldId && ft.Name.ToLower().Contains(term))
-            .OrderBy(ft => ft.Name)
-            .ToListAsync();
-    }
 }

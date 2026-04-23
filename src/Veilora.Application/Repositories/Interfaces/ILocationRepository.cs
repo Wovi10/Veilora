@@ -9,5 +9,5 @@ public interface ILocationRepository : IRepository<Location>
     Task<IEnumerable<Location>> GetByWorldIdAsync(Guid worldId);
     Task<Location?> FindByNameAsync(string name, Guid worldId);
     Task<PagedResult<Location>> GetPagedAsync(LocationCriteria criteria);
-    Task<IEnumerable<Location>> SearchByWorldAsync(WorldSearchCriteria criteria);
+    Task<IEnumerable<(Guid Id, string Name)>> SearchByWorldAsync(Guid worldId, string term, int limit);
 }
