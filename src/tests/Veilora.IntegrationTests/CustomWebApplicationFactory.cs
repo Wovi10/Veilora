@@ -1,3 +1,4 @@
+using Veilora.Api.Services;
 using Veilora.Application.Repositories.Interfaces;
 using Veilora.Application.Services.Interfaces;
 using Veilora.Infrastructure.Data;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 
 namespace Veilora.IntegrationTests;
@@ -17,6 +19,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public Mock<IRelationshipService> RelationshipServiceMock { get; } = new();
     public Mock<IWorldService> WorldServiceMock { get; } = new();
     public Mock<INoteService> NoteServiceMock { get; } = new();
+    public Mock<ICharacterService> CharacterServiceMock { get; } = new();
+    public Mock<IReadingSessionService> ReadingSessionServiceMock { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -24,24 +28,41 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // Remove DbContext (requires Postgres)
-            var dbDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
-            if (dbDescriptor is not null) services.Remove(dbDescriptor);
+            // Remove DbContext and all EF options (requires Postgres)
+            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
+            services.RemoveAll<ApplicationDbContext>();
 
-            // Replace all services that pull in repositories/DbContext
+            // Replace tested services with mocks; strip all others that depend on repositories
             RemoveAndMock<IEntityService>(services, EntityServiceMock.Object);
             RemoveAndMock<IFamilyTreeService>(services, FamilyTreeServiceMock.Object);
             RemoveAndMock<IRelationshipService>(services, RelationshipServiceMock.Object);
             RemoveAndMock<IWorldService>(services, WorldServiceMock.Object);
             RemoveAndMock<INoteService>(services, NoteServiceMock.Object);
 
-            // Remove repository registrations
+            RemoveAndMock<ICharacterService>(services, CharacterServiceMock.Object);
+            RemoveAll<ILocationService>(services);
+            RemoveAll<IAuthService>(services);
+            RemoveAll<ITokenService>(services);
+            RemoveAll<IWorldPermissionService>(services);
+            RemoveAll<ILanguageService>(services);
+            RemoveAll<IDateSuffixService>(services);
+            RemoveAndMock<IReadingSessionService>(services, ReadingSessionServiceMock.Object);
+            RemoveAll<ISearchService>(services);
+
+            // Remove all repository registrations
             RemoveAll<IEntityRepository>(services);
             RemoveAll<IFamilyTreeRepository>(services);
             RemoveAll<IRelationshipRepository>(services);
             RemoveAll<IWorldRepository>(services);
             RemoveAll<INoteRepository>(services);
+            RemoveAll<ICharacterRepository>(services);
+            RemoveAll<ILocationRepository>(services);
+            RemoveAll<IUserRepository>(services);
+            RemoveAll<IWorldPermissionRepository>(services);
+            RemoveAll<ILanguageRepository>(services);
+            RemoveAll<IDateSuffixRepository>(services);
+            RemoveAll<IReadingSessionRepository>(services);
+            RemoveAll<IReadingNoteRepository>(services);
 
             // Replace JWT auth with a test scheme that always authenticates
             services.AddAuthentication(TestAuthHandler.SchemeName)

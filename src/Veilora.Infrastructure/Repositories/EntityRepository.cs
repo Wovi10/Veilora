@@ -19,16 +19,6 @@ public class EntityRepository(ApplicationDbContext context) : Repository<Entity>
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Entity>> SearchByWorldAsync(WorldSearchCriteria criteria)
-    {
-        var term = criteria.Name.ToLower();
-        return await _context.Entities
-            .AsNoTracking()
-            .Where(e => e.WorldId == criteria.WorldId && e.Name.ToLower().Contains(term))
-            .OrderBy(e => e.Name)
-            .ToListAsync();
-    }
-
     public async Task<IEnumerable<Entity>> GetByWorldIdAsync(Guid worldId) =>
         await _context.Entities
             .AsNoTracking()
@@ -44,6 +34,19 @@ public class EntityRepository(ApplicationDbContext context) : Repository<Entity>
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<(Guid Id, string Name, string Type)>> SearchByWorldAsync(Guid worldId, string term, int limit)
+    {
+        var lower = term.ToLower();
+        return await _context.Entities
+            .AsNoTracking()
+            .Where(e => e.WorldId == worldId && e.Name.ToLower().Contains(lower))
+            .OrderBy(e => e.Name)
+            .Take(limit)
+            .Select(e => new { e.Id, e.Name, Type = e.Type.ToString() })
+            .ToListAsync()
+            .ContinueWith(t => t.Result.Select(x => (x.Id, x.Name, x.Type)));
+    }
+
     public async Task<PagedResult<Entity>> GetPagedAsync(EntityCriteria criteria)
     {
         var query = _context.Entities
@@ -53,6 +56,11 @@ public class EntityRepository(ApplicationDbContext context) : Repository<Entity>
         {
             var entityType = Enum.Parse<EntityType>(criteria.Type);
             query = query.Where(e => e.Type == entityType);
+        }
+        if (criteria.Name is not null)
+        {
+            var term = criteria.Name.ToLower();
+            query = query.Where(e => e.Name.ToLower().Contains(term));
         }
         query = query.OrderBy(e => e.Name);
         var totalCount = await query.CountAsync();

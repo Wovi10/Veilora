@@ -39,7 +39,15 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
             .AsNoTracking()
             .Include(c => c.BirthDateSuffix)
             .Include(c => c.DeathDateSuffix)
-            .Where(c => c.WorldId == criteria.WorldId)
+            .Where(c => c.WorldId == criteria.WorldId);
+        if (criteria.Name is not null)
+        {
+            var term = criteria.Name.ToLower();
+            query = query.Where(c => c.Name.ToLower().Contains(term)
+                || (c.FirstName != null && c.FirstName.ToLower().Contains(term))
+                || (c.LastName  != null && c.LastName.ToLower().Contains(term)));
+        }
+        query = query
             .OrderBy(c => c.LastName == null)
             .ThenBy(c => c.LastName)
             .ThenBy(c => c.BirthDate == null)
@@ -52,6 +60,22 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
         return new PagedResult<Character>(items, totalCount, criteria.Page, criteria.PageSize);
     }
 
+    public async Task<IEnumerable<(Guid Id, string Name)>> SearchByWorldAsync(Guid worldId, string term, int limit)
+    {
+        var lower = term.ToLower();
+        return await _context.Characters
+            .AsNoTracking()
+            .Where(c => c.WorldId == worldId && (
+                c.Name.ToLower().Contains(lower)
+                || (c.FirstName != null && c.FirstName.ToLower().Contains(lower))
+                || (c.LastName  != null && c.LastName.ToLower().Contains(lower))))
+            .OrderBy(c => c.Name)
+            .Take(limit)
+            .Select(c => new { c.Id, c.Name })
+            .ToListAsync()
+            .ContinueWith(t => t.Result.Select(x => (x.Id, x.Name)));
+    }
+
     public async Task<IEnumerable<Character>> SearchAsync(string searchTerm)
     {
         var term = searchTerm.ToLower();
@@ -60,18 +84,6 @@ public class CharacterRepository(ApplicationDbContext context) : Repository<Char
             .Where(c => c.Name.ToLower().Contains(term)
                 || (c.FirstName != null && c.FirstName.ToLower().Contains(term))
                 || (c.LastName != null && c.LastName.ToLower().Contains(term)))
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<Character>> SearchByWorldAsync(WorldSearchCriteria criteria)
-    {
-        var term = criteria.Name.ToLower();
-        return await _context.Characters
-            .AsNoTracking()
-            .Where(c => c.WorldId == criteria.WorldId
-                && (c.Name.ToLower().Contains(term)
-                    || (c.FirstName != null && c.FirstName.ToLower().Contains(term))
-                    || (c.LastName != null && c.LastName.ToLower().Contains(term))))
             .ToListAsync();
     }
 
