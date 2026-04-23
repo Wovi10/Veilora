@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Box, TextField, Chip, IconButton, Button, Typography, CircularProgress,
 } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import GroupsIcon from '@mui/icons-material/Groups';
 import BoltIcon from '@mui/icons-material/Bolt';
@@ -25,6 +26,7 @@ export default function EntityEditor({ entity, onSaved, onClose }: Props) {
   const [name, setName] = useState(entity.name);
   const [description, setDescription] = useState(entity.description ?? '');
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
   const meta = TYPE_META[entity.type as EntityType];
@@ -41,6 +43,8 @@ export default function EntityEditor({ entity, onSaved, onClose }: Props) {
         description: description.trim() || undefined,
       });
       onSaved(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch {
       setError('Failed to save changes');
     } finally {
@@ -101,10 +105,11 @@ export default function EntityEditor({ entity, onSaved, onClose }: Props) {
           size="small"
           onClick={handleSave}
           disabled={saving || !isDirty}
-          startIcon={saving ? <CircularProgress size={14} color="inherit" /> : undefined}
+          color={saved ? 'success' : 'primary'}
+          startIcon={saving ? <CircularProgress size={14} color="inherit" /> : saved ? <CheckIcon fontSize="small" /> : undefined}
           sx={{ textTransform: 'none' }}
         >
-          Save
+          {saved ? 'Saved' : 'Save'}
         </Button>
         {isDirty && (
           <Button
