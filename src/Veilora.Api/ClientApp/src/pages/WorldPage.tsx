@@ -259,7 +259,7 @@ export default function WorldPage() {
             <Grid2 container spacing={2}>
               {locations.map(location => (
                 <Grid2 key={location.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <LocationCard location={location} />
+                  <LocationCard location={location} onClick={() => navigate(`/worlds/${worldId}/locations/${location.id}`)} />
                 </Grid2>
               ))}
             </Grid2>
@@ -300,7 +300,7 @@ export default function WorldPage() {
             <Grid2 container spacing={2}>
               {events.map(event => (
                 <Grid2 key={event.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <EventCard event={event} />
+                  <EventCard event={event} onClick={() => navigate(`/worlds/${worldId}/events`)} />
                 </Grid2>
               ))}
             </Grid2>
