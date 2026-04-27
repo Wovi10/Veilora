@@ -5,6 +5,8 @@ export { default as AddEventDialog } from './shared/AddEventDialog';
 export { default as AddLocationDialog } from './shared/AddLocationDialog';
 export { default as CharacterCard } from './shared/CharacterCard';
 export { default as EditCharacterDialog } from './shared/EditCharacterDialog';
+export { default as EditEventDialog } from './shared/EditEventDialog';
+export { default as EventCard } from './shared/EventCard';
 export { default as FamilyTreeCard } from './shared/FamilyTreeCard';
 export { default as LocationCard } from './shared/LocationCard';
 
