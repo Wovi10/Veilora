@@ -28,10 +28,10 @@ export default function LoginPage() {
     try {
       if (mode === 'register') {
         const res = await registerApi({ username, email, password, displayName: displayName || undefined });
-        login(res.token, res.id);
+        login(res.token, res.id, res.email, res.displayName ?? null);
       } else {
         const res = await loginApi({ usernameOrEmail, password });
-        login(res.token, res.id);
+        login(res.token, res.id, res.email, res.displayName ?? null);
       }
       navigate('/', { replace: true });
     } catch {

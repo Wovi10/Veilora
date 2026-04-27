@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 import HomeIcon from '@mui/icons-material/Home';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import MenuIcon from '@mui/icons-material/Menu';
+import SettingsIcon from '@mui/icons-material/Settings';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -126,20 +127,30 @@ export default function App() {
       </AppBar>
 
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Toolbar>
-          <Typography variant="h6">Veilora</Typography>
-        </Toolbar>
-        <Divider />
-        <List sx={{ width: 220 }}>
-          <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
-            <ListItemIcon><HomeIcon /></ListItemIcon>
-            <ListItemText primary="Worlds" />
-          </ListItemButton>
-          <ListItemButton onClick={() => { navigate('/reading'); setDrawerOpen(false); }}>
-            <ListItemIcon><MenuBookIcon /></ListItemIcon>
-            <ListItemText primary="Reading" />
-          </ListItemButton>
-        </List>
+        <Box sx={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <Toolbar>
+            <Typography variant="h6">Veilora</Typography>
+          </Toolbar>
+          <Divider />
+          <List>
+            <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
+              <ListItemIcon><HomeIcon /></ListItemIcon>
+              <ListItemText primary="Worlds" />
+            </ListItemButton>
+            <ListItemButton onClick={() => { navigate('/reading'); setDrawerOpen(false); }}>
+              <ListItemIcon><MenuBookIcon /></ListItemIcon>
+              <ListItemText primary="Reading" />
+            </ListItemButton>
+          </List>
+          <Box sx={{ flexGrow: 1 }} />
+          <Divider />
+          <List>
+            <ListItemButton onClick={() => { navigate('/settings'); setDrawerOpen(false); }}>
+              <ListItemIcon><SettingsIcon /></ListItemIcon>
+              <ListItemText primary="User Settings" />
+            </ListItemButton>
+          </List>
+        </Box>
       </Drawer>
 
       <Box component="main">

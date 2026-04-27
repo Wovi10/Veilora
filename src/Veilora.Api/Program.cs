@@ -66,6 +66,7 @@ builder.Services.AddScoped<IFamilyTreeService, FamilyTreeService>();
 builder.Services.AddScoped<IRelationshipService, RelationshipService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IWorldPermissionService, WorldPermissionService>();
 builder.Services.AddScoped<ILanguageService, LanguageService>();
