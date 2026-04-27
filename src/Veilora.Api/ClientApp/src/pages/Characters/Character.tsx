@@ -97,7 +97,7 @@ export default function CharacterPage() {
     <Box sx={{ maxWidth: 900, mx: 'auto', px: 3, py: 4 }}>
       {/* Nav */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}/entities/Character`)}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}/characters`)}>
           Characters
         </Button>
         {canEdit && (
@@ -259,7 +259,7 @@ export default function CharacterPage() {
             setCharacter(updated);
             setEditOpen(false);
           }}
-          onDeleted={() => navigate(`/worlds/${worldId}/entities/Character`)}
+          onDeleted={() => navigate(`/worlds/${worldId}/characters`)}
         />
       )}
     </Box>
