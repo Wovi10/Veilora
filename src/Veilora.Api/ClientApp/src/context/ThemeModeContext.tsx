@@ -13,7 +13,8 @@ const ThemeModeContext = createContext<ThemeModeContextValue | null>(null);
 
 export function ThemeModeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>(
-    () => (localStorage.getItem(STORAGE_KEY) as ThemeMode) ?? 'light'
+    () => (localStorage.getItem(STORAGE_KEY) as ThemeMode)
+      ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   );
 
   const toggleThemeMode = () => {
