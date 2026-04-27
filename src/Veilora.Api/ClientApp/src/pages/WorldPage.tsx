@@ -27,7 +27,7 @@ import { useEditMode } from '../context/EditModeContext';
 import { useAuth } from '../context/AuthContext';
 import {
   AddCharacterDialog, AddEntityDialog, AddEventDialog, AddLocationDialog,
-  NewFamilyTreeDialog, CharacterCard, FamilyTreeCard, LocationCard,
+  NewFamilyTreeDialog, CharacterCard, EventCard, FamilyTreeCard, LocationCard,
 } from '../components';
 
 const ENTITY_SECTIONS: { type: EntityType; plural: string }[] = [
@@ -279,6 +279,14 @@ export default function WorldPage() {
                   {eventCount}
                 </Typography>
               </Typography>
+              <Button
+                size="small"
+                startIcon={<OpenInFullIcon fontSize="small" />}
+                onClick={() => navigate(`/worlds/${worldId}/events`)}
+                sx={{ textTransform: 'none', minWidth: 0 }}
+              >
+                View all
+              </Button>
             </Box>
             {canEdit && !isSearching && (
               <Button size="small" startIcon={<AddIcon />} onClick={() => setAddEventOpen(true)}>
@@ -464,21 +472,3 @@ function EntityCard({ entity }: { entity: EntityDto }) {
   );
 }
 
-function EventCard({ event }: { event: EventDto }) {
-  return (
-    <Card sx={{ borderRadius: 2, height: '100%', transition: 'box-shadow 0.2s', '&:hover': { boxShadow: 3 } }}>
-      <CardContent sx={{ pb: '12px !important' }}>
-        <Typography variant="subtitle1" fontWeight={600} noWrap>{event.name}</Typography>
-        {event.description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-          >
-            {event.description}
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
