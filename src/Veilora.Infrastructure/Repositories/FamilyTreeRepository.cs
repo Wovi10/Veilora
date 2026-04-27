@@ -88,4 +88,7 @@ public class FamilyTreeRepository(ApplicationDbContext context) : Repository<Fam
         await _context.SaveChangesAsync();
     }
 
+    public async Task TransferOwnershipAsync(Guid fromUserId, Guid toUserId) =>
+        await _dbSet.Where(ft => ft.CreatedBy == fromUserId)
+            .ExecuteUpdateAsync(s => s.SetProperty(ft => ft.CreatedBy, (Guid?)toUserId));
 }
