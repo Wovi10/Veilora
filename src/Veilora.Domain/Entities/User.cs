@@ -8,6 +8,9 @@ public class User : BaseEntity
     public required string PasswordHash { get; set; }
     public string? DisplayName { get; set; }
 
+    public Guid? BackupUserId { get; set; }
+    public User? BackupUser { get; set; }
+
     public ICollection<FamilyTree> CreatedFamilyTrees { get; set; } = [];
     public ICollection<World> CreatedWorlds { get; set; } = [];
     public ICollection<TreePermission> TreePermissions { get; set; } = [];

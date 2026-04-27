@@ -16,4 +16,10 @@ public class UserRepository(ApplicationDbContext context) : Repository<User>(con
         => await _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.DisplayName == displayName);
+
+    public async Task<User?> GetWithBackupAsync(Guid userId)
+        => await _context.Users
+            .AsNoTracking()
+            .Include(u => u.BackupUser)
+            .FirstOrDefaultAsync(u => u.Id == userId);
 }
