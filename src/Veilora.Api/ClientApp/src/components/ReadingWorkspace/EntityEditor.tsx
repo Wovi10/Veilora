@@ -5,14 +5,12 @@ import {
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import GroupsIcon from '@mui/icons-material/Groups';
-import BoltIcon from '@mui/icons-material/Bolt';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import { updateEntity } from '../../api/entitiesApi';
 import type { EntityDto, EntityType } from '../../types/entity';
 
 const TYPE_META: Record<EntityType, { icon: React.ReactNode; color: 'primary' | 'warning' | 'secondary' }> = {
   Group: { icon: <GroupsIcon fontSize="small" />, color: 'primary' },
-  Event: { icon: <BoltIcon fontSize="small" />, color: 'warning' },
   Concept: { icon: <LightbulbIcon fontSize="small" />, color: 'secondary' },
 };
 
