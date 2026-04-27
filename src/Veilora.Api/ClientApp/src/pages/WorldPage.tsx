@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, CircularProgress, Alert, Button,
@@ -59,6 +59,15 @@ export default function WorldPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
+  const initialDataRef = useRef<{
+    characters: CharacterDto[]; characterCount: number;
+    locations: LocationDto[];   locationCount: number;
+    events: EventDto[];         eventCount: number;
+    entitiesByType: Record<EntityType, EntityDto[]>;
+    entityCountByType: Record<EntityType, number>;
+    familyTrees: FamilyTreeDto[]; familyTreeCount: number;
+  } | null>(null);
+
   const [addCharacterOpen, setAddCharacterOpen] = useState(false);
   const [addEntityOpen, setAddEntityOpen] = useState(false);
   const [addEntityType, setAddEntityType] = useState<EntityType>('Group');
@@ -97,6 +106,16 @@ export default function WorldPage() {
         setFamilyTrees(trees.items);
         setFamilyTreeCount(trees.totalCount);
         setIsSearching(!!name);
+        if (!name) {
+          initialDataRef.current = {
+            characters: chars.items, characterCount: chars.totalCount,
+            locations: locs.items,   locationCount: locs.totalCount,
+            events: evts.items,      eventCount: evts.totalCount,
+            entitiesByType: { Group: groups.items, Concept: concepts.items } as Record<EntityType, EntityDto[]>,
+            entityCountByType: { Group: groups.totalCount, Concept: concepts.totalCount } as Record<EntityType, number>,
+            familyTrees: trees.items, familyTreeCount: trees.totalCount,
+          };
+        }
       })
       .catch(() => setError('Failed to load world'))
       .finally(() => { setLoading(false); setSearchLoading(false); });
@@ -112,8 +131,22 @@ export default function WorldPage() {
 
   const clearSearch = () => {
     setSearchQuery('');
-    setLoading(true);
-    loadData();
+    setIsSearching(false);
+    const d = initialDataRef.current;
+    if (d) {
+      setCharacters(d.characters);
+      setCharacterCount(d.characterCount);
+      setLocations(d.locations);
+      setLocationCount(d.locationCount);
+      setEvents(d.events);
+      setEventCount(d.eventCount);
+      setEntitiesByType(d.entitiesByType);
+      setEntityCountByType(d.entityCountByType);
+      setFamilyTrees(d.familyTrees);
+      setFamilyTreeCount(d.familyTreeCount);
+    } else {
+      loadData();
+    }
   };
 
   if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
