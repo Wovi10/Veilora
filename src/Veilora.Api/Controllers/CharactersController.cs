@@ -16,11 +16,12 @@ public class CharactersController(ICharacterService characterService, IRelations
     public async Task<IActionResult> GetByWorld(
         [FromQuery] Guid worldId,
         [FromQuery] int? page,
-        [FromQuery] int? pageSize)
+        [FromQuery] int? pageSize,
+        [FromQuery] string? name)
     {
-        if (page.HasValue || pageSize.HasValue)
+        if (page.HasValue || pageSize.HasValue || name is not null)
             return Ok(await characterService.GetPagedAsync(
-                new CharacterCriteria(worldId, page ?? 1, pageSize ?? 20)));
+                new CharacterCriteria(worldId, page ?? 1, pageSize ?? 20, name)));
         return Ok(await characterService.GetByWorldIdAsync(worldId));
     }
 
