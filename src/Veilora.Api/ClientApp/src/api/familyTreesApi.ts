@@ -8,8 +8,9 @@ export async function getFamilyTrees(): Promise<FamilyTreeDto[]> {
   return res.json();
 }
 
-export async function getFamilyTreesByWorldPaged(worldId: string, page: number, pageSize: number): Promise<PagedResult<FamilyTreeDto>> {
-  const res = await apiFetch(`/api/family-trees?worldId=${worldId}&page=${page}&pageSize=${pageSize}`);
+export async function getFamilyTreesByWorldPaged(worldId: string, page: number, pageSize: number, name?: string): Promise<PagedResult<FamilyTreeDto>> {
+  const url = `/api/family-trees?worldId=${worldId}&page=${page}&pageSize=${pageSize}${name ? `&name=${encodeURIComponent(name)}` : ''}`;
+  const res = await apiFetch(url);
   return res.json();
 }
 

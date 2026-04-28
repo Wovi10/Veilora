@@ -26,7 +26,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run unit tests
-        run: dotnet test src/tests/FamilyTree.UnitTests --no-build --configuration Release --logger "console;verbosity=normal"
+        run: dotnet test src/tests/Veilora.UnitTests --no-build --configuration Release --logger "console;verbosity=normal"
 
       - name: Run integration tests
-        run: dotnet test src/tests/FamilyTree.IntegrationTests --no-build --configuration Release --logger "console;verbosity=normal"
+        run: dotnet test src/tests/Veilora.IntegrationTests --no-build --configuration Release --logger "console;verbosity=normal"

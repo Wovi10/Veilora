@@ -53,7 +53,10 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IWorldPermissionRepository, WorldPermissionRepository>();
 builder.Services.AddScoped<ILanguageRepository, LanguageRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IDateSuffixRepository, DateSuffixRepository>();
+builder.Services.AddScoped<IReadingSessionRepository, ReadingSessionRepository>();
+builder.Services.AddScoped<IReadingNoteRepository, ReadingNoteRepository>();
 
 // Services
 builder.Services.AddScoped<IWorldService, WorldService>();
@@ -63,11 +66,15 @@ builder.Services.AddScoped<IFamilyTreeService, FamilyTreeService>();
 builder.Services.AddScoped<IRelationshipService, RelationshipService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IWorldPermissionService, WorldPermissionService>();
 builder.Services.AddScoped<ILanguageService, LanguageService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IDateSuffixService, DateSuffixService>();
+builder.Services.AddScoped<IReadingSessionService, ReadingSessionService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWorldDtoValidator>();

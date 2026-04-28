@@ -17,11 +17,12 @@ public class EntitiesController(IEntityService entityService) : ControllerBase
         [FromQuery] Guid? worldId,
         [FromQuery] string? type,
         [FromQuery] int? page,
-        [FromQuery] int? pageSize)
+        [FromQuery] int? pageSize,
+        [FromQuery] string? name)
     {
-        if (worldId.HasValue && (page.HasValue || pageSize.HasValue))
+        if (worldId.HasValue && (page.HasValue || pageSize.HasValue || name is not null))
             return Ok(await entityService.GetPagedAsync(
-                new EntityCriteria(worldId.Value, type, page ?? 1, pageSize ?? 20)));
+                new EntityCriteria(worldId.Value, type, page ?? 1, pageSize ?? 20, name)));
         if (worldId.HasValue && type is not null)
             return Ok(await entityService.GetByWorldIdAndTypeAsync(worldId.Value, type));
         if (worldId.HasValue)

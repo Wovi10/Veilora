@@ -29,5 +29,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Email)
             .IsUnique();
+
+        builder.HasOne(u => u.BackupUser)
+            .WithMany()
+            .HasForeignKey(u => u.BackupUserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

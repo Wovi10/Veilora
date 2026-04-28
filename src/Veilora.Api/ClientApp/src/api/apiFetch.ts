@@ -1,5 +1,7 @@
 const TOKEN_KEY = 'auth_token';
 const USER_ID_KEY = 'auth_user_id';
+const EMAIL_KEY = 'auth_email';
+const DISPLAY_NAME_KEY = 'auth_display_name';
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -23,6 +25,31 @@ export function setUserId(id: string): void {
 
 export function clearUserId(): void {
   localStorage.removeItem(USER_ID_KEY);
+}
+
+export function getEmail(): string | null {
+  return localStorage.getItem(EMAIL_KEY);
+}
+
+export function setEmail(email: string): void {
+  localStorage.setItem(EMAIL_KEY, email);
+}
+
+export function clearEmail(): void {
+  localStorage.removeItem(EMAIL_KEY);
+}
+
+export function getDisplayName(): string | null {
+  return localStorage.getItem(DISPLAY_NAME_KEY);
+}
+
+export function setDisplayName(name: string | null): void {
+  if (name) localStorage.setItem(DISPLAY_NAME_KEY, name);
+  else localStorage.removeItem(DISPLAY_NAME_KEY);
+}
+
+export function clearDisplayName(): void {
+  localStorage.removeItem(DISPLAY_NAME_KEY);
 }
 
 export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
