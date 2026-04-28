@@ -1,4 +1,4 @@
-export type EntityType = 'Group' | 'Event' | 'Concept';
+export type EntityType = 'Group' | 'Concept';
 
 export interface EntityDto {
   id: string;

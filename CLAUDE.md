@@ -2,9 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## What Veilora Is
+
+A worldbuilding companion app for fantasy writers. Users create **Worlds** and populate them with Characters, Family Trees, Entities (factions/events/concepts), Locations, Notes, Languages, and custom calendar systems. The family tree builder (React Flow canvas) is one feature within a broader world management system.
+
 ## Project Status
 
-Early development — Phase 1 (MVP). Backend has full CRUD controllers for Person, Tree, and Relationship, plus JWT authentication. React frontend is in progress (Tree detail page with React Flow canvas exists).
+Core features are fully implemented — 11 backend controllers, 11 services, 10+ frontend pages, JWT auth, world permissions, world-scoped name search. Active development continues on UI polish and new features.
 
 ## Commands
 
@@ -36,13 +40,13 @@ Clean Architecture with 4 layers:
 - **`Veilora.Infrastructure`** — EF Core `ApplicationDbContext`, repository implementations, entity configurations (Fluent API), migrations. Depends on Domain + Application.
 - **`Veilora.Api`** — Controllers, `Program.cs`, middleware. Depends on Application + Infrastructure.
 
-Repository interfaces live in **both** `Veilora.Application/Repositories/Interfaces/` (consumed by services) and `Veilora.Infrastructure/Repositories/Interfaces/` (implementations registered there). The Application layer owns the contracts.
+Repository interfaces live in `Veilora.Application/Repositories/Interfaces/` (consumed by services). Implementations are in `Veilora.Infrastructure/Repositories/`. The Application layer owns the contracts.
 
 `SaveChangesAsync` in `ApplicationDbContext` auto-sets `CreatedAt`/`UpdatedAt` on all `BaseEntity` subclasses.
 
 ## Key Conventions
 
-**Mapping**: Manual only — use static mapper classes (`PersonMapper.ToDto()`, `PersonMapper.ToEntity()`, `PersonMapper.UpdateEntity()`). **No AutoMapper.**
+**Mapping**: Manual only — use static mapper classes (`CharacterMapper.ToDto()`, etc.). **No AutoMapper.**
 
 **DTOs**: Use `record` types. Always create separate `CreateXxxDto` and `UpdateXxxDto` even if similar.
 
@@ -50,31 +54,60 @@ Repository interfaces live in **both** `Veilora.Application/Repositories/Interfa
 
 **C# style**: .NET 10 / C# 13. Primary constructors, collection expressions `[]`, nullable reference types, pattern matching.
 
-**Controllers**: Thin — delegate all logic to services. Catch `NotFoundException` → 404, `ValidationException` → 400.
+**Controllers**: Thin — delegate all logic to services. `ExceptionHandlingMiddleware` maps `NotFoundException` → 404, `ValidationException` → 400, `BusinessException` → 422.
 
-**Frontend** (not yet started): React + TypeScript + React Flow + Material-UI. Use MUI `sx` prop for styling. **No Tailwind CSS.**
+**Frontend**: React + TypeScript + Material-UI. Use MUI `sx` prop for styling. **No Tailwind CSS.**
 
 ## Domain Model
 
-- **Person** ↔ **Tree** via `PersonTree` junction (many-to-many). A person can belong to multiple trees.
-- **Relationship** is global (not tree-scoped) with `Person1Id`, `Person2Id`, `RelationshipType`, optional `StartDate`/`EndDate`.
-- `RelationshipType` enum: `ParentChildBiological`, `ParentChildAdopted`, `Spouse`, `Partner`, `StepParent`, `StepChild`, `Godparent`, `Guardian`, `CloseFriend`.
-- `User` and `TreePermission` entities exist in the domain but are **Phase 3** — do not wire them up yet.
-- No soft deletes — use hard deletes for now.
-- No photo storage in v1 — `ProfilePhotoUrl` is just a nullable string field.
+### Core entities
+
+- **World** — top-level container. Has `CreatedById` (owner), name, description. Owner can transfer ownership.
+- **Character** — belongs to a World. Rich biographical fields (FirstName, LastName, Gender, BirthDate, DeathDate, Biography, Species, etc.). Self-referencing `Parent1Id`/`Parent2Id`. Can belong to multiple FamilyTrees via `CharacterFamilyTree` junction (which also stores PositionX/Y for the canvas).
+- **FamilyTree** — belongs to a World. Characters are added via `CharacterFamilyTree`. Relationships between characters are visualized as edges.
+- **Relationship** — global (not tree-scoped). `Character1Id`, `Character2Id`, `RelationshipType`, optional `StartDate`/`EndDate`, Notes.
+- **Entity** — generic lore object in a World. `Type` enum: `Group`, `Event`, `Concept`. Has affiliations (characters), languages, locations.
+- **Location** — place within a World. Linked to characters and entities via join tables.
+- **Note** — free-form text attached to a World or Entity.
+- **Language** — named language in a World. Auto-created on first use (`GetOrCreate`).
+- **DateSuffix** — custom calendar entry: AnchorYear, Scale, IsReversed, IsDefault per World.
+- **WorldPermission** — `WorldId`, `UserId`, `CanEdit` boolean. Fully implemented and wired.
+- **TreePermission** — exists in domain but not yet wired to a service.
+- **User** — Email, PasswordHash (BCrypt), DisplayName.
+
+### Enums
+
+- `RelationshipType`: `ParentChildBiological`, `ParentChildAdopted`, `Spouse`, `Partner`, `StepParent`, `StepChild`, `Godparent`, `Guardian`, `CloseFriend`, `Sibling`
+- `EntityType`: `Group`, `Event`, `Concept`
+
+### Rules
+
+- No soft deletes — hard deletes only.
+- No file storage — `ProfilePhotoUrl` on Character is a nullable string URL.
+- All entities inherit `BaseEntity` (Guid Id, CreatedAt, UpdatedAt).
 
 ## Authentication
 
-JWT Bearer auth is implemented. `POST /api/auth/register` and `POST /api/auth/login` return a token. All other endpoints require `Authorization: Bearer {token}`.
+JWT Bearer auth. `POST /api/auth/register` and `POST /api/auth/login` return a token. All other endpoints require `Authorization: Bearer {token}`.
+
+Token claims: `sub` (userId), `email`, `jti`, `displayName`. 30-day expiry by default.
 
 Set the JWT secret via user secrets (never commit it):
 ```bash
 dotnet user-secrets set "Jwt:Key" "your-secret-key-at-least-32-chars" --project src/Veilora.Api
 ```
 
+## Frontend Structure
+
+Pages: Login, Home (world list), World (tabbed dashboard), WorldSettings (permissions), FamilyTree (React Flow canvas), Character detail, Characters list, Location detail, Locations list, Entity list.
+
+Contexts: `AuthContext` (token/userId in localStorage), `EditModeContext` (UI edit toggle), `ThemeModeContext` (light/dark).
+
+API calls go through a shared `apiFetch` helper that injects the Bearer token.
+
 ## What NOT to Implement Yet
 
-- Photo uploads → Phase 2
-- `TreePermission` service wiring (sharing/collaboration) → Phase 3
-- GEDCOM import/export → Phase 3
-- Mobile/responsive design → Phase 3
+- Photo/file uploads (Phase 2)
+- `TreePermission` service wiring — entity exists but service is not wired (Phase 3)
+- GEDCOM import/export (Phase 3)
+- Mobile-responsive design (Phase 3)

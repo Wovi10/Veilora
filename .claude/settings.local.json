@@ -17,7 +17,8 @@
       "Bash(git commit -m ' *)",
       "Bash(ls D:/GitHub/FamilyTree/*.user)",
       "Bash(ls D:/GitHub/FamilyTree/*.DotSettings*)",
-      "Bash(powershell -Command \"Move-Item -Path src/FamilyTree.Api -Destination src/Veilora.Api\")"
+      "Bash(powershell -Command \"Move-Item -Path src/FamilyTree.Api -Destination src/Veilora.Api\")",
+      "Bash(git commit *)"
     ]
   }
 }

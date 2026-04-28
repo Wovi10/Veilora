@@ -7,8 +7,9 @@ export async function getLocationsByWorld(worldId: string): Promise<LocationDto[
   return res.json();
 }
 
-export async function getLocationsByWorldPaged(worldId: string, page: number, pageSize: number): Promise<PagedResult<LocationDto>> {
-  const res = await apiFetch(`/api/locations/world/${worldId}?page=${page}&pageSize=${pageSize}`);
+export async function getLocationsByWorldPaged(worldId: string, page: number, pageSize: number, name?: string): Promise<PagedResult<LocationDto>> {
+  const url = `/api/locations/world/${worldId}?page=${page}&pageSize=${pageSize}${name ? `&name=${encodeURIComponent(name)}` : ''}`;
+  const res = await apiFetch(url);
   return res.json();
 }
 
