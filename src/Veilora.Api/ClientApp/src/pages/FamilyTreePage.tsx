@@ -321,7 +321,7 @@ export default function FamilyTreePage() {
     setEditingCharacter(null);
   }, [tree, handleParentBendsChange]);
 
-  const backPath = tree ? `/worlds/${tree.worldId}` : '/';
+  const backPath = tree ? `/worlds/${tree.worldId}/family-trees` : '/';
 
   return (
     <>

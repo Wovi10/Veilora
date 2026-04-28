@@ -13,10 +13,15 @@ public class TestAuthHandler(
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     public const string SchemeName = "Test";
+    public static readonly Guid TestUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var claims = new[] { new Claim(ClaimTypes.Name, "testuser") };
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Name, "testuser"),
+            new Claim(ClaimTypes.NameIdentifier, TestUserId.ToString()),
+        };
         var identity = new ClaimsIdentity(claims, SchemeName);
         var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(principal, SchemeName);

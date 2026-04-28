@@ -1,4 +1,4 @@
 namespace Veilora.Application.Criteria;
 
-public record CharacterCriteria(Guid WorldId, int Page = 1, int PageSize = 20)
+public record CharacterCriteria(Guid WorldId, int Page = 1, int PageSize = 20, string? Name = null)
     : PageCriteria(Page, PageSize);
