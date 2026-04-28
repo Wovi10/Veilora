@@ -10,6 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<World> Worlds => Set<World>();
     public DbSet<Entity> Entities => Set<Entity>();
     public DbSet<Location> Locations => Set<Location>();
+    public DbSet<Event> Events => Set<Event>();
     public DbSet<Character> Characters => Set<Character>();
     public DbSet<FamilyTreeEntity> FamilyTrees => Set<FamilyTreeEntity>();
     public DbSet<CharacterFamilyTree> CharacterFamilyTrees => Set<CharacterFamilyTree>();
@@ -20,6 +21,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<WorldPermission> WorldPermissions => Set<WorldPermission>();
     public DbSet<Language> Languages => Set<Language>();
     public DbSet<DateSuffix> DateSuffixes => Set<DateSuffix>();
+    public DbSet<ReadingSession> ReadingSessions => Set<ReadingSession>();
+    public DbSet<ReadingNote> ReadingNotes => Set<ReadingNote>();
     public DbSet<CharacterLocation> CharacterLocations => Set<CharacterLocation>();
     public DbSet<EntityAffiliation> EntityAffiliations => Set<EntityAffiliation>();
     public DbSet<EntityLanguage> EntityLanguages => Set<EntityLanguage>();

@@ -14,7 +14,7 @@ interface Props {
   onCreated: (entity: EntityDto) => void;
 }
 
-const ENTITY_TYPES: EntityType[] = ['Group', 'Event', 'Concept'];
+const ENTITY_TYPES: EntityType[] = ['Group', 'Concept'];
 
 export default function AddEntityDialog({ open, worldId, defaultType, onClose, onCreated }: Props) {
   const [type, setType] = useState<EntityType>(defaultType);
