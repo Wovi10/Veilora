@@ -16,11 +16,12 @@ public class LocationsController(ILocationService locationService) : ControllerB
     public async Task<IActionResult> GetByWorld(
         Guid worldId,
         [FromQuery] int? page,
-        [FromQuery] int? pageSize)
+        [FromQuery] int? pageSize,
+        [FromQuery] string? name)
     {
-        if (page.HasValue || pageSize.HasValue)
+        if (page.HasValue || pageSize.HasValue || name is not null)
             return Ok(await locationService.GetPagedAsync(
-                new LocationCriteria(worldId, page ?? 1, pageSize ?? 20)));
+                new LocationCriteria(worldId, page ?? 1, pageSize ?? 20, name)));
         return Ok(await locationService.GetByWorldIdAsync(worldId));
     }
 

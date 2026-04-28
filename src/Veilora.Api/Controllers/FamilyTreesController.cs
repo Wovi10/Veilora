@@ -16,11 +16,12 @@ public class FamilyTreesController(IFamilyTreeService familyTreeService, ICharac
     public async Task<IActionResult> GetAll(
         [FromQuery] Guid? worldId,
         [FromQuery] int? page,
-        [FromQuery] int? pageSize)
+        [FromQuery] int? pageSize,
+        [FromQuery] string? name)
     {
-        if (worldId.HasValue && (page.HasValue || pageSize.HasValue))
+        if (worldId.HasValue && (page.HasValue || pageSize.HasValue || name is not null))
             return Ok(await familyTreeService.GetPagedAsync(
-                new FamilyTreeCriteria(worldId.Value, page ?? 1, pageSize ?? 20)));
+                new FamilyTreeCriteria(worldId.Value, page ?? 1, pageSize ?? 20, name)));
         if (worldId.HasValue)
             return Ok(await familyTreeService.GetByWorldIdAsync(worldId.Value));
         return Ok(await familyTreeService.GetAllAsync());
