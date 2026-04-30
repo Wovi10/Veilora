@@ -39,7 +39,6 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   const [birthDateSuffixId, setBirthDateSuffixId] = useState('');
   const [deathDate, setDeathDate] = useState('');
   const [deathDateSuffixId, setDeathDateSuffixId] = useState('');
-  const [description, setDescription] = useState('');
   const [parent1Id, setParent1Id] = useState('');
   const [parent2Id, setParent2Id] = useState('');
   const [otherNames, setOtherNames] = useState('');
@@ -63,6 +62,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
 
   const [expanded, setExpanded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState('');
@@ -88,7 +88,6 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
     setBirthDateSuffixId(character.birthDateSuffixId ?? '');
     setDeathDate(character.deathDate ?? '');
     setDeathDateSuffixId(character.deathDateSuffixId ?? '');
-    setDescription(character.description ?? '');
     setParent1Id(character.parent1Id ?? '');
     setParent2Id(character.parent2Id ?? '');
     setOtherNames(character.otherNames ?? '');
@@ -152,7 +151,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
 
       const dto: UpdateCharacterDto = {
         name: effectiveName,
-        description: description.trim() || undefined,
+        description: character.description || undefined,
         firstName: firstName.trim() || undefined,
         lastName: lastName.trim() || undefined,
         species: species.trim() || undefined,
@@ -212,7 +211,6 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
               </Select>
             </FormControl>
           </Box>
-          <TextField label="Description" value={description} onChange={e => setDescription(e.target.value)} multiline rows={4} placeholder="Brief description of this character…" />
           <Button
             size="small"
             onClick={() => setExpanded(e => !e)}
