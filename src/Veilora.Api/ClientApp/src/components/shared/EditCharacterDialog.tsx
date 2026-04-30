@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
   TextField, MenuItem, Box, Select, FormControl, InputLabel, Typography,
-  Autocomplete, Chip,
+  Autocomplete, Chip, Collapse,
 } from '@mui/material';
 import { updateCharacter, deleteCharacter } from '../../api/charactersApi';
 import { getLanguagesByWorld, getOrCreateLanguage } from '../../api/languagesApi';
@@ -61,6 +61,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   const [availableLocations, setAvailableLocations] = useState<LocationDto[]>([]);
   const [availableDateSuffixes, setAvailableDateSuffixes] = useState<DateSuffixDto[]>([]);
 
+  const [expanded, setExpanded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -77,6 +78,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   useEffect(() => {
     if (!character) return;
     setConfirmDelete(false);
+    setExpanded(false);
     setError('');
     setFirstName(character.firstName ?? '');
     setLastName(character.lastName ?? '');
@@ -201,146 +203,160 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
             <TextField label="Other Names" value={otherNames} onChange={e => setOtherNames(e.target.value)} fullWidth placeholder="Aliases, nicknames…" />
             <TextField label="Position / Title" value={position} onChange={e => setPosition(e.target.value)} fullWidth placeholder="King, Knight…" />
           </Box>
-          <TextField label="Species / Race" value={species} onChange={e => setSpecies(e.target.value)} />
-          <FormControl fullWidth>
-            <InputLabel>Gender</InputLabel>
-            <Select value={gender} label="Gender" onChange={e => setGender(e.target.value as Gender)}>
-              {GENDERS.map(g => <MenuItem key={g} value={g}>{g}</MenuItem>)}
-            </Select>
-          </FormControl>
           <Box display="flex" gap={2}>
-            <TextField label="Height" value={height} onChange={e => setHeight(e.target.value)} fullWidth placeholder="e.g. 6'2&quot;" />
-            <TextField label="Hair Colour" value={hairColour} onChange={e => setHairColour(e.target.value)} fullWidth />
+            <TextField label="Species / Race" value={species} onChange={e => setSpecies(e.target.value)} fullWidth />
+            <FormControl fullWidth>
+              <InputLabel>Gender</InputLabel>
+              <Select value={gender} label="Gender" onChange={e => setGender(e.target.value as Gender)}>
+                {GENDERS.map(g => <MenuItem key={g} value={g}>{g}</MenuItem>)}
+              </Select>
+            </FormControl>
           </Box>
-          <Box display="flex" gap={2}>
-            <TextField label="Birth Date" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
-            {availableDateSuffixes.length > 0 && (
-              <FormControl sx={{ minWidth: 140 }}>
-                <InputLabel>Birth Era</InputLabel>
-                <Select value={birthDateSuffixId} label="Birth Era" onChange={e => setBirthDateSuffixId(e.target.value)}>
+          <TextField label="Description" value={description} onChange={e => setDescription(e.target.value)} multiline rows={4} placeholder="Brief description of this character…" />
+          <Button
+            size="small"
+            onClick={() => setExpanded(e => !e)}
+            sx={{ alignSelf: 'flex-start', color: 'text.secondary' }}
+          >
+            {expanded ? '▴ Less details' : '▾ More details'}
+          </Button>
+          <Collapse in={expanded}>
+            <Box display="flex" flexDirection="column" gap={2}>
+              <Box display="flex" gap={2}>
+                <TextField label="Height" value={height} onChange={e => setHeight(e.target.value)} fullWidth placeholder="e.g. 6'2&quot;" />
+                <TextField label="Hair Colour" value={hairColour} onChange={e => setHairColour(e.target.value)} fullWidth />
+              </Box>
+              <Box display="flex" gap={2}>
+                <TextField label="Birth Date" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
+                {availableDateSuffixes.length > 0 && (
+                  <FormControl sx={{ minWidth: 140 }}>
+                    <InputLabel>Birth Era</InputLabel>
+                    <Select value={birthDateSuffixId} label="Birth Era" onChange={e => setBirthDateSuffixId(e.target.value)}>
+                      <MenuItem value="">None</MenuItem>
+                      {availableDateSuffixes.map(s => <MenuItem key={s.id} value={s.id}>{s.abbreviation} — {s.name}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                )}
+              </Box>
+              <Autocomplete
+                freeSolo
+                options={locationOptions}
+                getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
+                value={birthPlaceLocation}
+                inputValue={birthPlaceInput}
+                onChange={(_, val) => setBirthPlaceLocation(val as LocationOrString | null)}
+                onInputChange={(_, val) => setBirthPlaceInput(val)}
+                renderInput={params => <TextField {...params} label="Birth Place" placeholder="Select or type to create…" />}
+              />
+              <Box display="flex" gap={2}>
+                <TextField label="Death Date" type="date" value={deathDate} onChange={e => setDeathDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
+                {availableDateSuffixes.length > 0 && (
+                  <FormControl sx={{ minWidth: 140 }}>
+                    <InputLabel>Death Era</InputLabel>
+                    <Select value={deathDateSuffixId} label="Death Era" onChange={e => setDeathDateSuffixId(e.target.value)}>
+                      <MenuItem value="">None</MenuItem>
+                      {availableDateSuffixes.map(s => <MenuItem key={s.id} value={s.id}>{s.abbreviation} — {s.name}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                )}
+              </Box>
+              <Autocomplete
+                freeSolo
+                options={locationOptions}
+                getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
+                value={deathPlaceLocation}
+                inputValue={deathPlaceInput}
+                onChange={(_, val) => setDeathPlaceLocation(val as LocationOrString | null)}
+                onInputChange={(_, val) => setDeathPlaceInput(val)}
+                renderInput={params => <TextField {...params} label="Death Place" placeholder="Select or type to create…" />}
+              />
+              <Autocomplete
+                multiple
+                freeSolo
+                options={locationOptions}
+                getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
+                value={selectedLocations}
+                onChange={(_, val) => setSelectedLocations(val as Array<LocationOrString>)}
+                renderTags={(val, getTagProps) =>
+                  val.map((opt, i) => (
+                    <Chip {...getTagProps({ index: i })} key={typeof opt === 'string' ? opt : opt.id} label={typeof opt === 'string' ? opt : opt.name} size="small" />
+                  ))
+                }
+                renderInput={params => <TextField {...params} label="Locations" placeholder="Add or type to create…" />}
+              />
+              <Autocomplete
+                multiple
+                freeSolo
+                options={groupOptions}
+                getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
+                value={selectedAffiliations}
+                onChange={(_, val) => setSelectedAffiliations(val as Array<LocationOrString>)}
+                renderTags={(val, getTagProps) =>
+                  val.map((opt, i) => (
+                    <Chip {...getTagProps({ index: i })} key={typeof opt === 'string' ? opt : opt.id} label={typeof opt === 'string' ? opt : opt.name} size="small" />
+                  ))
+                }
+                renderInput={params => <TextField {...params} label="Affiliations" placeholder="Add or type to create…" />}
+              />
+              <Autocomplete
+                multiple
+                freeSolo
+                options={availableLanguages}
+                getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
+                value={selectedLanguages}
+                onChange={(_, val) => setSelectedLanguages(val as Array<LanguageDto | string>)}
+                renderTags={(val, getTagProps) =>
+                  val.map((opt, i) => (
+                    <Chip
+                      {...getTagProps({ index: i })}
+                      key={typeof opt === 'string' ? opt : opt.id}
+                      label={typeof opt === 'string' ? opt : opt.name}
+                      size="small"
+                    />
+                  ))
+                }
+                renderInput={params => <TextField {...params} label="Languages" placeholder="Type to add…" />}
+              />
+              <Autocomplete
+                multiple
+                options={characterOptions}
+                getOptionLabel={opt => opt.name}
+                value={selectedSpouses}
+                onChange={(_, val) => setSelectedSpouses(val)}
+                isOptionEqualToValue={(opt, val) => opt.id === val.id}
+                renderTags={(val, getTagProps) =>
+                  val.map((opt, i) => <Chip {...getTagProps({ index: i })} key={opt.id} label={opt.name} size="small" />)
+                }
+                renderInput={params => <TextField {...params} label="Spouse(s)" placeholder="Add spouse…" />}
+              />
+              <Autocomplete
+                multiple
+                options={characterOptions}
+                getOptionLabel={opt => opt.name}
+                value={selectedChildren}
+                onChange={(_, val) => setSelectedChildren(val)}
+                isOptionEqualToValue={(opt, val) => opt.id === val.id}
+                renderTags={(val, getTagProps) =>
+                  val.map((opt, i) => <Chip {...getTagProps({ index: i })} key={opt.id} label={opt.name} size="small" />)
+                }
+                renderInput={params => <TextField {...params} label="Children" placeholder="Add child…" />}
+              />
+              <FormControl fullWidth>
+                <InputLabel>Parent 1</InputLabel>
+                <Select value={parent1Id} label="Parent 1" onChange={e => setParent1Id(e.target.value)}>
                   <MenuItem value="">None</MenuItem>
-                  {availableDateSuffixes.map(s => <MenuItem key={s.id} value={s.id}>{s.abbreviation} — {s.name}</MenuItem>)}
+                  {others.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                 </Select>
               </FormControl>
-            )}
-          </Box>
-          <Autocomplete
-            freeSolo
-            options={locationOptions}
-            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={birthPlaceLocation}
-            inputValue={birthPlaceInput}
-            onChange={(_, val) => setBirthPlaceLocation(val as LocationOrString | null)}
-            onInputChange={(_, val) => setBirthPlaceInput(val)}
-            renderInput={params => <TextField {...params} label="Birth Place" placeholder="Select or type to create…" />}
-          />
-          <Box display="flex" gap={2}>
-            <TextField label="Death Date" type="date" value={deathDate} onChange={e => setDeathDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
-            {availableDateSuffixes.length > 0 && (
-              <FormControl sx={{ minWidth: 140 }}>
-                <InputLabel>Death Era</InputLabel>
-                <Select value={deathDateSuffixId} label="Death Era" onChange={e => setDeathDateSuffixId(e.target.value)}>
+              <FormControl fullWidth>
+                <InputLabel>Parent 2</InputLabel>
+                <Select value={parent2Id} label="Parent 2" onChange={e => setParent2Id(e.target.value)}>
                   <MenuItem value="">None</MenuItem>
-                  {availableDateSuffixes.map(s => <MenuItem key={s.id} value={s.id}>{s.abbreviation} — {s.name}</MenuItem>)}
+                  {others.filter(c => c.id !== parent1Id).map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                 </Select>
               </FormControl>
-            )}
-          </Box>
-          <Autocomplete
-            freeSolo
-            options={locationOptions}
-            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={deathPlaceLocation}
-            inputValue={deathPlaceInput}
-            onChange={(_, val) => setDeathPlaceLocation(val as LocationOrString | null)}
-            onInputChange={(_, val) => setDeathPlaceInput(val)}
-            renderInput={params => <TextField {...params} label="Death Place" placeholder="Select or type to create…" />}
-          />
-          <Autocomplete
-            multiple
-            freeSolo
-            options={locationOptions}
-            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={selectedLocations}
-            onChange={(_, val) => setSelectedLocations(val as Array<LocationOrString>)}
-            renderTags={(val, getTagProps) =>
-              val.map((opt, i) => (
-                <Chip {...getTagProps({ index: i })} key={typeof opt === 'string' ? opt : opt.id} label={typeof opt === 'string' ? opt : opt.name} size="small" />
-              ))
-            }
-            renderInput={params => <TextField {...params} label="Locations" placeholder="Add or type to create…" />}
-          />
-          <Autocomplete
-            multiple
-            freeSolo
-            options={groupOptions}
-            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={selectedAffiliations}
-            onChange={(_, val) => setSelectedAffiliations(val as Array<LocationOrString>)}
-            renderTags={(val, getTagProps) =>
-              val.map((opt, i) => (
-                <Chip {...getTagProps({ index: i })} key={typeof opt === 'string' ? opt : opt.id} label={typeof opt === 'string' ? opt : opt.name} size="small" />
-              ))
-            }
-            renderInput={params => <TextField {...params} label="Affiliations" placeholder="Add or type to create…" />}
-          />
-          <Autocomplete
-            multiple
-            freeSolo
-            options={availableLanguages}
-            getOptionLabel={opt => typeof opt === 'string' ? opt : opt.name}
-            value={selectedLanguages}
-            onChange={(_, val) => setSelectedLanguages(val as Array<LanguageDto | string>)}
-            renderTags={(val, getTagProps) =>
-              val.map((opt, i) => (
-                <Chip
-                  {...getTagProps({ index: i })}
-                  key={typeof opt === 'string' ? opt : opt.id}
-                  label={typeof opt === 'string' ? opt : opt.name}
-                  size="small"
-                />
-              ))
-            }
-            renderInput={params => <TextField {...params} label="Languages" placeholder="Type to add…" />}
-          />
-          <Autocomplete
-            multiple
-            options={characterOptions}
-            getOptionLabel={opt => opt.name}
-            value={selectedSpouses}
-            onChange={(_, val) => setSelectedSpouses(val)}
-            isOptionEqualToValue={(opt, val) => opt.id === val.id}
-            renderTags={(val, getTagProps) =>
-              val.map((opt, i) => <Chip {...getTagProps({ index: i })} key={opt.id} label={opt.name} size="small" />)
-            }
-            renderInput={params => <TextField {...params} label="Spouse(s)" placeholder="Add spouse…" />}
-          />
-          <Autocomplete
-            multiple
-            options={characterOptions}
-            getOptionLabel={opt => opt.name}
-            value={selectedChildren}
-            onChange={(_, val) => setSelectedChildren(val)}
-            isOptionEqualToValue={(opt, val) => opt.id === val.id}
-            renderTags={(val, getTagProps) =>
-              val.map((opt, i) => <Chip {...getTagProps({ index: i })} key={opt.id} label={opt.name} size="small" />)
-            }
-            renderInput={params => <TextField {...params} label="Children" placeholder="Add child…" />}
-          />
-          <FormControl fullWidth>
-            <InputLabel>Parent 1</InputLabel>
-            <Select value={parent1Id} label="Parent 1" onChange={e => setParent1Id(e.target.value)}>
-              <MenuItem value="">None</MenuItem>
-              {others.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel>Parent 2</InputLabel>
-            <Select value={parent2Id} label="Parent 2" onChange={e => setParent2Id(e.target.value)}>
-              <MenuItem value="">None</MenuItem>
-              {others.filter(c => c.id !== parent1Id).map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-            </Select>
-          </FormControl>
+            </Box>
+          </Collapse>
           {error && <Typography color="error" variant="caption">{error}</Typography>}
         </Box>
       </DialogContent>
