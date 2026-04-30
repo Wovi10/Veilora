@@ -86,15 +86,32 @@ export default function CharacterPage() {
     .filter(Boolean)
     .join(' ') || character.name;
 
-  const detailRows = [
+  const bioRows = [
     character.otherNames && { label: 'Also known as', value: character.otherNames },
     character.position   && { label: 'Position',      value: character.position },
-    character.height     && { label: 'Height',         value: character.height },
-    character.hairColour && { label: 'Hair',           value: character.hairColour },
+    character.species    && { label: 'Species',        value: character.species },
+    character.gender && character.gender !== 'Unknown' && { label: 'Gender', value: character.gender },
+    character.birthDate  && {
+      label: 'Born',
+      value: [formatDate(character.birthDate, character.birthDateSuffixAbbreviation), character.birthPlaceLocationName].filter(Boolean).join(', '),
+    },
+    character.deathDate  && {
+      label: 'Died',
+      value: [formatDate(character.deathDate, character.deathDateSuffixAbbreviation), character.deathPlaceLocationName].filter(Boolean).join(', '),
+    },
+    character.residence  && { label: 'Residence',     value: character.residence },
   ].filter(Boolean) as { label: string; value: string }[];
 
+  const physicalRows = [
+    character.height     && { label: 'Height', value: character.height },
+    character.hairColour && { label: 'Hair',   value: character.hairColour },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  const hasFamily = parent1 || parent2 || character.spouses?.length > 0 || character.children?.length > 0;
+  const hasBio = bioRows.length > 0 || character.affiliations?.length > 0 || character.locations?.length > 0 || character.languages?.length > 0;
+
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto', px: 3, py: 4 }}>
+    <Box sx={{ maxWidth: 1100, mx: 'auto', px: 3, py: 4 }}>
       {/* Nav */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}/characters`)}>
@@ -107,145 +124,152 @@ export default function CharacterPage() {
         )}
       </Box>
 
-      {/* Hero */}
-      <Box mb={5}>
+      {/* Title */}
+      <Box mb={3}>
         <Typography variant="h3" fontWeight={700} lineHeight={1.1}>{fullName}</Typography>
         {character.maidenName && (
           <Typography variant="body1" color="text.secondary" fontStyle="italic" mt={0.5}>
             née {character.maidenName}
           </Typography>
         )}
-        <Box display="flex" gap={1} mt={1.5} flexWrap="wrap" alignItems="center">
-          {character.species && <Chip label={character.species} size="small" />}
-          {character.gender && character.gender !== 'Unknown' && (
-            <Chip label={character.gender} size="small" variant="outlined" />
-          )}
-        </Box>
-        {(character.birthDate || character.deathDate) && (
-          <Typography variant="body2" color="text.secondary" mt={1.5}>
-            {character.birthDate && (
-              <>
-                Born {formatDate(character.birthDate, character.birthDateSuffixAbbreviation)}
-                {character.birthPlaceLocationName && ` in ${character.birthPlaceLocationName}`}
-              </>
-            )}
-            {character.birthDate && character.deathDate && ' · '}
-            {character.deathDate && (
-              <>
-                Died {formatDate(character.deathDate, character.deathDateSuffixAbbreviation)}
-                {character.deathPlaceLocationName && ` in ${character.deathPlaceLocationName}`}
-              </>
-            )}
-          </Typography>
-        )}
-        {character.residence && (
-          <Typography variant="body2" color="text.secondary" mt={0.5}>
-            Resides in {character.residence}
-          </Typography>
-        )}
       </Box>
 
-      {/* Detail fields */}
-      {detailRows.length > 0 && (
-        <Section title="Details">
-          <Box display="flex" flexDirection="column" gap={0.75}>
-            {detailRows.map(({ label, value }) => (
-              <Box key={label} display="flex" gap={1.5}>
-                <Typography variant="body2" color="text.secondary" sx={{ minWidth: 110 }}>{label}</Typography>
-                <Typography variant="body2">{value}</Typography>
-              </Box>
-            ))}
-          </Box>
-        </Section>
-      )}
+      {/* Wiki layout: body + infobox */}
+      <Box display="flex" gap={4} alignItems="stretch">
 
-      {/* Description */}
-      {character.description && (
-        <Section title="About">
-          <Typography variant="body1">{character.description}</Typography>
-        </Section>
-      )}
-
-      {/* Biography */}
-      {character.biography && (
-        <Section title="Biography">
-          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-            {character.biography}
-          </Typography>
-        </Section>
-      )}
-
-      {/* Family */}
-      {(parent1 || parent2 || character.spouses?.length > 0 || character.children?.length > 0) && (
-        <Section title="Family">
-          {(parent1 || parent2) && (
-            <Box mb={2}>
-              <Typography variant="body2" color="text.secondary" mb={0.5}>Parents</Typography>
-              <Box display="flex" gap={2} flexWrap="wrap">
-                {parent1 && <CharacterLink entity={{ id: parent1.id, name: parent1.name }} worldId={worldId!} />}
-                {parent2 && <CharacterLink entity={{ id: parent2.id, name: parent2.name }} worldId={worldId!} />}
-              </Box>
-            </Box>
+        {/* Main body */}
+        <Box flex={1} minWidth={0}>
+          {character.description ? (
+            <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.9 }}>
+              {character.description}
+            </Typography>
+          ) : (
+            <Typography variant="body1" color="text.disabled" fontStyle="italic">
+              No description yet.
+            </Typography>
           )}
-          {character.spouses?.length > 0 && (
-            <Box mb={2}>
-              <Typography variant="body2" color="text.secondary" mb={0.5}>
-                {character.spouses.length === 1 ? 'Spouse' : 'Spouses'}
-              </Typography>
-              <Box display="flex" gap={2} flexWrap="wrap">
-                {character.spouses.map(s => (
-                  <CharacterLink key={s.id} entity={s} worldId={worldId!} />
+        </Box>
+
+        {/* Infobox */}
+        <Box
+          sx={{
+            width: 300,
+            flexShrink: 0,
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 1,
+            overflow: 'hidden',
+          }}
+        >
+          <Box sx={{ bgcolor: 'action.hover', px: 1.5, py: 1 }}>
+            <Typography variant="subtitle2" fontWeight={700}>{fullName}</Typography>
+          </Box>
+          {/* Biographical information */}
+          {hasBio && (
+            <>
+              <Box sx={{ bgcolor: 'action.selected', px: 1.5, py: 0.5 }}>
+                <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Biographical information
+                </Typography>
+              </Box>
+              <Box display="flex" flexDirection="column" sx={{ px: 1.5, py: 1, gap: 0.75 }}>
+                {bioRows.map(({ label, value }) => (
+                  <Box key={label}>
+                    <Typography variant="caption" color="text.secondary" display="block">{label}</Typography>
+                    <Typography variant="body2">{value}</Typography>
+                  </Box>
+                ))}
+                {character.affiliations?.length > 0 && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">Affiliations</Typography>
+                    <Box display="flex" gap={0.5} flexWrap="wrap" mt={0.25}>
+                      {character.affiliations.map(a => <Chip key={a.id} label={a.name} size="small" variant="outlined" />)}
+                    </Box>
+                  </Box>
+                )}
+                {character.locations?.length > 0 && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">Locations</Typography>
+                    <Box display="flex" gap={0.5} flexWrap="wrap" mt={0.25}>
+                      {character.locations.map(l => <Chip key={l.id} label={l.name} size="small" variant="outlined" />)}
+                    </Box>
+                  </Box>
+                )}
+                {character.languages?.length > 0 && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">Languages</Typography>
+                    <Box display="flex" gap={0.5} flexWrap="wrap" mt={0.25}>
+                      {character.languages.map(l => <Chip key={l.id} label={l.name} size="small" />)}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            </>
+          )}
+
+          {/* Family */}
+          {hasFamily && (
+            <>
+              <Box sx={{ bgcolor: 'action.selected', px: 1.5, py: 0.5 }}>
+                <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Family
+                </Typography>
+              </Box>
+              <Box display="flex" flexDirection="column" sx={{ px: 1.5, py: 1, gap: 0.75 }}>
+                {(parent1 || parent2) && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">Parents</Typography>
+                    <Box display="flex" flexDirection="column">
+                      {parent1 && <CharacterLink entity={{ id: parent1.id, name: parent1.name }} worldId={worldId!} />}
+                      {parent2 && <CharacterLink entity={{ id: parent2.id, name: parent2.name }} worldId={worldId!} />}
+                    </Box>
+                  </Box>
+                )}
+                {character.spouses?.length > 0 && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      {character.spouses.length === 1 ? 'Spouse' : 'Spouses'}
+                    </Typography>
+                    <Box display="flex" flexDirection="column">
+                      {character.spouses.map(s => <CharacterLink key={s.id} entity={s} worldId={worldId!} />)}
+                    </Box>
+                  </Box>
+                )}
+                {character.children?.length > 0 && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      {character.children.length === 1 ? 'Child' : 'Children'}
+                    </Typography>
+                    <Box display="flex" flexDirection="column">
+                      {character.children.map(c => <CharacterLink key={c.id} entity={c} worldId={worldId!} />)}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            </>
+          )}
+
+          {/* Physical description */}
+          {physicalRows.length > 0 && (
+            <>
+              <Box sx={{ bgcolor: 'action.selected', px: 1.5, py: 0.5 }}>
+                <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Physical description
+                </Typography>
+              </Box>
+              <Box display="flex" flexDirection="column" sx={{ px: 1.5, py: 1, gap: 0.75 }}>
+                {physicalRows.map(({ label, value }) => (
+                  <Box key={label}>
+                    <Typography variant="caption" color="text.secondary" display="block">{label}</Typography>
+                    <Typography variant="body2">{value}</Typography>
+                  </Box>
                 ))}
               </Box>
-            </Box>
+            </>
           )}
-          {character.children?.length > 0 && (
-            <Box>
-              <Typography variant="body2" color="text.secondary" mb={0.5}>
-                {character.children.length === 1 ? 'Child' : 'Children'}
-              </Typography>
-              <Box display="flex" gap={2} flexWrap="wrap">
-                {character.children.map(c => (
-                  <CharacterLink key={c.id} entity={c} worldId={worldId!} />
-                ))}
-              </Box>
-            </Box>
-          )}
-        </Section>
-      )}
+        </Box>
 
-      {/* Affiliations */}
-      {character.affiliations?.length > 0 && (
-        <Section title="Affiliations">
-          <Box display="flex" gap={1} flexWrap="wrap">
-            {character.affiliations.map(a => (
-              <Chip key={a.id} label={a.name} variant="outlined" />
-            ))}
-          </Box>
-        </Section>
-      )}
-
-      {/* Locations */}
-      {character.locations?.length > 0 && (
-        <Section title="Locations">
-          <Box display="flex" gap={1} flexWrap="wrap">
-            {character.locations.map(l => (
-              <Chip key={l.id} label={l.name} variant="outlined" />
-            ))}
-          </Box>
-        </Section>
-      )}
-
-      {/* Languages */}
-      {character.languages?.length > 0 && (
-        <Section title="Languages">
-          <Box display="flex" gap={1} flexWrap="wrap">
-            {character.languages.map(l => (
-              <Chip key={l.id} label={l.name} size="small" />
-            ))}
-          </Box>
-        </Section>
-      )}
+      </Box>
 
       {editOpen && (
         <EditCharacterDialog
