@@ -25,6 +25,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSettings["Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey == "REPLACE_VIA_USER_SECRETS")
+    throw new InvalidOperationException(
+        "JWT key is not configured. Run: dotnet user-secrets set \"Jwt:Key\" \"<secret>\" --project src/Veilora.Api");
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -37,7 +42,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+                Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 
