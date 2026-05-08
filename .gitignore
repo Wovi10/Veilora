@@ -10,5 +10,6 @@ dist/
 
 # Generated SQL scripts
 setup.sql
-# Local environment overrides
+# Local environment overrides — never commit files with secrets
 src/Veilora.Api/appsettings.Neon.json
+src/Veilora.Api/appsettings.Development.json
