@@ -1,3 +1,4 @@
+---
 name: "code-writer"
 description: "Use when implementing a feature from a technical plan. Produces production-ready code in Clean Architecture. Implements only — no design or review."
 tools: Glob, Grep, ListMcpResourcesTool, Read, ReadMcpResourceTool, Edit, NotebookEdit, Write

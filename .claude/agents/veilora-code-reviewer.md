@@ -1,3 +1,4 @@
+---
 name: "veilora-code-reviewer"
 description: "Strict review gate for Veilora code/technical plans. Enforces Clean Architecture, conventions, and safety before merge."
 tools: Glob, Grep, ListMcpResourcesTool, Read, ReadMcpResourceTool, TaskCreate, TaskGet, TaskList, TaskStop, TaskUpdate, WebFetch, WebSearch
