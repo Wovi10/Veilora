@@ -13,3 +13,6 @@ setup.sql
 # Local environment overrides — never commit files with secrets
 src/Veilora.Api/appsettings.Neon.json
 src/Veilora.Api/appsettings.Development.json
+
+# Claude Code local agent memory
+.claude/agent-memory-local/
