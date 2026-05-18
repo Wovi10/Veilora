@@ -24,6 +24,7 @@ import { getDateSuffixesByWorld, createDateSuffix, updateDateSuffix, deleteDateS
 import type { WorldPermissionDto } from '../types/worldPermission';
 import type { DateSuffixDto } from '../types/dateSuffix';
 import { useAuth } from '../context/AuthContext';
+import useFullScreenDialog from '../hooks/useFullScreenDialog';
 
 interface EraDraft {
   abbreviation: string;
@@ -43,6 +44,7 @@ export default function WorldSettingsPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { fullScreen } = useFullScreenDialog();
 
   // World fields
   const [name, setName] = useState('');
@@ -261,7 +263,7 @@ export default function WorldSettingsPage() {
   );
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', px: 3, py: 4 }}>
+    <Box sx={{ maxWidth: 800, mx: 'auto', px: { xs: 2, sm: 3 }, py: 4 }}>
       <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}`)} sx={{ mb: 3 }}>
         Back to {name}
       </Button>
@@ -303,6 +305,7 @@ export default function WorldSettingsPage() {
       </Typography>
 
       {(eras.length > 0 || editingEraId !== null) && (
+        <Box sx={{ overflowX: 'auto' }}>
         <TableContainer component={Paper} variant="outlined" sx={{ mb: 0 }}>
           <Table size="small">
             <TableHead>
@@ -357,6 +360,7 @@ export default function WorldSettingsPage() {
             </TableBody>
           </Table>
         </TableContainer>
+        </Box>
       )}
 
       {eras.length >= 2 && (() => {
@@ -392,7 +396,7 @@ export default function WorldSettingsPage() {
         const labelBaseY = tickTop - 6;
 
         return (
-          <Box sx={{ color: 'text.secondary', mt: 2, mb: eraError ? 1 : 3 }}>
+          <Box sx={{ overflowX: 'auto', color: 'text.secondary', mt: 2, mb: eraError ? 1 : 3 }}>
             <svg width="100%" height={svgH} style={{ display: 'block', overflow: 'visible' }}>
               <line x1="0" y1={lineY} x2="100%" y2={lineY} stroke="currentColor" strokeWidth="1.5" />
               {withPct.map(({ era, pct }, i) => {
@@ -426,6 +430,7 @@ export default function WorldSettingsPage() {
       {permissions.length === 0 ? (
         <Typography color="text.secondary" mb={3}>This world is not shared with anyone yet.</Typography>
       ) : (
+        <Box sx={{ overflowX: 'auto' }}>
         <TableContainer component={Paper} variant="outlined" sx={{ mb: 4 }}>
           <Table size="small">
             <TableHead>
@@ -456,6 +461,7 @@ export default function WorldSettingsPage() {
             </TableBody>
           </Table>
         </TableContainer>
+        </Box>
       )}
 
       <Typography variant="h6" fontWeight={600} mb={2}>Add user</Typography>
@@ -465,7 +471,7 @@ export default function WorldSettingsPage() {
           value={newEmail}
           onChange={e => setNewEmail(e.target.value)}
           size="small"
-          sx={{ flexGrow: 1, minWidth: 280 }}
+          sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 280 } }}
           required
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -508,7 +514,7 @@ export default function WorldSettingsPage() {
         </Box>
       </Paper>
 
-      <Dialog open={transferDialogOpen} onClose={() => !transferring && setTransferDialogOpen(false)} fullWidth maxWidth="xs">
+      <Dialog open={transferDialogOpen} onClose={() => !transferring && setTransferDialogOpen(false)} fullWidth maxWidth="xs" fullScreen={fullScreen}>
         <DialogTitle>Change creator of "{name}"</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
           <DialogContentText>
@@ -556,7 +562,7 @@ export default function WorldSettingsPage() {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={deleteDialogOpen} onClose={() => !deleting && setDeleteDialogOpen(false)}>
+      <Dialog open={deleteDialogOpen} onClose={() => !deleting && setDeleteDialogOpen(false)} fullScreen={fullScreen}>
         <DialogTitle>Delete "{name}"?</DialogTitle>
         <DialogContent>
           <DialogContentText>

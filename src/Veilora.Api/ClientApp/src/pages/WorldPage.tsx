@@ -162,7 +162,7 @@ export default function WorldPage() {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, sm: 3 }, py: 4 }}>
       {/* Header */}
       <Box display="flex" flexDirection="column" mb={5}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -176,7 +176,7 @@ export default function WorldPage() {
           )}
         </Box>
         <Box>
-          <Typography variant="h3" fontWeight={700} lineHeight={1.1}>{world.name}</Typography>
+          <Typography variant="h3" fontWeight={700} lineHeight={1.1} sx={{ fontSize: { xs: '1.75rem', sm: '3rem' } }}>{world.name}</Typography>
           {world.author && (
             <Typography variant="subtitle1" color="text.secondary" fontStyle="italic" mt={0.5}>
               by {world.author}
@@ -222,9 +222,9 @@ export default function WorldPage() {
       {/* Characters section */}
       {(!isSearching || characters.length > 0) && (
         <Box mb={5}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} sx={{ flexWrap: 'wrap', gap: 1 }}>
             <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h5" fontWeight={600}>
+              <Typography variant="h5" fontWeight={600} sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
                 Characters
                 <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
                   {characterCount}
@@ -263,9 +263,9 @@ export default function WorldPage() {
       {/* Locations section */}
       {(!isSearching || locations.length > 0) && (
         <Box mb={5}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} sx={{ flexWrap: 'wrap', gap: 1 }}>
             <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h5" fontWeight={600}>
+              <Typography variant="h5" fontWeight={600} sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
                 Locations
                 <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
                   {locationCount}
@@ -304,9 +304,9 @@ export default function WorldPage() {
       {/* Events section */}
       {(!isSearching || events.length > 0) && (
         <Box mb={5}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} sx={{ flexWrap: 'wrap', gap: 1 }}>
             <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h5" fontWeight={600}>
+              <Typography variant="h5" fontWeight={600} sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
                 Events
                 <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
                   {eventCount}
@@ -348,9 +348,9 @@ export default function WorldPage() {
         if (isSearching && sectionEntities.length === 0) return null;
         return (
           <Box key={type} mb={5}>
-            <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} sx={{ flexWrap: 'wrap', gap: 1 }}>
               <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="h5" fontWeight={600}>
+                <Typography variant="h5" fontWeight={600} sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
                   {plural}
                   <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
                     {entityCountByType[type] ?? 0}
@@ -392,9 +392,9 @@ export default function WorldPage() {
       {/* Family Trees section */}
       {(!isSearching || familyTrees.length > 0) && (
         <Box mb={5}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} sx={{ flexWrap: 'wrap', gap: 1 }}>
             <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h5" fontWeight={600}>
+              <Typography variant="h5" fontWeight={600} sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
                 Family Trees
                 <Typography component="span" variant="body1" color="text.secondary" fontWeight={400} ml={1}>
                   {familyTreeCount}

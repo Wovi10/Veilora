@@ -21,6 +21,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import LogoutIcon from '@mui/icons-material/Logout';
 import Badge from '@mui/material/Badge';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useAuth } from './context/AuthContext';
@@ -28,6 +29,66 @@ import { useEditMode } from './context/EditModeContext';
 import { useThemeMode } from './context/ThemeModeContext';
 import { ReadingSessionProvider, useReadingSession } from './context/ReadingSessionContext';
 import ReadingFab from './components/ReadingFab/ReadingFab';
+import { useIsMobile } from './hooks/useBreakpoint';
+
+interface DrawerContentProps {
+  navigate: ReturnType<typeof useNavigate>;
+  setDrawerOpen: (open: boolean) => void;
+  isMobile: boolean;
+  isEditMode: boolean;
+  toggleEditMode: () => void;
+  mode: 'light' | 'dark';
+  toggleThemeMode: () => void;
+  handleLogout: () => void;
+}
+
+function DrawerContent({
+  navigate, setDrawerOpen, isMobile, isEditMode, toggleEditMode, mode, toggleThemeMode, handleLogout,
+}: DrawerContentProps) {
+  return (
+    <Box sx={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Toolbar>
+        <Typography variant="h6">Veilora</Typography>
+      </Toolbar>
+      <Divider />
+      <List>
+        <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
+          <ListItemIcon><HomeIcon /></ListItemIcon>
+          <ListItemText primary="Worlds" />
+        </ListItemButton>
+        <ListItemButton onClick={() => { navigate('/reading'); setDrawerOpen(false); }}>
+          <ListItemIcon><MenuBookIcon /></ListItemIcon>
+          <ListItemText primary="Reading" />
+        </ListItemButton>
+      </List>
+      <Box sx={{ flexGrow: 1 }} />
+      <Divider />
+      <List>
+        <ListItemButton onClick={() => { navigate('/settings'); setDrawerOpen(false); }}>
+          <ListItemIcon><SettingsIcon /></ListItemIcon>
+          <ListItemText primary="User Settings" />
+        </ListItemButton>
+        {isMobile && (
+          <>
+            <Divider />
+            <ListItemButton onClick={() => { toggleEditMode(); setDrawerOpen(false); }}>
+              <ListItemIcon>{isEditMode ? <VisibilityIcon /> : <EditIcon />}</ListItemIcon>
+              <ListItemText primary={isEditMode ? 'View Mode' : 'Edit Mode'} />
+            </ListItemButton>
+            <ListItemButton onClick={() => { toggleThemeMode(); setDrawerOpen(false); }}>
+              <ListItemIcon>{mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}</ListItemIcon>
+              <ListItemText primary={mode === 'dark' ? 'Light Mode' : 'Dark Mode'} />
+            </ListItemButton>
+            <ListItemButton onClick={handleLogout}>
+              <ListItemIcon><LogoutIcon /></ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+          </>
+        )}
+      </List>
+    </Box>
+  );
+}
 
 function LogoutButton() {
   const { session, pause } = useReadingSession();
@@ -41,14 +102,33 @@ function LogoutButton() {
   }
 
   return (
-    <Button color="inherit" onClick={handleLogout}>Logout</Button>
+    <Button color="inherit" onClick={handleLogout} sx={{ display: { xs: 'none', sm: 'flex' } }}>Logout</Button>
   );
 }
 
-function NotesButton() {
+interface NotesButtonProps {
+  iconOnly?: boolean;
+}
+
+function NotesButton({ iconOnly }: NotesButtonProps) {
   const { session } = useReadingSession();
   const navigate = useNavigate();
   const count = session?.noteCount ?? 0;
+
+  if (iconOnly) {
+    return (
+      <IconButton color="inherit" onClick={() => navigate('/reading')}>
+        <Badge
+          badgeContent={count || undefined}
+          color="error"
+          max={99}
+          sx={{ '& .MuiBadge-badge': { right: -10 } }}
+        >
+          <MenuBookIcon />
+        </Badge>
+      </IconButton>
+    );
+  }
 
   return (
     <Button
@@ -74,6 +154,7 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const { isEditMode, toggleEditMode } = useEditMode();
+  const isMobile = useIsMobile();
 
   return (
     <ReadingSessionProvider>
@@ -102,7 +183,7 @@ export default function App() {
               Veilora
             </Box>
           </Typography>
-          <NotesButton />
+          <NotesButton iconOnly={isMobile} />
           <Button
             color="inherit"
             variant={isEditMode ? 'outlined' : 'text'}
@@ -110,6 +191,7 @@ export default function App() {
             onClick={toggleEditMode}
             sx={{
               mr: 1,
+              display: { xs: 'none', sm: 'flex' },
               borderColor: 'rgba(255,255,255,0.5)',
               ...(isEditMode && {
                 bgcolor: 'rgba(255,255,255,0.15)',
@@ -127,30 +209,15 @@ export default function App() {
       </AppBar>
 
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Box sx={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Toolbar>
-            <Typography variant="h6">Veilora</Typography>
-          </Toolbar>
-          <Divider />
-          <List>
-            <ListItemButton onClick={() => { navigate('/'); setDrawerOpen(false); }}>
-              <ListItemIcon><HomeIcon /></ListItemIcon>
-              <ListItemText primary="Worlds" />
-            </ListItemButton>
-            <ListItemButton onClick={() => { navigate('/reading'); setDrawerOpen(false); }}>
-              <ListItemIcon><MenuBookIcon /></ListItemIcon>
-              <ListItemText primary="Reading" />
-            </ListItemButton>
-          </List>
-          <Box sx={{ flexGrow: 1 }} />
-          <Divider />
-          <List>
-            <ListItemButton onClick={() => { navigate('/settings'); setDrawerOpen(false); }}>
-              <ListItemIcon><SettingsIcon /></ListItemIcon>
-              <ListItemText primary="User Settings" />
-            </ListItemButton>
-          </List>
-        </Box>
+        <DrawerContentWithLogout
+          navigate={navigate}
+          setDrawerOpen={setDrawerOpen}
+          isMobile={isMobile}
+          isEditMode={isEditMode}
+          toggleEditMode={toggleEditMode}
+          mode={mode}
+          toggleThemeMode={toggleThemeMode}
+        />
       </Drawer>
 
       <Box component="main">
@@ -159,5 +226,32 @@ export default function App() {
       <ReadingFab />
     </ThemeProvider>
     </ReadingSessionProvider>
+  );
+}
+
+function DrawerContentWithLogout({
+  navigate, setDrawerOpen, isMobile, isEditMode, toggleEditMode, mode, toggleThemeMode,
+}: Omit<DrawerContentProps, 'handleLogout'>) {
+  const { session, pause } = useReadingSession();
+  const { logout } = useAuth();
+
+  async function handleLogout() {
+    if (session?.isActive) await pause();
+    logout();
+    navigate('/login', { replace: true });
+    setDrawerOpen(false);
+  }
+
+  return (
+    <DrawerContent
+      navigate={navigate}
+      setDrawerOpen={setDrawerOpen}
+      isMobile={isMobile}
+      isEditMode={isEditMode}
+      toggleEditMode={toggleEditMode}
+      mode={mode}
+      toggleThemeMode={toggleThemeMode}
+      handleLogout={handleLogout}
+    />
   );
 }

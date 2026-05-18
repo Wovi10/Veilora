@@ -5,6 +5,7 @@ import {
   Autocomplete, Chip, Collapse,
 } from '@mui/material';
 import { updateCharacter, deleteCharacter } from '../../api/charactersApi';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 import { getLanguagesByWorld, getOrCreateLanguage } from '../../api/languagesApi';
 import { getLocationsByWorld } from '../../api/locationsApi';
 import { getDateSuffixesByWorld } from '../../api/dateSuffixesApi';
@@ -31,6 +32,7 @@ type LocationOrString = EntityRefDto | string;
 const GENDERS: Gender[] = ['Male', 'Female', 'Other', 'Unknown'];
 
 export default function EditCharacterDialog({ open, character, worldCharacters, worldEntities, worldId, onClose, onSaved, onDeleted }: Props) {
+  const { fullScreen } = useFullScreenDialog();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [species, setSpecies] = useState('');
@@ -190,19 +192,19 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
   const others = worldCharacters.filter(c => c.id !== character.id);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
       <DialogTitle>Edit Character</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} pt={1}>
-          <Box display="flex" gap={2}>
+          <Box display="flex" gap={2} sx={{ flexDirection: { xs: 'column', sm: 'row' } }}>
             <TextField label="First Name" value={firstName} onChange={e => setFirstName(e.target.value)} fullWidth />
             <TextField label="Last Name" value={lastName} onChange={e => setLastName(e.target.value)} fullWidth />
           </Box>
-          <Box display="flex" gap={2}>
+          <Box display="flex" gap={2} sx={{ flexDirection: { xs: 'column', sm: 'row' } }}>
             <TextField label="Other Names" value={otherNames} onChange={e => setOtherNames(e.target.value)} fullWidth placeholder="Aliases, nicknames…" />
             <TextField label="Position / Title" value={position} onChange={e => setPosition(e.target.value)} fullWidth placeholder="King, Knight…" />
           </Box>
-          <Box display="flex" gap={2}>
+          <Box display="flex" gap={2} sx={{ flexDirection: { xs: 'column', sm: 'row' } }}>
             <TextField label="Species / Race" value={species} onChange={e => setSpecies(e.target.value)} fullWidth />
             <FormControl fullWidth>
               <InputLabel>Gender</InputLabel>
@@ -220,11 +222,11 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
           </Button>
           <Collapse in={expanded}>
             <Box display="flex" flexDirection="column" gap={2}>
-              <Box display="flex" gap={2}>
+              <Box display="flex" gap={2} sx={{ flexDirection: { xs: 'column', sm: 'row' } }}>
                 <TextField label="Height" value={height} onChange={e => setHeight(e.target.value)} fullWidth placeholder="e.g. 6'2&quot;" />
                 <TextField label="Hair Colour" value={hairColour} onChange={e => setHairColour(e.target.value)} fullWidth />
               </Box>
-              <Box display="flex" gap={2}>
+              <Box display="flex" gap={2} sx={{ flexDirection: { xs: 'column', sm: 'row' } }}>
                 <TextField label="Birth Date" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
                 {availableDateSuffixes.length > 0 && (
                   <FormControl sx={{ minWidth: 140 }}>
@@ -246,7 +248,7 @@ export default function EditCharacterDialog({ open, character, worldCharacters, 
                 onInputChange={(_, val) => setBirthPlaceInput(val)}
                 renderInput={params => <TextField {...params} label="Birth Place" placeholder="Select or type to create…" />}
               />
-              <Box display="flex" gap={2}>
+              <Box display="flex" gap={2} sx={{ flexDirection: { xs: 'column', sm: 'row' } }}>
                 <TextField label="Death Date" type="date" value={deathDate} onChange={e => setDeathDate(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} fullWidth />
                 {availableDateSuffixes.length > 0 && (
                   <FormControl sx={{ minWidth: 140 }}>

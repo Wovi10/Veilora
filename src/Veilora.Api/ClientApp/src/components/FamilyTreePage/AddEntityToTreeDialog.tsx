@@ -5,6 +5,7 @@ import {
   CircularProgress, TextField, Divider,
 } from '@mui/material';
 import { getCharactersByWorld, createCharacter } from '../../api/charactersApi';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 import { addCharacterToFamilyTree } from '../../api/familyTreesApi';
 import type { CharacterDto } from '../../types/character';
 
@@ -20,6 +21,7 @@ interface Props {
 export default function AddEntityToTreeDialog({
   open, familyTreeId, worldId, existingCharacterIds, onClose, onAdded,
 }: Props) {
+  const { fullScreen } = useFullScreenDialog();
   const [worldCharacters, setWorldCharacters] = useState<CharacterDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [newFirstName, setNewFirstName] = useState('');
@@ -83,7 +85,7 @@ export default function AddEntityToTreeDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
       <DialogTitle>Add to Tree</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} pt={1}>

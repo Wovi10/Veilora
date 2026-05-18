@@ -6,6 +6,7 @@ import {
 import { getWorlds } from '../../api/worldsApi';
 import type { WorldDto } from '../../types/world';
 import { useReadingSession } from '../../context/ReadingSessionContext';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 
 interface Props {
   open: boolean;
@@ -15,6 +16,7 @@ interface Props {
 
 export default function StartSessionDialog({ open, onClose, onStarted }: Props) {
   const { start } = useReadingSession();
+  const { fullScreen } = useFullScreenDialog();
   const [worlds, setWorlds] = useState<WorldDto[]>([]);
   const [worldId, setWorldId] = useState('');
   const [saving, setSaving] = useState(false);
@@ -36,7 +38,7 @@ export default function StartSessionDialog({ open, onClose, onStarted }: Props) 
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth fullScreen={fullScreen}>
       <DialogTitle>Start Reading Session</DialogTitle>
       <DialogContent>
         <FormControl fullWidth sx={{ mt: 1 }}>

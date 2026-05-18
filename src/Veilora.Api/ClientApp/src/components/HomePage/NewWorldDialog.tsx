@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { createWorld } from '../../api/worldsApi';
 import type { WorldDto } from '../../types/world';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 
 interface Props {
   open: boolean;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function NewWorldDialog({ open, onClose, onCreated }: Props) {
+  const { fullScreen } = useFullScreenDialog();
   const [name, setName] = useState('');
   const [author, setAuthor] = useState('');
   const [description, setDescription] = useState('');
@@ -43,7 +45,7 @@ export default function NewWorldDialog({ open, onClose, onCreated }: Props) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
       <DialogTitle>New World</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} pt={1}>

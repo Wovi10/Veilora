@@ -270,7 +270,7 @@ export default function CharacterPage() {
   const hasBio = bioRows.length > 0 || character.affiliations?.length > 0 || character.locations?.length > 0 || character.languages?.length > 0;
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', px: 3, py: 4 }}>
+    <Box sx={{ maxWidth: 1100, mx: 'auto', px: { xs: 2, sm: 3 }, py: 4 }}>
       {/* Nav */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}/characters`)}>
@@ -297,7 +297,7 @@ export default function CharacterPage() {
           </Box>
         ) : (
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h3" fontWeight={700} lineHeight={1.1}>{fullName}</Typography>
+            <Typography variant="h3" fontWeight={700} lineHeight={1.1} sx={{ fontSize: { xs: '1.75rem', sm: '3rem' } }}>{fullName}</Typography>
             {canEdit && (
               <Tooltip title="Edit character">
                 <IconButton size="small" onClick={handleStartEditing} sx={{ color: 'text.secondary', mt: 0.5 }}>
@@ -315,7 +315,7 @@ export default function CharacterPage() {
       </Box>
 
       {/* Wiki layout: body + infobox */}
-      <Box display="flex" gap={4} alignItems="stretch">
+      <Box display="flex" gap={4} alignItems="stretch" sx={{ flexDirection: { xs: 'column', sm: 'row' } }}>
 
         {/* Main body */}
         <Box flex={1} minWidth={0}>
@@ -349,8 +349,8 @@ export default function CharacterPage() {
         {/* Infobox */}
         <Box
           sx={{
-            width: 300,
-            flexShrink: 0,
+            width: { xs: '100%', sm: 300 },
+            flexShrink: { xs: 1, sm: 0 },
             border: '1px solid',
             borderColor: 'divider',
             borderRadius: 1,

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Button, Chip, Divider, IconButton, CircularProgress, Stack,
+  Tabs, Tab,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
@@ -11,11 +12,14 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import type { ReadingNoteDto } from '../types/readingSession';
 import { useReadingSession } from '../context/ReadingSessionContext';
 import ReadingWorkspace from '../components/ReadingWorkspace/ReadingWorkspace';
+import { useIsMobile } from '../hooks/useBreakpoint';
 
 export default function ReadingPage() {
   const { session, notes, loading, pause, resume, clear, removeNote } = useReadingSession();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [selectedNote, setSelectedNote] = useState<ReadingNoteDto | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   if (loading) {
     return <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>;
@@ -42,6 +46,131 @@ export default function ReadingPage() {
   function handleRemoveNote(noteId: string) {
     if (selectedNote?.id === noteId) setSelectedNote(null);
     removeNote(noteId);
+  }
+
+  const leftPanel = (
+    <>
+      <Box sx={{ flex: 1, overflowY: 'auto', px: 3, py: 2 }}>
+        {selectedNote == null ? (
+          <Typography variant="body2" color="text.secondary" fontStyle="italic" mt={2}>
+            Click a note to read it.
+          </Typography>
+        ) : (
+          <Box>
+            <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+              {new Date(selectedNote.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Typography>
+            <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{selectedNote.text}</Typography>
+            {selectedNote.tags.length > 0 && (
+              <Box display="flex" gap={0.5} mt={1.5} flexWrap="wrap">
+                {selectedNote.tags.map(tag => (
+                  <Chip key={tag} label={`#${tag}`} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.72rem' }} />
+                ))}
+              </Box>
+            )}
+          </Box>
+        )}
+      </Box>
+
+      <Divider />
+
+      <Box sx={{ height: 240, overflowY: 'auto', px: 3, py: 1 }}>
+        {notes.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" fontStyle="italic" mt={1}>
+            No notes yet. Start writing in the panel below.
+          </Typography>
+        ) : (
+          <Stack gap={0}>
+            {notes.map(note => (
+              <NoteRow
+                key={note.id}
+                note={note}
+                selected={selectedNote?.id === note.id}
+                onSelect={() => setSelectedNote(note)}
+                onDelete={() => handleRemoveNote(note.id)}
+              />
+            ))}
+          </Stack>
+        )}
+      </Box>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Box sx={{ height: { xs: 'calc(100dvh - 64px)', sm: 'calc(100vh - 64px)' }, display: 'flex', flexDirection: 'column' }}>
+        {/* Session header */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" px={3} py={2} borderBottom={1} borderColor="divider" sx={{ flexWrap: 'wrap', gap: 1 }}>
+          <Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography variant="h6" fontWeight={700}>{session.worldName}</Typography>
+              {!session.isActive && (
+                <Chip label="Paused" size="small" color="warning" variant="outlined" />
+              )}
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              Started {started.toLocaleDateString()} at {started.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Typography>
+          </Box>
+
+          <Box display="flex" alignItems="center" gap={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+            <Chip
+              label={`${session.noteCount} ${session.noteCount === 1 ? 'note' : 'notes'}`}
+              size="small"
+              color="primary"
+            />
+            {session.isActive ? (
+              <Button
+                size="small"
+                startIcon={<PauseCircleOutlineIcon />}
+                onClick={pause}
+                sx={{ textTransform: 'none' }}
+              >
+                Pause session
+              </Button>
+            ) : (
+              <>
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<PlayArrowIcon />}
+                  onClick={resume}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Resume
+                </Button>
+                <Button
+                  size="small"
+                  color="error"
+                  startIcon={<DeleteForeverIcon />}
+                  onClick={handleClear}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Clear session
+                </Button>
+              </>
+            )}
+          </Box>
+        </Box>
+
+        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tab label="Notes" />
+          <Tab label="Workspace" />
+        </Tabs>
+
+        {activeTab === 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: 'auto', overflow: 'visible' }}>
+            {leftPanel}
+          </Box>
+        )}
+
+        {activeTab === 1 && (
+          <Box sx={{ height: 'calc(100dvh - 180px)', overflow: 'hidden' }}>
+            <ReadingWorkspace />
+          </Box>
+        )}
+      </Box>
+    );
   }
 
   return (
@@ -104,51 +233,7 @@ export default function ReadingPage() {
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* Left — detail (top) + notes list (bottom) */}
         <Box sx={{ width: '50%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* Detail panel */}
-          <Box sx={{ flex: 1, overflowY: 'auto', px: 3, py: 2 }}>
-            {selectedNote == null ? (
-              <Typography variant="body2" color="text.secondary" fontStyle="italic" mt={2}>
-                Click a note to read it.
-              </Typography>
-            ) : (
-              <Box>
-                <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                  {new Date(selectedNote.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Typography>
-                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{selectedNote.text}</Typography>
-                {selectedNote.tags.length > 0 && (
-                  <Box display="flex" gap={0.5} mt={1.5} flexWrap="wrap">
-                    {selectedNote.tags.map(tag => (
-                      <Chip key={tag} label={`#${tag}`} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.72rem' }} />
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            )}
-          </Box>
-
-          <Divider />
-
-          {/* Notes list */}
-          <Box sx={{ height: 240, overflowY: 'auto', px: 3, py: 1 }}>
-            {notes.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" fontStyle="italic" mt={1}>
-                No notes yet. Start writing in the panel below.
-              </Typography>
-            ) : (
-              <Stack gap={0}>
-                {notes.map(note => (
-                  <NoteRow
-                    key={note.id}
-                    note={note}
-                    selected={selectedNote?.id === note.id}
-                    onSelect={() => setSelectedNote(note)}
-                    onDelete={() => handleRemoveNote(note.id)}
-                  />
-                ))}
-              </Stack>
-            )}
-          </Box>
+          {leftPanel}
         </Box>
 
         <Divider orientation="vertical" flexItem />

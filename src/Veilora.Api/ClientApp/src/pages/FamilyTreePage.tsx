@@ -7,6 +7,7 @@ import {
   Alert, Box, Button, CircularProgress, IconButton, Typography,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import { getFamilyTreeWithEntities, getFamilyTreeRelationships, updateCharacterPosition } from '../api/familyTreesApi';
 import { getCharactersByWorld } from '../api/charactersApi';
 import { getEntities } from '../api/entitiesApi';
@@ -18,6 +19,9 @@ import {
   CharacterNode, ParentEdge, RelationshipEdge,
   AddEntityToTreeDialog, EditCharacterDialog, AddRelationshipDialog,
 } from '../components';
+import { useIsMobile } from '../hooks/useBreakpoint';
+import BottomSheet from '../components/shared/BottomSheet';
+import { useEditMode } from '../context/EditModeContext';
 
 const COLS = 4;
 const NODE_W = 180;
@@ -30,6 +34,7 @@ const edgeTypes = { parentEdge: ParentEdge, relationshipEdge: RelationshipEdge }
 function buildNodes(
   entries: FamilyTreeWithEntitiesDto['characters'],
   onEdit: (character: CharacterDto) => void,
+  onTap: ((character: CharacterDto) => void) | undefined,
 ): Node[] {
   return entries.map((entry, i) => ({
     id: entry.character.id,
@@ -38,7 +43,7 @@ function buildNodes(
       x: entry.positionX ?? (i % COLS) * (NODE_W + GAP),
       y: entry.positionY ?? Math.floor(i / COLS) * (NODE_H + GAP),
     },
-    data: { character: entry.character, onEdit },
+    data: { character: entry.character, onEdit, onTap },
   }));
 }
 
@@ -159,6 +164,8 @@ function buildRelationshipEdges(relationships: RelationshipDto[], posMap: Map<st
 export default function FamilyTreePage() {
   const { familyTreeId } = useParams<{ familyTreeId: string }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { isEditMode } = useEditMode();
 
   const [tree, setTree] = useState<FamilyTreeWithEntitiesDto | null>(null);
   const [worldCharacters, setWorldCharacters] = useState<CharacterDto[]>([]);
@@ -170,6 +177,8 @@ export default function FamilyTreePage() {
   const [error, setError] = useState<string | null>(null);
   const [addToTreeOpen, setAddToTreeOpen] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState<CharacterDto | null>(null);
+  const [tappedCharacter, setTappedCharacter] = useState<CharacterDto | null>(null);
+  const [characterSheetOpen, setCharacterSheetOpen] = useState(false);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
   const flowContainerRef = useRef<HTMLDivElement | null>(null);
   const [pendingConnection, setPendingConnection] = useState<{
@@ -179,6 +188,11 @@ export default function FamilyTreePage() {
 
   const handleEdit = useCallback((character: CharacterDto) => {
     setEditingCharacter(character);
+  }, []);
+
+  const handleTap = useCallback((character: CharacterDto) => {
+    setTappedCharacter(character);
+    setCharacterSheetOpen(true);
   }, []);
 
   const handleEdgeBendChange = useCallback<BendChangeFn>((edgeId, bends) => {
@@ -211,7 +225,7 @@ export default function FamilyTreePage() {
         setWorldCharacters(worldChars);
         setWorldEntities(allEntities.filter(e => e.worldId === treeData.worldId));
 
-        const builtNodes = buildNodes(treeData.characters, handleEdit);
+        const builtNodes = buildNodes(treeData.characters, handleEdit, isMobile ? handleTap : undefined);
         setNodes(builtNodes);
         const posMap = new Map(builtNodes.map(n => [n.id, n.position]));
         const chars = treeData.characters.map(e => e.character);
@@ -225,7 +239,7 @@ export default function FamilyTreePage() {
         setLoading(false);
       }
     })();
-  }, [familyTreeId, handleEdit, handleEdgeBendChange, handleParentBendsChange]);
+  }, [familyTreeId, handleEdit, handleTap, handleEdgeBendChange, handleParentBendsChange]);
 
   const handleCharacterAddedToTree = useCallback((character: CharacterDto) => {
     setTree(prev => {
@@ -243,11 +257,11 @@ export default function FamilyTreePage() {
         id: character.id,
         type: 'character',
         position: { x: flowX, y: flowY },
-        data: { character, onEdit: handleEdit, isNew: true },
+        data: { character, onEdit: handleEdit, onTap: isMobile ? handleTap : undefined, isNew: true },
       }];
     });
     setWorldCharacters(prev => [...prev, character]);
-  }, [handleEdit]);
+  }, [handleEdit, handleTap]);
 
   const handleCharacterDeleted = useCallback(() => {
     if (!editingCharacter) return;
@@ -332,12 +346,28 @@ export default function FamilyTreePage() {
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           {tree?.name ?? '…'}
         </Typography>
-        <Button variant="outlined" size="small" onClick={handleRedrawLines} disabled={loading || !!error}>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handleRedrawLines}
+          disabled={loading || !!error}
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
+        >
           Redraw Lines
         </Button>
-        <Button variant="contained" size="small" onClick={() => setAddToTreeOpen(true)} disabled={loading || !!error}>
-          Add to Tree
-        </Button>
+        {isMobile ? (
+          <IconButton
+            onClick={() => setAddToTreeOpen(true)}
+            disabled={loading || !!error}
+            color="primary"
+          >
+            <GroupAddIcon />
+          </IconButton>
+        ) : (
+          <Button variant="contained" size="small" onClick={() => setAddToTreeOpen(true)} disabled={loading || !!error}>
+            Add to Tree
+          </Button>
+        )}
       </Box>
 
       {loading && <Box display="flex" justifyContent="center" mt={8}><CircularProgress /></Box>}
@@ -353,7 +383,7 @@ export default function FamilyTreePage() {
           )}
 
           {tree && tree.characters.length > 0 && (
-            <Box ref={flowContainerRef} sx={{ height: 'calc(100vh - 128px)' }}>
+            <Box ref={flowContainerRef} sx={{ height: 'calc(100dvh - 128px)' }}>
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -364,6 +394,9 @@ export default function FamilyTreePage() {
                 onConnect={handleConnect}
                 onInit={instance => { rfInstance.current = instance; }}
                 connectionMode={ConnectionMode.Loose}
+                nodesDraggable={!isMobile} // drag disabled on mobile — position persistence does not apply to touch sessions
+                preventScrolling={false}
+                zoomOnPinch={true}
                 fitView
               >
                 <Background />
@@ -406,6 +439,34 @@ export default function FamilyTreePage() {
           onClose={() => setPendingConnection(null)}
           onCreated={handleRelationshipCreated}
         />
+      )}
+
+      {isMobile && (
+        <BottomSheet
+          open={characterSheetOpen}
+          onClose={() => setCharacterSheetOpen(false)}
+          title={tappedCharacter ? `${tappedCharacter.firstName ?? ''} ${tappedCharacter.lastName ?? ''}`.trim() || tappedCharacter.name : undefined}
+        >
+          {tappedCharacter && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {tappedCharacter.birthDate && <Typography variant="body2">Born: {tappedCharacter.birthDate}</Typography>}
+              {tappedCharacter.deathDate && <Typography variant="body2">Died: {tappedCharacter.deathDate}</Typography>}
+              {tappedCharacter.species && <Typography variant="body2">Species: {tappedCharacter.species}</Typography>}
+              {isEditMode && (
+                <Button
+                  variant="contained"
+                  sx={{ mt: 1 }}
+                  onClick={() => {
+                    setCharacterSheetOpen(false);
+                    setEditingCharacter(tappedCharacter);
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
+            </Box>
+          )}
+        </BottomSheet>
       )}
     </>
   );
