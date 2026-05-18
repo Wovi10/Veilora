@@ -25,7 +25,11 @@
       "Bash(gh auth *)",
       "Bash(gh --version)",
       "PowerShell(gh *)",
-      "Bash(git remote *)"
+      "Bash(git remote *)",
+      "Bash(Get-Content *)",
+      "Bash(git checkout *)",
+      "Bash(npx vitest *)",
+      "Bash(npm test *)"
     ]
   }
 }
