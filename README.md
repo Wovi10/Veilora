@@ -28,7 +28,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 ### Done
 
 - [x] Clean Architecture project setup (.NET 10)
-- [x] PostgreSQL + EF Core with Fluent API configuration (12 migrations)
+- [x] PostgreSQL + EF Core with Fluent API configuration (13 migrations)
 - [x] Domain models: World, Character, FamilyTree, Entity, Event, Location, Note, Language, DateSuffix, WorldPermission, ReadingSession, ReadingNote, User
 - [x] Full CRUD API: 15 controllers, 60+ endpoints
 - [x] JWT authentication (register + login)
@@ -47,10 +47,10 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 - [x] Reading notes — persistent FAB for quick capture, dedicated page with note list and live entity workspace (search, edit, create)
 - [x] World search — name-based search across all entity types, filters sections in place
 - [x] FluentValidation integration and centralized exception handling middleware
+- [x] Rich text editor for character biographies (Tiptap)
 
 ### Planned
 
-- [ ] Rich text biography / notes editor
 - [ ] Photo uploads for characters
 - [ ] Export family tree as image / PDF
 - [ ] Mobile-responsive design
