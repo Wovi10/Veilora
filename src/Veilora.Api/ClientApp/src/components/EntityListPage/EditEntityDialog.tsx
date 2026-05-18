@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { updateEntity, deleteEntity } from '../../api/entitiesApi';
 import type { EntityDto } from '../../types/entity';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 
 interface Props {
   open: boolean;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function EditEntityDialog({ open, entity, onClose, onSaved, onDeleted }: Props) {
+  const { fullScreen } = useFullScreenDialog();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -62,7 +64,7 @@ export default function EditEntityDialog({ open, entity, onClose, onSaved, onDel
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
       <DialogTitle>Edit {entity.type}</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} pt={1}>

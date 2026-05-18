@@ -31,7 +31,7 @@ export default function HomePage() {
   if (error) return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, sm: 3 }, py: 4 }}>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={4}>
         <Typography variant="h4" fontWeight={700}>My Worlds</Typography>
         {isEditMode && (
@@ -66,7 +66,7 @@ export default function HomePage() {
                 <Box
                   sx={{
                     height: 160,
-                    px: 5,
+                    px: { xs: 2, sm: 5 },
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -74,17 +74,17 @@ export default function HomePage() {
                     color: 'white',
                   }}
                 >
-                  <Box>
-                    <Typography variant="h3" fontWeight={700} sx={{ letterSpacing: '-0.5px', lineHeight: 1.1 }}>
+                  <Box sx={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
+                    <Typography noWrap variant="h3" fontWeight={700} sx={{ letterSpacing: '-0.5px', lineHeight: 1.1, fontSize: { xs: '1.5rem', md: '3rem' }, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {world.name}
                     </Typography>
                     {world.author && (
-                      <Typography variant="subtitle1" sx={{ mt: 0.5, opacity: 0.6, fontStyle: 'italic' }}>
+                      <Typography noWrap variant="subtitle1" sx={{ mt: 0.5, opacity: 0.6, fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         by {world.author}
                       </Typography>
                     )}
                   </Box>
-                  <Box textAlign="right">
+                  <Box sx={{ flexShrink: 0, ml: 2, textAlign: 'right', display: { xs: 'none', sm: 'block' } }}>
                     <Typography variant="caption" sx={{ opacity: 0.4, textTransform: 'uppercase', letterSpacing: 1 }}>
                       Last updated
                     </Typography>

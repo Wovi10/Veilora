@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-      <Paper sx={{ p: 4, width: 360 }}>
+      <Paper sx={{ p: 4, width: { xs: '100%', sm: 360 }, mx: { xs: 1, sm: 'auto' } }}>
         <Typography variant="h5" gutterBottom>Veilora</Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
           {mode === 'register' ? (

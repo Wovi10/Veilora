@@ -56,8 +56,8 @@ export default function EntityListPage() {
   const canEdit = isEditMode && isOwner;
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, sm: 3 }, py: 4 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} sx={{ flexWrap: 'wrap', gap: 1 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}`)}>
           {world.name}
         </Button>
@@ -68,7 +68,7 @@ export default function EntityListPage() {
         )}
       </Box>
 
-      <Typography variant="h4" fontWeight={700} mb={3}>
+      <Typography variant="h4" fontWeight={700} mb={3} sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
         {plural}
         <Typography component="span" variant="h6" color="text.secondary" fontWeight={400} ml={1.5}>
           {entities.length}

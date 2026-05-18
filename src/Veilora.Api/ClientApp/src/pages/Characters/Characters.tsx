@@ -69,8 +69,8 @@ export default function Characters() {
   const isFiltered = speciesFilter.length > 0 || languageFilter.length > 0 || !!searchLower;
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, sm: 3 }, py: 4 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} sx={{ flexWrap: 'wrap', gap: 1 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/worlds/${worldId}`)}>
           {world.name}
         </Button>
@@ -94,7 +94,7 @@ export default function Characters() {
           placeholder="Search by name…"
           value={searchText}
           onChange={e => setSearchText(e.target.value)}
-          sx={{ minWidth: 220 }}
+          sx={{ minWidth: { xs: '100%', sm: 220 } }}
           slotProps={{
             input: {
               startAdornment: (
@@ -106,7 +106,7 @@ export default function Characters() {
           }}
         />
         {speciesOptions.length > 0 && (
-          <FormControl size="small" sx={{ minWidth: 220 }}>
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 220 } }}>
             <InputLabel>Species / Race</InputLabel>
             <Select
               multiple
@@ -131,7 +131,7 @@ export default function Characters() {
           </FormControl>
         )}
         {languageOptions.length > 0 && (
-          <FormControl size="small" sx={{ minWidth: 220 }}>
+          <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 220 } }}>
             <InputLabel>Language</InputLabel>
             <Select
               multiple

@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { createLocation } from '../../api/locationsApi';
 import type { LocationDto } from '../../types/location';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 
 interface Props {
   open: boolean;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function AddLocationDialog({ open, worldId, onClose, onCreated }: Props) {
+  const { fullScreen } = useFullScreenDialog();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -41,7 +43,7 @@ export default function AddLocationDialog({ open, worldId, onClose, onCreated }:
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
       <DialogTitle>Add Location</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} pt={1}>

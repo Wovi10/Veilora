@@ -6,6 +6,7 @@ import {
 import { createRelationship } from '../../api/relationshipsApi';
 import type { RelationshipDto, RelationshipType } from '../../types/relationship';
 import type { CharacterDto } from '../../types/character';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 
 interface Props {
   open: boolean;
@@ -20,6 +21,7 @@ const RELATIONSHIP_TYPES: RelationshipType[] = [
 ];
 
 export default function AddRelationshipDialog({ open, character1, character2, onClose, onCreated }: Props) {
+  const { fullScreen } = useFullScreenDialog();
   const [relationshipType, setRelationshipType] = useState<RelationshipType | ''>('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -56,7 +58,7 @@ export default function AddRelationshipDialog({ open, character1, character2, on
   }
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm" fullScreen={fullScreen}>
       <DialogTitle>Add Relationship</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}>
         {error && <Alert severity="error">{error}</Alert>}

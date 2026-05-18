@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { createEntity } from '../../api/entitiesApi';
 import type { EntityDto, EntityType } from '../../types/entity';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 
 interface Props {
   open: boolean;
@@ -17,6 +18,7 @@ interface Props {
 const ENTITY_TYPES: EntityType[] = ['Group', 'Concept'];
 
 export default function AddEntityDialog({ open, worldId, defaultType, onClose, onCreated }: Props) {
+  const { fullScreen } = useFullScreenDialog();
   const [type, setType] = useState<EntityType>(defaultType);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -50,7 +52,7 @@ export default function AddEntityDialog({ open, worldId, defaultType, onClose, o
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
       <DialogTitle>Add {type}</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} pt={1}>

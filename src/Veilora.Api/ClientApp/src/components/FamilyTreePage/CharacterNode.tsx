@@ -26,8 +26,8 @@ const genderIconMap: Record<Gender, React.ReactElement> = {
   Unknown: <QuestionMarkIcon sx={{ fontSize: 14, color: 'text.disabled' }} />,
 };
 
-function CharacterNode({ data }: NodeProps<{ character: CharacterDto; onEdit: (character: CharacterDto) => void; isNew?: boolean }>) {
-  const { character, onEdit, isNew } = data;
+function CharacterNode({ data }: NodeProps<{ character: CharacterDto; onEdit: (character: CharacterDto) => void; onTap?: (character: CharacterDto) => void; isNew?: boolean }>) {
+  const { character, onEdit, onTap, isNew } = data;
   const [hovered, setHovered] = useState(false);
   const { isEditMode } = useEditMode();
 
@@ -64,6 +64,7 @@ function CharacterNode({ data }: NodeProps<{ character: CharacterDto; onEdit: (c
         variant="outlined"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        onClick={(e) => { e.stopPropagation(); onTap?.(character); }}
         sx={{
           width: 180,
           height: 80,

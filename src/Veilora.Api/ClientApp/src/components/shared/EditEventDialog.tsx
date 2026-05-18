@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { updateEvent, deleteEvent } from '../../api/eventsApi';
 import type { EventDto } from '../../types/event';
+import useFullScreenDialog from '../../hooks/useFullScreenDialog';
 
 interface Props {
   open: boolean;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function EditEventDialog({ open, event, onClose, onSaved, onDeleted }: Props) {
+  const { fullScreen } = useFullScreenDialog();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -61,7 +63,7 @@ export default function EditEventDialog({ open, event, onClose, onSaved, onDelet
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
       <DialogTitle>Edit Event</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} pt={1}>

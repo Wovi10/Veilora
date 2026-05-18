@@ -128,7 +128,7 @@ export default function UserSettingsPage() {
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', px: 3, py: 4 }}>
+    <Box sx={{ maxWidth: 600, mx: 'auto', px: { xs: 2, sm: 3 }, py: 4 }}>
       <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} sx={{ mb: 3 }}>
         Home
       </Button>
@@ -199,7 +199,7 @@ export default function UserSettingsPage() {
               Current backup: <strong>{me.backupUserDisplayName ?? me.backupUserEmail}</strong> ({me.backupUserEmail})
             </Alert>
           )}
-          <Box display="flex" gap={1} alignItems="flex-start" mb={1}>
+          <Box display="flex" gap={1} alignItems="flex-start" mb={1} sx={{ flexWrap: 'wrap' }}>
             <TextField
               label="Backup user email"
               value={backupEmail}

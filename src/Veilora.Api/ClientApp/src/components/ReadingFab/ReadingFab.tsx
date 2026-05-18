@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   Box, Button, Paper, TextField, Typography,
-  IconButton, Tooltip, CircularProgress,
+  IconButton, Tooltip, CircularProgress, Fab, Badge,
 } from '@mui/material';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -10,11 +10,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { useReadingSession } from '../../context/ReadingSessionContext';
 import StartSessionDialog from './StartSessionDialog';
+import { useIsMobile } from '../../hooks/useBreakpoint';
+import BottomSheet from '../shared/BottomSheet';
 
 export default function ReadingFab() {
   const { session, loading, pause, resume, captureNote } = useReadingSession();
   const [minimized, setMinimized] = useState(true);
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (location.pathname === '/reading') setMinimized(true);
@@ -51,6 +54,101 @@ export default function ReadingFab() {
   async function handlePause(e: React.MouseEvent) {
     e.stopPropagation();
     await pause();
+  }
+
+  if (isMobile) {
+    return (
+      <>
+        {!session && (
+          <Fab
+            variant="extended"
+            color="primary"
+            onClick={() => setStartOpen(true)}
+            sx={{ position: 'fixed', bottom: 16, right: 16 }}
+          >
+            <MenuBookIcon sx={{ mr: 1 }} />
+            Start Reading
+          </Fab>
+        )}
+
+        {session && (
+          <>
+            <Fab
+              color="primary"
+              onClick={() => setMinimized(false)}
+              sx={{ position: 'fixed', bottom: 16, right: 16 }}
+            >
+              <Badge
+                badgeContent={session.noteCount || undefined}
+                color="error"
+                max={99}
+              >
+                <MenuBookIcon />
+              </Badge>
+            </Fab>
+
+            <BottomSheet
+              open={!minimized}
+              onClose={() => setMinimized(true)}
+              title={session.worldName}
+            >
+              {session.isActive ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <TextField
+                    inputRef={inputRef}
+                    multiline
+                    minRows={4}
+                    maxRows={12}
+                    fullWidth
+                    autoFocus
+                    placeholder="Jot a note… (Enter to save)"
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    variant="standard"
+                    slotProps={{
+                      input: {
+                        disableUnderline: true,
+                        endAdornment: saving
+                          ? <CircularProgress size={14} sx={{ alignSelf: 'flex-start', mt: 0.5 }} />
+                          : undefined,
+                      },
+                    }}
+                    sx={{ '& textarea': { fontSize: '0.9rem', lineHeight: 1.6 } }}
+                  />
+                  <Box display="flex" justifyContent="flex-end">
+                    <Button size="small" color="error" onClick={handlePause} sx={{ textTransform: 'none' }}>
+                      Pause session
+                    </Button>
+                  </Box>
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {session.noteCount} {session.noteCount === 1 ? 'note' : 'notes'} captured
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<PlayArrowIcon />}
+                    onClick={async () => { await resume(); handleOpen(); }}
+                    sx={{ textTransform: 'none' }}
+                  >
+                    Resume
+                  </Button>
+                </Box>
+              )}
+            </BottomSheet>
+          </>
+        )}
+
+        <StartSessionDialog
+          open={startOpen}
+          onClose={() => setStartOpen(false)}
+          onStarted={handleOpen}
+        />
+      </>
+    );
   }
 
   return (
