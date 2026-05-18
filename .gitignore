@@ -16,5 +16,6 @@ src/Veilora.Api/appsettings.Development.json
 
 # Claude Code local agent memory
 .claude/agent-memory-local/
+.claude/agent-memory/
 .claude/tmp/
 .claude/cache/
