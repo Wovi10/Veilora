@@ -62,6 +62,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IDateSuffixRepository, DateSuffixRepository>();
 builder.Services.AddScoped<IReadingSessionRepository, ReadingSessionRepository>();
 builder.Services.AddScoped<IReadingNoteRepository, ReadingNoteRepository>();
+builder.Services.AddScoped<IPhotoRepository, PhotoRepository>();
 
 // Services
 builder.Services.AddScoped<IWorldService, WorldService>();
@@ -80,6 +81,7 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IDateSuffixService, DateSuffixService>();
 builder.Services.AddScoped<IReadingSessionService, ReadingSessionService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IPhotoService, PhotoService>();
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWorldDtoValidator>();

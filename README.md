@@ -55,6 +55,7 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 - [ ] Photo uploads for characters
 - [ ] Export family tree as image / PDF
 - [ ] GEDCOM import/export
+- [ ] User notification on photo upload failure
 
 ---
 

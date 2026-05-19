@@ -14,6 +14,7 @@ public class EntityServiceTests
 {
     private Mock<IEntityRepository> _entityRepositoryMock;
     private Mock<IWorldRepository> _worldRepositoryMock;
+    private Mock<IPhotoRepository> _photoRepositoryMock;
     private EntityService _sut;
 
     [SetUp]
@@ -21,7 +22,8 @@ public class EntityServiceTests
     {
         _entityRepositoryMock = new Mock<IEntityRepository>();
         _worldRepositoryMock = new Mock<IWorldRepository>();
-        _sut = new EntityService(_entityRepositoryMock.Object, _worldRepositoryMock.Object);
+        _photoRepositoryMock = new Mock<IPhotoRepository>();
+        _sut = new EntityService(_entityRepositoryMock.Object, _worldRepositoryMock.Object, _photoRepositoryMock.Object);
     }
 
     private static Entity MakeEntity(Guid id, DateTime now) => new()
@@ -162,6 +164,7 @@ public class EntityServiceTests
         _entityRepositoryMock.Setup(r => r.GetByIdAsync(entityId)).ReturnsAsync(entity);
         _entityRepositoryMock.Setup(r => r.DeleteAsync(entity)).Returns(Task.CompletedTask);
         _entityRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        _photoRepositoryMock.Setup(r => r.DeleteByEntityAsync(It.IsAny<Veilora.Domain.Enums.PhotoTargetType>(), entityId)).Returns(Task.CompletedTask);
 
         await _sut.DeleteAsync(entityId);
 

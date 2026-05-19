@@ -24,6 +24,7 @@ import type { DateSuffixDto } from '../../types/dateSuffix';
 import { useEditMode } from '../../context/EditModeContext';
 import { useAuth } from '../../context/AuthContext';
 import RichTextEditor from '../../components/shared/RichTextEditor';
+import PhotoSection from '../../components/shared/PhotoSection';
 
 const GENDERS: Gender[] = ['Male', 'Female', 'Other', 'Unknown'];
 
@@ -659,6 +660,14 @@ export default function CharacterPage() {
           )}
         </Box>
 
+      </Box>
+
+      <Box mt={4}>
+        <PhotoSection
+          entityType="Character"
+          entityId={character.id}
+          canEdit={canEdit}
+        />
       </Box>
 
     </Box>
