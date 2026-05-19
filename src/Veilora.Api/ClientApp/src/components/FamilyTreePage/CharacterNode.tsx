@@ -67,25 +67,35 @@ function CharacterNode({ data }: NodeProps<{ character: CharacterDto; onEdit: (c
         onClick={(e) => { e.stopPropagation(); onTap?.(character); }}
         sx={{
           width: 180,
-          height: 80,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
           alignItems: 'center',
-          px: 1,
+          pb: 1,
           textAlign: 'center',
           position: 'relative',
+          overflow: 'hidden',
           ...(isNew && {
             borderColor: 'rgba(99, 179, 237, 0.9)',
             animation: `${glowPulse} 1.4s ease-in-out infinite`,
           }),
         }}
       >
+        {character.profilePhotoUrl && (
+          <Box sx={{ height: 100, display: 'flex', justifyContent: 'center', lineHeight: 0 }}>
+            <img
+              src={character.profilePhotoUrl}
+              alt={displayName}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              style={{ height: '100%', width: 'auto', display: 'block' }}
+            />
+          </Box>
+        )}
         {character.gender && (
           <Box sx={{ position: 'absolute', top: 4, left: 6, lineHeight: 0 }}>
             {genderIconMap[character.gender]}
           </Box>
         )}
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 60, px: 1, width: '100%' }}>
         <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: '100%' }}>
           {displayName}
         </Typography>
@@ -99,6 +109,7 @@ function CharacterNode({ data }: NodeProps<{ character: CharacterDto; onEdit: (c
             )}
           </Box>
         )}
+        </Box>
         {hovered && isEditMode && (
           <IconButton
             size="small"

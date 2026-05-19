@@ -6,12 +6,14 @@ using Veilora.Application.Mappers;
 using Veilora.Application.Repositories.Interfaces;
 using Veilora.Application.Services.Interfaces;
 using Veilora.Domain.Entities;
+using Veilora.Domain.Enums;
 
 namespace Veilora.Application.Services;
 
 public class LocationService(
     ILocationRepository locationRepository,
-    IWorldRepository worldRepository) : ILocationService
+    IWorldRepository worldRepository,
+    IPhotoRepository photoRepository) : ILocationService
 {
     public async Task<IEnumerable<LocationDto>> GetByWorldIdAsync(Guid worldId)
     {
@@ -51,6 +53,7 @@ public class LocationService(
     {
         var location = await locationRepository.GetByIdAsync(id)
             ?? throw new NotFoundException(nameof(Location), id);
+        await photoRepository.DeleteByEntityAsync(PhotoTargetType.Location, id);
         await locationRepository.DeleteAsync(location);
         await locationRepository.SaveChangesAsync();
     }

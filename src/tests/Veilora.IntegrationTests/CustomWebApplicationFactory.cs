@@ -22,6 +22,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public Mock<ICharacterService> CharacterServiceMock { get; } = new();
     public Mock<IReadingSessionService> ReadingSessionServiceMock { get; } = new();
     public Mock<IEventService> EventServiceMock { get; } = new();
+    public Mock<IPhotoService> PhotoServiceMock { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -50,6 +51,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             RemoveAndMock<IReadingSessionService>(services, ReadingSessionServiceMock.Object);
             RemoveAndMock<IEventService>(services, EventServiceMock.Object);
             RemoveAll<ISearchService>(services);
+            RemoveAndMock<IPhotoService>(services, PhotoServiceMock.Object);
 
             // Remove all repository registrations
             RemoveAll<IEntityRepository>(services);
@@ -66,6 +68,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             RemoveAll<IReadingSessionRepository>(services);
             RemoveAll<IReadingNoteRepository>(services);
             RemoveAll<IEventRepository>(services);
+            RemoveAll<IPhotoRepository>(services);
 
             // Replace JWT auth with a test scheme that always authenticates
             services.AddAuthentication(TestAuthHandler.SchemeName)

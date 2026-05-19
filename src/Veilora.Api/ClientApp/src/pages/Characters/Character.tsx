@@ -24,6 +24,7 @@ import type { DateSuffixDto } from '../../types/dateSuffix';
 import { useEditMode } from '../../context/EditModeContext';
 import { useAuth } from '../../context/AuthContext';
 import RichTextEditor from '../../components/shared/RichTextEditor';
+import PhotoSection from '../../components/shared/PhotoSection';
 
 const GENDERS: Gender[] = ['Male', 'Female', 'Other', 'Unknown'];
 
@@ -107,6 +108,7 @@ export default function CharacterPage() {
   const [selectedLocations, setSelectedLocations] = useState<LocationOrString[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<Array<LanguageDto | string>>([]);
   const [descriptionDraft, setDescriptionDraft] = useState('');
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState('');
 
   // Available options for dropdowns
   const [availableLanguages, setAvailableLanguages] = useState<LanguageDto[]>([]);
@@ -175,6 +177,7 @@ export default function CharacterPage() {
     setSelectedLocations(character.locations ?? []);
     setSelectedLanguages(character.languages ?? []);
     setDescriptionDraft(character.description ?? '');
+    setProfilePhotoUrl(character.profilePhotoUrl ?? '');
     setEditing(true);
   };
 
@@ -225,6 +228,7 @@ export default function CharacterPage() {
         languageIds: resolvedLanguageIds,
         spouseIds: selectedSpouses.map(s => s.id),
         childIds: selectedChildren.map(c => c.id),
+        profilePhotoUrl: profilePhotoUrl.trim() || undefined,
       });
       setCharacter(updated);
       setEditing(false);
@@ -361,6 +365,17 @@ export default function CharacterPage() {
             <Typography variant="subtitle2" fontWeight={700}>{fullName}</Typography>
           </Box>
 
+          {character.profilePhotoUrl && (
+            <Box sx={{ width: '100%', height: 'auto' }}>
+              <img
+                src={character.profilePhotoUrl}
+                alt={`${character.firstName ?? ''} ${character.lastName ?? ''}`.trim() || character.name}
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </Box>
+          )}
+
           {/* ── Biographical information ── */}
           {(editing || hasBio) && (
             <>
@@ -368,6 +383,10 @@ export default function CharacterPage() {
               <Box display="flex" flexDirection="column" sx={{ px: 1.5, py: 1, gap: 1 }}>
                 {editing ? (
                   <>
+                    <Box>
+                      <InfoLabel>Profile photo URL</InfoLabel>
+                      <TextField size="small" fullWidth value={profilePhotoUrl} onChange={e => setProfilePhotoUrl(e.target.value)} placeholder="https://…" />
+                    </Box>
                     <Box>
                       <InfoLabel>Also known as</InfoLabel>
                       <TextField size="small" fullWidth value={otherNames} onChange={e => setOtherNames(e.target.value)} placeholder="Aliases, nicknames…" />
@@ -659,6 +678,14 @@ export default function CharacterPage() {
           )}
         </Box>
 
+      </Box>
+
+      <Box mt={4}>
+        <PhotoSection
+          entityType="Character"
+          entityId={character.id}
+          canEdit={canEdit}
+        />
       </Box>
 
     </Box>

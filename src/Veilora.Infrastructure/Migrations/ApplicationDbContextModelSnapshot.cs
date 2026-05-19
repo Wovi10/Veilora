@@ -460,6 +460,41 @@ namespace Veilora.Infrastructure.Migrations
                     b.ToTable("Notes");
                 });
 
+            modelBuilder.Entity("Veilora.Domain.Entities.Photo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityType", "EntityId", "DisplayOrder");
+
+                    b.ToTable("Photos");
+                });
+
             modelBuilder.Entity("Veilora.Domain.Entities.ReadingNote", b =>
                 {
                     b.Property<Guid>("Id")

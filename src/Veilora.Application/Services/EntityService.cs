@@ -12,7 +12,8 @@ namespace Veilora.Application.Services;
 
 public class EntityService(
     IEntityRepository entityRepository,
-    IWorldRepository worldRepository) : IEntityService
+    IWorldRepository worldRepository,
+    IPhotoRepository photoRepository) : IEntityService
 {
     public async Task<IEnumerable<EntityDto>> GetAllAsync()
     {
@@ -62,6 +63,7 @@ public class EntityService(
     {
         var entity = await entityRepository.GetByIdAsync(id)
             ?? throw new NotFoundException(nameof(Entity), id);
+        await photoRepository.DeleteByEntityAsync(PhotoTargetType.Entity, id);
         await entityRepository.DeleteAsync(entity);
         await entityRepository.SaveChangesAsync();
     }

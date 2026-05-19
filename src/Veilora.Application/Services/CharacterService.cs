@@ -16,7 +16,8 @@ public class CharacterService(
     ILocationRepository locationRepository,
     IEntityRepository entityRepository,
     IWorldRepository worldRepository,
-    IRelationshipRepository relationshipRepository) : ICharacterService
+    IRelationshipRepository relationshipRepository,
+    IPhotoRepository photoRepository) : ICharacterService
 {
     public async Task<CharacterDto?> GetByIdAsync(Guid id)
     {
@@ -144,6 +145,7 @@ public class CharacterService(
     {
         var character = await characterRepository.GetByIdAsync(id)
             ?? throw new NotFoundException(nameof(Character), id);
+        await photoRepository.DeleteByEntityAsync(PhotoTargetType.Character, id);
         await characterRepository.DeleteAsync(character);
         await characterRepository.SaveChangesAsync();
     }

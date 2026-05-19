@@ -23,6 +23,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<ReadingSession> ReadingSessions => Set<ReadingSession>();
     public DbSet<ReadingNote> ReadingNotes => Set<ReadingNote>();
     public DbSet<CharacterLocation> CharacterLocations => Set<CharacterLocation>();
+    public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<EntityAffiliation> EntityAffiliations => Set<EntityAffiliation>();
     public DbSet<EntityLanguage> EntityLanguages => Set<EntityLanguage>();
 
