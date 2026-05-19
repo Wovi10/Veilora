@@ -576,44 +576,6 @@ namespace Veilora.Infrastructure.Migrations
                     b.ToTable("Relationships");
                 });
 
-            modelBuilder.Entity("Veilora.Domain.Entities.TreePermission", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("GrantedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PermissionLevel")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<Guid>("TreeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TreeId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("TreeId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("TreePermissions");
-                });
-
             modelBuilder.Entity("Veilora.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -980,25 +942,6 @@ namespace Veilora.Infrastructure.Migrations
                     b.Navigation("Character2");
                 });
 
-            modelBuilder.Entity("Veilora.Domain.Entities.TreePermission", b =>
-                {
-                    b.HasOne("Veilora.Domain.Entities.FamilyTree", "Tree")
-                        .WithMany()
-                        .HasForeignKey("TreeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Veilora.Domain.Entities.User", "User")
-                        .WithMany("TreePermissions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tree");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Veilora.Domain.Entities.User", b =>
                 {
                     b.HasOne("Veilora.Domain.Entities.User", "BackupUser")
@@ -1082,8 +1025,6 @@ namespace Veilora.Infrastructure.Migrations
                     b.Navigation("CreatedFamilyTrees");
 
                     b.Navigation("CreatedWorlds");
-
-                    b.Navigation("TreePermissions");
 
                     b.Navigation("WorldPermissions");
                 });

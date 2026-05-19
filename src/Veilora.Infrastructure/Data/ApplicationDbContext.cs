@@ -17,7 +17,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Relationship> Relationships => Set<Relationship>();
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<TreePermission> TreePermissions => Set<TreePermission>();
     public DbSet<WorldPermission> WorldPermissions => Set<WorldPermission>();
     public DbSet<Language> Languages => Set<Language>();
     public DbSet<DateSuffix> DateSuffixes => Set<DateSuffix>();

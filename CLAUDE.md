@@ -108,6 +108,4 @@ API calls go through a shared `apiFetch` helper that injects the Bearer token.
 ## What NOT to Implement Yet
 
 - Photo/file uploads (Phase 2)
-- `TreePermission` service wiring — entity exists but service is not wired (Phase 3)
 - GEDCOM import/export (Phase 3)
-- Mobile-responsive design (Phase 3)

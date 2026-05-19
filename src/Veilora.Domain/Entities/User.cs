@@ -13,6 +13,5 @@ public class User : BaseEntity
 
     public ICollection<FamilyTree> CreatedFamilyTrees { get; set; } = [];
     public ICollection<World> CreatedWorlds { get; set; } = [];
-    public ICollection<TreePermission> TreePermissions { get; set; } = [];
     public ICollection<WorldPermission> WorldPermissions { get; set; } = [];
 }
