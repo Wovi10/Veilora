@@ -48,12 +48,12 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 - [x] World search — name-based search across all entity types, filters sections in place
 - [x] FluentValidation integration and centralized exception handling middleware
 - [x] Rich text editor for character biographies (Tiptap)
+- [x] Mobile-responsive design — all pages usable at 360 px minimum; fullScreen dialogs on xs, BottomSheet on family tree and reading pages, touch pan/pinch-zoom on canvas
 
 ### Planned
 
 - [ ] Photo uploads for characters
 - [ ] Export family tree as image / PDF
-- [ ] Mobile-responsive design
 - [ ] GEDCOM import/export
 
 ---
