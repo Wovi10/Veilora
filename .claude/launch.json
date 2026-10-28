@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "smtp4dev",
+      "runtimeExecutable": "/home/wovi10/.dotnet/dotnet",
+      "runtimeArgs": ["/home/wovi10/.dotnet/tools/.store/rnwood.smtp4dev/3.15.0/rnwood.smtp4dev.linux-x64/3.15.0/tools/net10.0/linux-x64/Rnwood.Smtp4dev.dll", "--smtpport=2525", "--urls=http://localhost:5050", "--db=", "--imapport=", "--pop3port="],
+      "port": 5050
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "/home/wovi10/.dotnet/dotnet",
+      "runtimeArgs": ["run", "--project", "src/Veilora.Api", "--urls", "http://localhost:5131"],
+      "port": 5131
+    }
+  ]
+}

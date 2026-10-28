@@ -61,6 +61,8 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 
 ## Getting Started
 
+> See [ONBOARDING.md](ONBOARDING.md) for a full step-by-step setup guide, including the local SMTP setup for testing the forgot-password flow without a real email provider.
+
 ```bash
 # Run the API (Swagger at https://localhost:7xxx/swagger)
 dotnet run --project src/Veilora.Api

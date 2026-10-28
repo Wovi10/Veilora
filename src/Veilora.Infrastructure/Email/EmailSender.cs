@@ -30,7 +30,7 @@ public class EmailSender(EmailSettings settings, ILogger<EmailSender> logger) : 
         await client.ConnectAsync(
             settings.Host,
             settings.Port,
-            settings.UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
+            settings.UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.Auto);
 
         if (!string.IsNullOrEmpty(settings.Username) && !string.IsNullOrEmpty(settings.Password))
             await client.AuthenticateAsync(settings.Username, settings.Password);
