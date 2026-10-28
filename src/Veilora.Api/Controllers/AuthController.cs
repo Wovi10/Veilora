@@ -38,4 +38,21 @@ public class AuthController(IAuthService authService, ITokenService tokenService
         var token = tokenService.GenerateToken(user);
         return Ok(new AuthResponseDto(user.Id, token, user.Email, user.DisplayName));
     }
+
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        await authService.ForgotPasswordAsync(dto);
+        return Ok(new { message = "If an account exists for that email, a reset link has been sent." });
+    }
+
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        await authService.ResetPasswordAsync(dto);
+        return Ok(new { message = "Your password has been reset." });
+    }
 }

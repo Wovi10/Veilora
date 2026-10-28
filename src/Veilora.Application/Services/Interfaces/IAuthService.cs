@@ -6,4 +6,6 @@ public interface IAuthService
 {
     Task<UserInfoDto> RegisterAsync(RegisterDto dto);
     Task<UserInfoDto?> ValidateAsync(LoginDto dto);
+    Task ForgotPasswordAsync(ForgotPasswordDto dto);
+    Task ResetPasswordAsync(ResetPasswordDto dto);
 }

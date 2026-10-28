@@ -26,6 +26,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<EntityAffiliation> EntityAffiliations => Set<EntityAffiliation>();
     public DbSet<EntityLanguage> EntityLanguages => Set<EntityLanguage>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

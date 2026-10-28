@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -61,6 +61,11 @@ export default function LoginPage() {
             <TextField label="Username or email" value={usernameOrEmail} onChange={e => setUsernameOrEmail(e.target.value)} required autoFocus />
           )}
           <TextField label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+          {mode === 'login' && (
+            <Typography variant="body2" textAlign="right" sx={{ mt: -1 }}>
+              <Link component={RouterLink} to="/forgot-password">Forgot password?</Link>
+            </Typography>
+          )}
           {error && <Typography color="error" variant="body2">{error}</Typography>}
           <Button type="submit" variant="contained" disabled={loading}>
             {loading ? (mode === 'register' ? 'Registering…' : 'Logging in…') : (mode === 'register' ? 'Register' : 'Log in')}

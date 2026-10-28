@@ -4,6 +4,8 @@ using Veilora.Api.Services;
 using Veilora.Application.Repositories.Interfaces;
 using Veilora.Application.Services;
 using Veilora.Application.Services.Interfaces;
+using Veilora.Application.Settings;
+using Veilora.Infrastructure.Email;
 using Veilora.Infrastructure.Repositories;
 using Veilora.Application.Validators;
 using Veilora.Infrastructure.Data;
@@ -63,6 +65,7 @@ builder.Services.AddScoped<IDateSuffixRepository, DateSuffixRepository>();
 builder.Services.AddScoped<IReadingSessionRepository, ReadingSessionRepository>();
 builder.Services.AddScoped<IReadingNoteRepository, ReadingNoteRepository>();
 builder.Services.AddScoped<IPhotoRepository, PhotoRepository>();
+builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 // Services
 builder.Services.AddScoped<IWorldService, WorldService>();
@@ -82,6 +85,22 @@ builder.Services.AddScoped<IDateSuffixService, DateSuffixService>();
 builder.Services.AddScoped<IReadingSessionService, ReadingSessionService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
+// Password reset / email configuration
+builder.Services.AddSingleton(new PasswordResetSettings(
+    ClientBaseUrl: builder.Configuration["App:ClientBaseUrl"] ?? "http://localhost:5173",
+    TokenExpiryMinutes: int.Parse(builder.Configuration["PasswordReset:TokenExpiryMinutes"] ?? "60")));
+
+var emailSettings = builder.Configuration.GetSection("Email");
+builder.Services.AddSingleton(new EmailSettings(
+    Host: emailSettings["Host"] ?? "localhost",
+    Port: int.Parse(emailSettings["Port"] ?? "587"),
+    FromAddress: emailSettings["FromAddress"] ?? "noreply@veilora.app",
+    FromName: emailSettings["FromName"] ?? "Veilora",
+    Username: emailSettings["Username"],
+    Password: emailSettings["Password"],
+    UseSsl: bool.Parse(emailSettings["UseSsl"] ?? "true")));
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWorldDtoValidator>();

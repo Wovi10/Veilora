@@ -3,6 +3,8 @@ import App from './App';
 import { getToken } from './api/apiFetch';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import WorldPage from './pages/WorldPage';
 import WorldSettingsPage from './pages/WorldSettingsPage';
 import FamilyTreePage from './pages/FamilyTreePage';
@@ -27,6 +29,14 @@ const routes: RouteObject[] = [
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPasswordPage />,
   },
   {
     path: '/',

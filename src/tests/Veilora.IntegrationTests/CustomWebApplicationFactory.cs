@@ -23,6 +23,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public Mock<IReadingSessionService> ReadingSessionServiceMock { get; } = new();
     public Mock<IEventService> EventServiceMock { get; } = new();
     public Mock<IPhotoService> PhotoServiceMock { get; } = new();
+    public Mock<IAuthService> AuthServiceMock { get; } = new();
+    public Mock<ITokenService> TokenServiceMock { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -43,8 +45,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             RemoveAndMock<ICharacterService>(services, CharacterServiceMock.Object);
             RemoveAll<ILocationService>(services);
-            RemoveAll<IAuthService>(services);
-            RemoveAll<ITokenService>(services);
+            RemoveAndMock<IAuthService>(services, AuthServiceMock.Object);
+            RemoveAndMock<ITokenService>(services, TokenServiceMock.Object);
             RemoveAll<IWorldPermissionService>(services);
             RemoveAll<ILanguageService>(services);
             RemoveAll<IDateSuffixService>(services);
