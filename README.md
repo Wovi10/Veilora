@@ -62,29 +62,3 @@ A personal web-based worldbuilding companion for fantasy writers and creators. O
 ## Getting Started
 
 > See [ONBOARDING.md](ONBOARDING.md) for a full step-by-step setup guide, including the local SMTP setup for testing the forgot-password flow without a real email provider.
-
-```bash
-# Run the API (Swagger at https://localhost:7xxx/swagger)
-dotnet run --project src/Veilora.Api
-
-# Run the frontend dev server
-cd src/Veilora.Api/ClientApp
-npm run dev
-```
-
-Set required secrets before running:
-
-```bash
-dotnet user-secrets set "Jwt:Key" "your-secret-key-at-least-32-chars" --project src/Veilora.Api
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=...;Database=...;Username=...;Password=..." --project src/Veilora.Api
-```
-
-## Running Tests
-
-```bash
-dotnet test
-
-# Single project
-dotnet test src/tests/Veilora.UnitTests
-dotnet test src/tests/Veilora.IntegrationTests
-```
