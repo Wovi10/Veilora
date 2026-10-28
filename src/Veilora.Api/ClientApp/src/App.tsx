@@ -178,7 +178,7 @@ export default function App() {
             <Box
               component="span"
               onClick={() => navigate('/')}
-              sx={{ cursor: 'pointer', '&:hover': { opacity: 0.85 } }}
+              sx={{ cursor: 'pointer', userSelect: 'none', '&:hover': { opacity: 0.85 } }}
             >
               Veilora
             </Box>

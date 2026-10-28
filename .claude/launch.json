@@ -12,6 +12,12 @@
       "runtimeExecutable": "/home/wovi10/.dotnet/dotnet",
       "runtimeArgs": ["run", "--project", "src/Veilora.Api", "--urls", "http://localhost:5131"],
       "port": 5131
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "src/Veilora.Api/ClientApp"],
+      "port": 5173
     }
   ]
 }
